@@ -18,9 +18,9 @@ class PatientVisitController extends Controller
 
     public function index(Request $request)
     {
-        $visits = PatientVisit::with(['patient', 'doctor.user', 'appointment'])
+        $visits = PatientVisit::with(['patient', 'dentist.user', 'appointment'])
             ->when($request->input('patient_id'), fn ($q, $id) => $q->where('patient_id', $id))
-            ->when($request->input('doctor_id'), fn ($q, $id) => $q->where('doctor_id', $id))
+            ->when($request->input('dentist_id'), fn ($q, $id) => $q->where('dentist_id', $id))
             ->when($request->input('date'), fn ($q, $date) => $q->whereDate('visited_at', $date))
             ->orderByDesc('visited_at')
             ->paginate($request->integer('per_page', 10))
@@ -28,7 +28,7 @@ class PatientVisitController extends Controller
 
         return Inertia::render('patientVisits/index', [
             'data'    => $visits,
-            'filters' => $request->only(['patient_id', 'doctor_id', 'date', 'per_page']),
+            'filters' => $request->only(['patient_id', 'dentist_id', 'date', 'per_page']),
         ]);
     }
 
@@ -41,7 +41,7 @@ class PatientVisitController extends Controller
 
     public function show(PatientVisit $patientVisit)
     {
-        $patientVisit->load(['patient', 'doctor.user', 'appointment.service', 'medicalRecord']);
+        $patientVisit->load(['patient', 'dentist.user', 'appointment.service', 'dentalRecord']);
 
         return Inertia::render('patientVisits/show', [
             'visit' => $patientVisit,

@@ -30,10 +30,10 @@ class EloquentPatientRepository implements PatientRepository
     public function findWithHistory(int $id): ?Patient
     {
         return Patient::with([
-            'visits.medicalRecord',
-            'visits.doctor.user',
+            'visits.dentalRecord',
+            'visits.dentist.user',
             'appointments.service',
-            'appointments.doctor.user',
+            'appointments.dentist.user',
         ])->find($id);
     }
 

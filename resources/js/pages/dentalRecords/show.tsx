@@ -13,12 +13,12 @@ import {
 } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/app-layout';
 import {
-    index as medicalRecords,
-    edit as medicalRecordsEdit,
-    destroy as medicalRecordsDestroy,
-} from '@/routes/medical-records';
+    index as dentalRecords,
+    edit as dentalRecordsEdit,
+    destroy as dentalRecordsDestroy,
+} from '@/routes/dental-records';
 import { show as patientVisitsShow } from '@/routes/patient-visits';
-import type { MedicalRecordsShowProps } from '@/types';
+import type { DentalRecordsShowProps } from '@/types';
 
 function Field({ label, value, multiline = false }: { label: string; value: string | null | undefined; multiline?: boolean }) {
     return (
@@ -37,13 +37,13 @@ function Field({ label, value, multiline = false }: { label: string; value: stri
     );
 }
 
-export default function Show({ record }: MedicalRecordsShowProps) {
+export default function Show({ record }: DentalRecordsShowProps) {
     const [showDelete, setShowDelete] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
     const handleDelete = () => {
         setIsDeleting(true);
-        router.delete(medicalRecordsDestroy(record.id), {
+        router.delete(dentalRecordsDestroy(record.id), {
             onFinish: () => {
                 setIsDeleting(false);
                 setShowDelete(false);
@@ -53,19 +53,19 @@ export default function Show({ record }: MedicalRecordsShowProps) {
 
     return (
         <>
-            <Head title={`Medical Record — ${record.patient?.full_name ?? ''}`} />
+            <Head title={`Dental Record — ${record.patient?.full_name ?? ''}`} />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4 lg:p-6">
                 <div className="flex items-center justify-between">
                     <Button variant="ghost" size="sm" asChild>
-                        <Link href={medicalRecords()}>
+                        <Link href={dentalRecords()}>
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to list
                         </Link>
                     </Button>
                     <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" asChild>
-                            <Link href={medicalRecordsEdit(record.id)}>
+                            <Link href={dentalRecordsEdit(record.id)}>
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Edit
                             </Link>
@@ -84,8 +84,8 @@ export default function Show({ record }: MedicalRecordsShowProps) {
                         </CardHeader>
                         <CardContent className="space-y-3 text-sm">
                             <Field label="Patient" value={record.patient?.full_name} />
-                            <Field label="Doctor" value={record.doctor?.user?.name} />
-                            <Field label="Specialization" value={record.doctor?.specialization} />
+                            <Field label="Dentist" value={record.dentist?.user?.name} />
+                            <Field label="Specialization" value={record.dentist?.specialization} />
                             <Field label="Date" value={record.created_at} />
                         </CardContent>
                     </Card>
@@ -97,6 +97,7 @@ export default function Show({ record }: MedicalRecordsShowProps) {
                         <CardContent className="space-y-3 text-sm">
                             <Field label="Chief Complaint" value={record.chief_complaint} multiline />
                             <Field label="Diagnosis" value={record.diagnosis} multiline />
+                            <Field label="Treatment" value={record.treatment} multiline />
                             <Field label="Prescription" value={record.prescription} multiline />
                             {record.notes && <Field label="Notes" value={record.notes} multiline />}
                         </CardContent>
@@ -129,9 +130,9 @@ export default function Show({ record }: MedicalRecordsShowProps) {
                         </div>
                         <div className="pt-0.5">
                             <DialogHeader className="space-y-1">
-                                <DialogTitle className="text-base font-semibold">Delete Medical Record</DialogTitle>
+                                <DialogTitle className="text-base font-semibold">Delete Dental Record</DialogTitle>
                                 <DialogDescription className="text-sm text-muted-foreground">
-                                    Are you sure you want to delete this medical record for{' '}
+                                    Are you sure you want to delete this dental record for{' '}
                                     <span className="font-medium text-foreground">{record.patient?.full_name}</span>?
                                     This action cannot be undone.
                                 </DialogDescription>
@@ -156,7 +157,7 @@ export default function Show({ record }: MedicalRecordsShowProps) {
 Show.layout = (page: React.ReactNode) => (
     <AppLayout
         breadcrumbs={[
-            { title: 'Medical Records', href: medicalRecords() },
+            { title: 'Dental Records', href: dentalRecords() },
             { title: 'View Record', href: '#' },
         ]}
     >

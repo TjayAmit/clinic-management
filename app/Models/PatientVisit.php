@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'patient_id', 'doctor_id', 'appointment_id', 'visited_at',
+    'patient_id', 'dentist_id', 'appointment_id', 'visited_at',
     'check_in_at', 'check_out_at', 'blood_pressure', 'temperature',
     'weight', 'heart_rate', 'notes',
 ])]
@@ -34,9 +34,9 @@ class PatientVisit extends Model
         return $this->belongsTo(Patient::class);
     }
 
-    public function doctor(): BelongsTo
+    public function dentist(): BelongsTo
     {
-        return $this->belongsTo(Doctor::class);
+        return $this->belongsTo(Doctor::class, 'dentist_id');
     }
 
     public function appointment(): BelongsTo
@@ -44,8 +44,8 @@ class PatientVisit extends Model
         return $this->belongsTo(Appointment::class);
     }
 
-    public function medicalRecord(): HasOne
+    public function dentalRecord(): HasOne
     {
-        return $this->hasOne(MedicalRecord::class, 'patient_visit_id');
+        return $this->hasOne(DentalRecord::class, 'patient_visit_id');
     }
 }

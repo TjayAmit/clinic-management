@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('patient_visits', function (Blueprint $table) {
             $table->id();
             $table->foreignId('patient_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('doctor_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('dentist_id')->constrained('doctors')->cascadeOnDelete();
             $table->foreignId('appointment_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamp('visited_at');
             $table->timestamp('check_in_at')->nullable();

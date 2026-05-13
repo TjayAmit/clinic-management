@@ -123,10 +123,10 @@ export default function Index({ data, filters }: PatientVisitsIndexProps) {
                         <TableHeader>
                             <TableRow className="border-b border-border bg-muted/40 hover:bg-muted/40">
                                 <TableHead className="h-11 py-0 pl-6 pr-4 text-sm font-medium text-muted-foreground">Patient</TableHead>
-                                <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Doctor</TableHead>
+                                <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Dentist</TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Visited At</TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Status</TableHead>
-                                <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Medical Record</TableHead>
+                                <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Dental Record</TableHead>
                                 <TableHead className="h-11 w-12 py-0 pl-4 pr-6">
                                     <span className="sr-only">Actions</span>
                                 </TableHead>
@@ -158,7 +158,7 @@ export default function Index({ data, filters }: PatientVisitsIndexProps) {
                                                 {item.patient?.full_name ?? '—'}
                                             </TableCell>
                                             <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                                {item.doctor?.user?.name ?? '—'}
+                                                {item.dentist?.user?.name ?? '—'}
                                             </TableCell>
                                             <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
                                                 {item.visited_at}
@@ -167,7 +167,7 @@ export default function Index({ data, filters }: PatientVisitsIndexProps) {
                                                 <Badge variant={status.variant}>{status.label}</Badge>
                                             </TableCell>
                                             <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                                {item.medicalRecord ? (
+                                                {item.dentalRecord ? (
                                                     <Badge variant="outline">Recorded</Badge>
                                                 ) : (
                                                     <span className="text-muted-foreground">—</span>

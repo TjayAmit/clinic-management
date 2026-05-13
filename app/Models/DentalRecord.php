@@ -9,10 +9,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'patient_visit_id', 'patient_id', 'doctor_id',
-    'chief_complaint', 'diagnosis', 'prescription', 'notes',
+    'patient_visit_id', 'patient_id', 'dentist_id',
+    'chief_complaint', 'diagnosis', 'treatment', 'prescription', 'notes',
 ])]
-class MedicalRecord extends Model
+class DentalRecord extends Model
 {
     use HasFactory, SoftDeletes;
 
@@ -26,8 +26,8 @@ class MedicalRecord extends Model
         return $this->belongsTo(Patient::class);
     }
 
-    public function doctor(): BelongsTo
+    public function dentist(): BelongsTo
     {
-        return $this->belongsTo(Doctor::class);
+        return $this->belongsTo(Doctor::class, 'dentist_id');
     }
 }

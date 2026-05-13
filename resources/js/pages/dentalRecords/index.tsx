@@ -22,15 +22,15 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import {
-    index as medicalRecords,
-    create as medicalRecordsCreate,
-    show as medicalRecordsShow,
-    edit as medicalRecordsEdit,
-    destroy as medicalRecordsDestroy,
-} from '@/routes/medical-records';
-import type { MedicalRecordsIndexProps } from '@/types';
+    index as dentalRecords,
+    create as dentalRecordsCreate,
+    show as dentalRecordsShow,
+    edit as dentalRecordsEdit,
+    destroy as dentalRecordsDestroy,
+} from '@/routes/dental-records';
+import type { DentalRecordsIndexProps } from '@/types';
 
-export default function Index({ data, filters }: MedicalRecordsIndexProps) {
+export default function Index({ data, filters }: DentalRecordsIndexProps) {
     const [search, setSearch] = useState(filters.search || '');
     const [perPage, setPerPage] = useState(Number((filters as Record<string, unknown>).per_page) || 10);
     const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -39,7 +39,7 @@ export default function Index({ data, filters }: MedicalRecordsIndexProps) {
 
     const navigate = (params: Record<string, unknown> = {}) => {
         router.get(
-            medicalRecords(),
+            dentalRecords(),
             { search, per_page: perPage, ...params },
             { preserveState: true, preserveScroll: true },
         );
@@ -56,7 +56,7 @@ export default function Index({ data, filters }: MedicalRecordsIndexProps) {
     const handleDelete = () => {
         if (!deleteId) return;
         setIsDeleting(true);
-        router.delete(medicalRecordsDestroy(deleteId), {
+        router.delete(dentalRecordsDestroy(deleteId), {
             onFinish: () => {
                 setIsDeleting(false);
                 setDeleteId(null);
@@ -66,18 +66,18 @@ export default function Index({ data, filters }: MedicalRecordsIndexProps) {
 
     return (
         <>
-            <Head title="Medical Records" />
+            <Head title="Dental Records" />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4 lg:p-6">
                 <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
 
                     <TablePageHeader
-                        title="Medical Records"
+                        title="Dental Records"
                         count={data.total}
                         search={search}
                         searchPlaceholder="Search by patient name…"
                         onSearchChange={handleSearchChange}
-                        createHref={medicalRecordsCreate().url}
+                        createHref={dentalRecordsCreate().url}
                         createLabel="New Record"
                     />
 
@@ -85,7 +85,7 @@ export default function Index({ data, filters }: MedicalRecordsIndexProps) {
                         <TableHeader>
                             <TableRow className="border-b border-border bg-muted/40 hover:bg-muted/40">
                                 <TableHead className="h-11 py-0 pl-6 pr-4 text-sm font-medium text-muted-foreground">Patient</TableHead>
-                                <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Doctor</TableHead>
+                                <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Dentist</TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Chief Complaint</TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Diagnosis</TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Date</TableHead>
@@ -104,7 +104,7 @@ export default function Index({ data, filters }: MedicalRecordsIndexProps) {
                                                 <FileText className="h-5 w-5 opacity-50" />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-medium">No medical records found</p>
+                                                <p className="text-sm font-medium">No dental records found</p>
                                                 {search && (
                                                     <p className="mt-0.5 text-sm">
                                                         Try a different search or{' '}
@@ -125,13 +125,13 @@ export default function Index({ data, filters }: MedicalRecordsIndexProps) {
                                     <TableRow
                                         key={item.id}
                                         className="cursor-pointer border-b border-border/60 last:border-0 transition-colors hover:bg-muted/30"
-                                        onClick={() => router.get(medicalRecordsShow(item.id))}
+                                        onClick={() => router.get(dentalRecordsShow(item.id))}
                                     >
                                         <TableCell className="py-3.5 pl-6 pr-4 text-sm font-medium">
                                             {item.patient?.full_name ?? '—'}
                                         </TableCell>
                                         <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                            {item.doctor?.user?.name ?? '—'}
+                                            {item.dentist?.user?.name ?? '—'}
                                         </TableCell>
                                         <TableCell className="max-w-[200px] truncate px-4 py-3.5 text-sm text-muted-foreground">
                                             {item.chief_complaint}
@@ -158,11 +158,11 @@ export default function Index({ data, filters }: MedicalRecordsIndexProps) {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-40">
-                                                    <DropdownMenuItem onClick={() => router.get(medicalRecordsShow(item.id))}>
+                                                    <DropdownMenuItem onClick={() => router.get(dentalRecordsShow(item.id))}>
                                                         <Eye className="mr-2 h-4 w-4" />
                                                         View
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => router.get(medicalRecordsEdit(item.id))}>
+                                                    <DropdownMenuItem onClick={() => router.get(dentalRecordsEdit(item.id))}>
                                                         <Pencil className="mr-2 h-4 w-4" />
                                                         Edit
                                                     </DropdownMenuItem>
@@ -201,7 +201,7 @@ export default function Index({ data, filters }: MedicalRecordsIndexProps) {
             <ConfirmDeleteDialog
                 open={!!deleteId}
                 onOpenChange={() => setDeleteId(null)}
-                title="Delete Medical Record"
+                title="Delete Dental Record"
                 itemName={data.data.find((r) => r.id === deleteId)?.patient?.full_name}
                 onConfirm={handleDelete}
                 isLoading={isDeleting}
@@ -211,7 +211,7 @@ export default function Index({ data, filters }: MedicalRecordsIndexProps) {
 }
 
 Index.layout = (page: React.ReactNode) => (
-    <AppLayout breadcrumbs={[{ title: 'Medical Records', href: medicalRecords() }]}>
+    <AppLayout breadcrumbs={[{ title: 'Dental Records', href: dentalRecords() }]}>
         {page}
     </AppLayout>
 );

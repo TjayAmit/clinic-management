@@ -6,7 +6,7 @@ use App\Repositories\Eloquent\{
     EloquentAppointmentRepository,
     EloquentDoctorRepository,
     EloquentDoctorScheduleRepository,
-    EloquentMedicalRecordRepository,
+    EloquentDentalRecordRepository,
     EloquentPatientRepository,
     EloquentPatientVisitRepository,
     EloquentServiceRepository,
@@ -17,7 +17,7 @@ use App\Repositories\{
     AppointmentRepository,
     DoctorRepository,
     DoctorScheduleRepository,
-    MedicalRecordRepository,
+    DentalRecordRepository,
     PatientRepository,
     PatientVisitRepository,
     ServiceRepository,
@@ -66,8 +66,8 @@ class RepositoryServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
-            MedicalRecordRepository::class,
-            EloquentMedicalRecordRepository::class
+            DentalRecordRepository::class,
+            EloquentDentalRecordRepository::class
         );
     }
 }

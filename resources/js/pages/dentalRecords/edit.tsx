@@ -7,20 +7,21 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import {
-    index as medicalRecords,
-    show as medicalRecordsShow,
-    update as medicalRecordsUpdate,
-} from '@/routes/medical-records';
+    index as dentalRecords,
+    show as dentalRecordsShow,
+    update as dentalRecordsUpdate,
+} from '@/routes/dental-records';
 import { show as patientVisitsShow } from '@/routes/patient-visits';
-import type { MedicalRecordsFormProps } from '@/types';
+import type { DentalRecordsFormProps } from '@/types';
 
-export default function Edit({ record }: MedicalRecordsFormProps) {
+export default function Edit({ record }: DentalRecordsFormProps) {
     const { data, setData, put, processing, errors } = useForm({
         patient_visit_id: record?.patient_visit_id ? String(record.patient_visit_id) : '',
         patient_id: record?.patient_id ? String(record.patient_id) : '',
-        doctor_id: record?.doctor_id ? String(record.doctor_id) : '',
+        dentist_id: record?.dentist_id ? String(record.dentist_id) : '',
         chief_complaint: record?.chief_complaint ?? '',
         diagnosis: record?.diagnosis ?? '',
+        treatment: record?.treatment ?? '',
         prescription: record?.prescription ?? '',
         notes: record?.notes ?? '',
     });
@@ -28,18 +29,18 @@ export default function Edit({ record }: MedicalRecordsFormProps) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (record) {
-            put(medicalRecordsUpdate.url(record.id));
+            put(dentalRecordsUpdate.url(record.id));
         }
     };
 
     return (
         <>
-            <Head title="Edit Medical Record" />
+            <Head title="Edit Dental Record" />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4 lg:p-6">
                 <div>
                     <Button variant="ghost" size="sm" asChild>
-                        <Link href={record ? medicalRecordsShow(record.id) : medicalRecords()}>
+                        <Link href={record ? dentalRecordsShow(record.id) : dentalRecords()}>
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to details
                         </Link>
@@ -58,13 +59,13 @@ export default function Edit({ record }: MedicalRecordsFormProps) {
                                     <p>{record?.patient?.full_name ?? '—'}</p>
                                 </div>
                                 <div className="grid gap-0.5">
-                                    <p className="text-xs font-medium text-muted-foreground">Doctor</p>
-                                    <p>{record?.doctor?.user?.name ?? '—'}</p>
+                                    <p className="text-xs font-medium text-muted-foreground">Dentist</p>
+                                    <p>{record?.dentist?.user?.name ?? '—'}</p>
                                 </div>
-                                {record?.doctor?.specialization && (
+                                {record?.dentist?.specialization && (
                                     <div className="grid gap-0.5">
                                         <p className="text-xs font-medium text-muted-foreground">Specialization</p>
-                                        <p>{record.doctor.specialization}</p>
+                                        <p>{record.dentist.specialization}</p>
                                     </div>
                                 )}
                                 <div className="grid gap-0.5">
@@ -87,7 +88,7 @@ export default function Edit({ record }: MedicalRecordsFormProps) {
                             )}
 
                             <div className="rounded-lg border border-border bg-muted/20 px-4 py-3 text-muted-foreground">
-                                <p>Patient and doctor cannot be changed after a record is created.</p>
+                                <p>Patient and dentist cannot be changed after a record is created.</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -125,6 +126,18 @@ export default function Edit({ record }: MedicalRecordsFormProps) {
                             </div>
 
                             <div className="space-y-2">
+                                <Label htmlFor="treatment">Treatment</Label>
+                                <Textarea
+                                    id="treatment"
+                                    value={data.treatment}
+                                    onChange={(e) => setData('treatment', e.target.value)}
+                                    placeholder="Dental treatment performed"
+                                    rows={3}
+                                />
+                                <InputError message={errors.treatment} />
+                            </div>
+
+                            <div className="space-y-2">
                                 <Label htmlFor="prescription">Prescription</Label>
                                 <Textarea
                                     id="prescription"
@@ -153,7 +166,7 @@ export default function Edit({ record }: MedicalRecordsFormProps) {
                                     {processing ? 'Saving…' : 'Save Changes'}
                                 </Button>
                                 <Button variant="outline" asChild>
-                                    <Link href={record ? medicalRecordsShow(record.id) : medicalRecords()}>
+                                    <Link href={record ? dentalRecordsShow(record.id) : dentalRecords()}>
                                         Cancel
                                     </Link>
                                 </Button>
@@ -169,7 +182,7 @@ export default function Edit({ record }: MedicalRecordsFormProps) {
 Edit.layout = (page: React.ReactNode) => (
     <AppLayout
         breadcrumbs={[
-            { title: 'Medical Records', href: medicalRecords() },
+            { title: 'Dental Records', href: dentalRecords() },
             { title: 'Edit Record', href: '#' },
         ]}
     >

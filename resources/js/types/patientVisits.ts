@@ -1,7 +1,7 @@
 export interface PatientVisit {
     id: number;
     patient_id: number;
-    doctor_id: number;
+    dentist_id: number;
     appointment_id: number | null;
     visited_at: string;
     check_in_at: string | null;
@@ -14,9 +14,9 @@ export interface PatientVisit {
     created_at: string;
     updated_at: string;
     patient?: { id: number; first_name: string; last_name: string; full_name: string; phone: string | null };
-    doctor?: { id: number; specialization: string; user?: { id: number; name: string } };
+    dentist?: { id: number; specialization: string; user?: { id: number; name: string } };
     appointment?: { id: number; service?: { id: number; name: string } } | null;
-    medicalRecord?: { id: number } | null;
+    dentalRecord?: { id: number } | null;
 }
 
 export interface PatientVisitsIndexProps {
@@ -31,7 +31,7 @@ export interface PatientVisitsIndexProps {
     };
     filters: {
         patient_id?: string;
-        doctor_id?: string;
+        dentist_id?: string;
         date?: string;
     };
 }

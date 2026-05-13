@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AppointmentStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'patient_id', 'doctor_id', 'service_id', 'appointment_date',
+    'patient_id', 'dentist_id', 'service_id', 'appointment_date',
     'start_time', 'end_time', 'status', 'notes', 'created_by',
 ])]
 class Appointment extends Model
@@ -21,6 +22,7 @@ class Appointment extends Model
     {
         return [
             'appointment_date' => 'date',
+            'status' => AppointmentStatus::class,
         ];
     }
 
@@ -29,9 +31,9 @@ class Appointment extends Model
         return $this->belongsTo(Patient::class);
     }
 
-    public function doctor(): BelongsTo
+    public function dentist(): BelongsTo
     {
-        return $this->belongsTo(Doctor::class);
+        return $this->belongsTo(Doctor::class, 'dentist_id');
     }
 
     public function service(): BelongsTo

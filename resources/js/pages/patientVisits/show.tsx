@@ -19,7 +19,7 @@ import {
     checkIn as patientVisitsCheckIn,
     checkOut as patientVisitsCheckOut,
 } from '@/routes/patient-visits';
-import { show as medicalRecordsShow, create as medicalRecordsCreate } from '@/routes/medical-records';
+import { show as dentalRecordsShow, create as dentalRecordsCreate } from '@/routes/dental-records';
 import type { PatientVisitsShowProps } from '@/types';
 
 function Field({ label, value, multiline = false }: { label: string; value: string | number | null | undefined; multiline?: boolean }) {
@@ -103,8 +103,8 @@ export default function Show({ visit }: PatientVisitsShowProps) {
                         </CardHeader>
                         <CardContent className="space-y-3 text-sm">
                             <Field label="Patient" value={visit.patient?.full_name} />
-                            <Field label="Doctor" value={visit.doctor?.user?.name} />
-                            <Field label="Specialization" value={visit.doctor?.specialization} />
+                            <Field label="Dentist" value={visit.dentist?.user?.name} />
+                            <Field label="Specialization" value={visit.dentist?.specialization} />
                             <Field label="Appointment Service" value={visit.appointment?.service?.name} />
                             <Field label="Visited At" value={visit.visited_at} />
                             <Field label="Check-In" value={visit.check_in_at} />
@@ -127,25 +127,25 @@ export default function Show({ visit }: PatientVisitsShowProps) {
 
                     <Card className="lg:col-span-2">
                         <CardHeader>
-                            <CardTitle className="text-base">Medical Record</CardTitle>
+                            <CardTitle className="text-base">Dental Record</CardTitle>
                         </CardHeader>
                         <CardContent className="text-sm">
-                            {visit.medicalRecord ? (
+                            {visit.dentalRecord ? (
                                 <div className="space-y-3">
-                                    <p className="text-muted-foreground">A medical record exists for this visit.</p>
+                                    <p className="text-muted-foreground">A dental record exists for this visit.</p>
                                     <Button variant="outline" size="sm" asChild>
-                                        <Link href={medicalRecordsShow(visit.medicalRecord.id)}>
-                                            View Medical Record
+                                        <Link href={dentalRecordsShow(visit.dentalRecord.id)}>
+                                            View Dental Record
                                         </Link>
                                     </Button>
                                 </div>
                             ) : (
                                 <div className="space-y-3">
-                                    <p className="text-muted-foreground">No medical record yet.</p>
+                                    <p className="text-muted-foreground">No dental record yet.</p>
                                     {visit.check_in_at && (
                                         <Button size="sm" asChild>
-                                            <Link href={`${medicalRecordsCreate().url}?visit_id=${visit.id}`}>
-                                                Create Medical Record
+                                            <Link href={`${dentalRecordsCreate().url}?visit_id=${visit.id}`}>
+                                                Create Dental Record
                                             </Link>
                                         </Button>
                                     )}

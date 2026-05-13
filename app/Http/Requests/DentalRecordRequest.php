@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class MedicalRecordRequest extends FormRequest
+class DentalRecordRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,9 +16,10 @@ class MedicalRecordRequest extends FormRequest
         return [
             'patient_visit_id' => ['nullable', 'exists:patient_visits,id'],
             'patient_id'       => ['required', 'exists:patients,id'],
-            'doctor_id'        => ['required', 'exists:doctors,id'],
+            'dentist_id'       => ['required', 'exists:doctors,id'],
             'chief_complaint'  => ['required', 'string'],
             'diagnosis'        => ['nullable', 'string'],
+            'treatment'        => ['nullable', 'string'],
             'prescription'     => ['nullable', 'string'],
             'notes'            => ['nullable', 'string'],
         ];

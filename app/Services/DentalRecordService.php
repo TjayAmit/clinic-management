@@ -2,17 +2,17 @@
 
 namespace App\Services;
 
-use App\DTOs\MedicalRecordData;
-use App\Models\MedicalRecord;
-use App\Repositories\MedicalRecordRepository;
+use App\DTOs\DentalRecordData;
+use App\Models\DentalRecord;
+use App\Repositories\DentalRecordRepository;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class MedicalRecordService
+class DentalRecordService
 {
     public function __construct(
-        protected MedicalRecordRepository $repository,
+        protected DentalRecordRepository $repository,
     ) {}
 
     public function all(): iterable
@@ -20,7 +20,7 @@ class MedicalRecordService
         return $this->repository->all();
     }
 
-    public function findById(int $id): ?MedicalRecord
+    public function findById(int $id): ?DentalRecord
     {
         return $this->repository->findById($id);
     }
@@ -30,23 +30,23 @@ class MedicalRecordService
         return $this->repository->getByPatient($patientId);
     }
 
-    public function getByDoctor(int $doctorId): iterable
+    public function getByDentist(int $dentistId): iterable
     {
-        return $this->repository->getByDoctor($doctorId);
+        return $this->repository->getByDentist($dentistId);
     }
 
-    public function getByPatientVisit(int $patientVisitId): ?MedicalRecord
+    public function getByPatientVisit(int $patientVisitId): ?DentalRecord
     {
         return $this->repository->getByPatientVisit($patientVisitId);
     }
 
-    public function createFromRequest(Request $request): MedicalRecord
+    public function createFromRequest(Request $request): DentalRecord
     {
         $model = null;
         $dto = null;
 
         DB::transaction(function () use ($request, &$model, &$dto) {
-            $dto = MedicalRecordData::fromRequest($request);
+            $dto = DentalRecordData::fromRequest($request);
             $model = $this->repository->create($dto->toArray());
         });
 
@@ -55,7 +55,7 @@ class MedicalRecordService
         return $model;
     }
 
-    public function updateFromRequest(int $id, Request $request): MedicalRecord
+    public function updateFromRequest(int $id, Request $request): DentalRecord
     {
         $model = $this->repository->findById($id);
         $oldData = $model->getOriginal();
@@ -63,7 +63,7 @@ class MedicalRecordService
         $updatedModel = null;
 
         DB::transaction(function () use ($request, $model, &$dto, &$updatedModel) {
-            $dto = MedicalRecordData::fromRequest($request);
+            $dto = DentalRecordData::fromRequest($request);
             $updatedModel = $this->repository->update($model->id, $dto->toArray());
         });
 

@@ -5,7 +5,7 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\DoctorScheduleController;
 use App\Http\Controllers\FeatureController;
-use App\Http\Controllers\MedicalRecordController;
+use App\Http\Controllers\DentalRecordController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PatientVisitController;
 use App\Http\Controllers\RoleController;
@@ -55,8 +55,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('patient-visits/{patientVisit}/check-in', [PatientVisitController::class, 'checkIn'])->name('patient-visits.check-in');
     Route::patch('patient-visits/{patientVisit}/check-out', [PatientVisitController::class, 'checkOut'])->name('patient-visits.check-out');
 
-    // Medical Records
-    Route::resource('medical-records', MedicalRecordController::class);
+    // Dental Records
+    Route::resource('dental-records', DentalRecordController::class);
 
     // Users
     Route::resource('users', UserController::class);

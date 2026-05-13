@@ -41,8 +41,8 @@ class Doctor extends Model
         return $this->hasMany(PatientVisit::class);
     }
 
-    public function medicalRecords(): HasMany
+    public function dentalRecords(): HasMany
     {
-        return $this->hasMany(MedicalRecord::class);
+        return $this->hasMany(DentalRecord::class);
     }
 }

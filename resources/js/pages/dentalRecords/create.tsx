@@ -13,33 +13,34 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { index as medicalRecords, store as medicalRecordsStore } from '@/routes/medical-records';
-import type { MedicalRecordsFormProps } from '@/types';
+import { index as dentalRecords, store as dentalRecordsStore } from '@/routes/dental-records';
+import type { DentalRecordsFormProps } from '@/types';
 
-export default function Create({ patients, doctors, patient_visit }: MedicalRecordsFormProps) {
+export default function Create({ patients, doctors, patient_visit }: DentalRecordsFormProps) {
     const { data, setData, post, processing, errors } = useForm({
         patient_visit_id: patient_visit ? String(patient_visit.id) : '',
         patient_id: patient_visit?.patient ? String(patient_visit.patient.id) : '',
-        doctor_id: patient_visit?.doctor ? String(patient_visit.doctor.id) : '',
+        dentist_id: patient_visit?.dentist ? String(patient_visit.dentist.id) : '',
         chief_complaint: '',
         diagnosis: '',
+        treatment: '',
         prescription: '',
         notes: '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(medicalRecordsStore.url());
+        post(dentalRecordsStore.url());
     };
 
     return (
         <>
-            <Head title="New Medical Record" />
+            <Head title="New Dental Record" />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4 lg:p-6">
                 <div>
                     <Button variant="ghost" size="sm" asChild>
-                        <Link href={medicalRecords()}>
+                        <Link href={dentalRecords()}>
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to list
                         </Link>
@@ -49,7 +50,7 @@ export default function Create({ patients, doctors, patient_visit }: MedicalReco
                 <form onSubmit={handleSubmit} className="grid gap-4 lg:grid-cols-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">Patient & Doctor</CardTitle>
+                            <CardTitle className="text-base">Patient & Dentist</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {patient_visit ? (
@@ -60,8 +61,8 @@ export default function Create({ patients, doctors, patient_visit }: MedicalReco
                                         <span className="text-foreground">{patient_visit.patient?.full_name}</span>
                                     </p>
                                     <p className="mt-0.5 text-muted-foreground">
-                                        Doctor:{' '}
-                                        <span className="text-foreground">{patient_visit.doctor?.user?.name}</span>
+                                        Dentist:{' '}
+                                        <span className="text-foreground">{patient_visit.dentist?.user?.name}</span>
                                     </p>
                                     <p className="mt-0.5 text-muted-foreground">
                                         Visit date:{' '}
@@ -88,27 +89,27 @@ export default function Create({ patients, doctors, patient_visit }: MedicalReco
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label>Doctor <span className="text-destructive">*</span></Label>
-                                        <Select value={data.doctor_id} onValueChange={(v) => setData('doctor_id', v)}>
+                                        <Label>Dentist <span className="text-destructive">*</span></Label>
+                                        <Select value={data.dentist_id} onValueChange={(v) => setData('dentist_id', v)}>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Select doctor" />
+                                                <SelectValue placeholder="Select dentist" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {doctors.map((d) => (
                                                     <SelectItem key={d.id} value={String(d.id)}>
-                                                        {d.user?.name ?? `Doctor #${d.id}`}
+                                                        {d.user?.name ?? `Dentist #${d.id}`}
                                                         {d.specialization ? ` — ${d.specialization}` : ''}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                        <InputError message={errors.doctor_id} />
+                                        <InputError message={errors.dentist_id} />
                                     </div>
                                 </>
                             )}
 
                             <div className="rounded-lg border border-border bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-                                <p>This record will be permanently associated with the selected patient and doctor and cannot be reassigned after creation.</p>
+                                <p>This record will be permanently associated with the selected patient and dentist and cannot be reassigned after creation.</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -146,6 +147,18 @@ export default function Create({ patients, doctors, patient_visit }: MedicalReco
                             </div>
 
                             <div className="space-y-2">
+                                <Label htmlFor="treatment">Treatment</Label>
+                                <Textarea
+                                    id="treatment"
+                                    value={data.treatment}
+                                    onChange={(e) => setData('treatment', e.target.value)}
+                                    placeholder="Dental treatment performed"
+                                    rows={3}
+                                />
+                                <InputError message={errors.treatment} />
+                            </div>
+
+                            <div className="space-y-2">
                                 <Label htmlFor="prescription">Prescription</Label>
                                 <Textarea
                                     id="prescription"
@@ -174,7 +187,7 @@ export default function Create({ patients, doctors, patient_visit }: MedicalReco
                                     {processing ? 'Creating…' : 'Create Record'}
                                 </Button>
                                 <Button variant="outline" asChild>
-                                    <Link href={medicalRecords()}>Cancel</Link>
+                                    <Link href={dentalRecords()}>Cancel</Link>
                                 </Button>
                             </div>
                         </CardContent>
@@ -188,7 +201,7 @@ export default function Create({ patients, doctors, patient_visit }: MedicalReco
 Create.layout = (page: React.ReactNode) => (
     <AppLayout
         breadcrumbs={[
-            { title: 'Medical Records', href: medicalRecords() },
+            { title: 'Dental Records', href: dentalRecords() },
             { title: 'Create', href: '#' },
         ]}
     >

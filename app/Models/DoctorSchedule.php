@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['doctor_id', 'day_of_week', 'start_time', 'end_time', 'is_available'])]
+#[Fillable(['dentist_id', 'day_of_week', 'start_time', 'end_time', 'is_available'])]
 class DoctorSchedule extends Model
 {
     use HasFactory;
@@ -29,8 +29,8 @@ class DoctorSchedule extends Model
         );
     }
 
-    public function doctor(): BelongsTo
+    public function dentist(): BelongsTo
     {
-        return $this->belongsTo(Doctor::class);
+        return $this->belongsTo(Doctor::class, 'dentist_id');
     }
 }

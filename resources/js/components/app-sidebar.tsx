@@ -10,6 +10,7 @@ import {
     Briefcase,
     FileText,
     UserRound,
+    Flag,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -59,8 +60,8 @@ const navGroups: NavGroup[] = [
                 permissions: ['appointments.view'],
             },
             {
-                title: 'Medical Records',
-                href: '/medical-records',
+                title: 'Visit Records',
+                href: '/dental-records',
                 icon: FileText,
                 permissions: ['medical_records.view'],
             },
@@ -105,6 +106,12 @@ const navGroups: NavGroup[] = [
                 href: '/activity-logs',
                 icon: Activity,
                 permissions: ['activity_logs.view'],
+            },
+            {
+                title: 'Features',
+                href: '/features',
+                icon: Flag,
+                permissions: ['features.view'],
             },
         ],
     },

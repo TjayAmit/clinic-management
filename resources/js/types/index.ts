@@ -9,4 +9,5 @@ export type * from './doctors';
 export type * from './services';
 export type * from './appointments';
 export type * from './patientVisits';
-export type * from './medicalRecords';
+export type * from './dentalRecords';
+export type * from './features';

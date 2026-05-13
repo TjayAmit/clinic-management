@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Gender;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable([
     'first_name', 'last_name', 'date_of_birth', 'gender', 'blood_type',
     'phone', 'email', 'address', 'emergency_contact_name',
-    'emergency_contact_phone', 'allergies', 'medical_history',
+    'emergency_contact_phone', 'allergies', 'dental_history',
 ])]
 class Patient extends Model
 {
@@ -22,6 +23,7 @@ class Patient extends Model
     {
         return [
             'date_of_birth' => 'date',
+            'gender' => Gender::class,
         ];
     }
 
@@ -42,8 +44,8 @@ class Patient extends Model
         return $this->hasMany(PatientVisit::class)->orderByDesc('visited_at');
     }
 
-    public function medicalRecords(): HasMany
+    public function dentalRecords(): HasMany
     {
-        return $this->hasMany(MedicalRecord::class)->orderByDesc('created_at');
+        return $this->hasMany(DentalRecord::class)->orderByDesc('created_at');
     }
 }

@@ -69,12 +69,12 @@ export default function Edit({ appointment, patients, doctors, services }: Appoi
                     </Button>
                 </div>
 
-                <Card className="max-w-2xl">
-                    <CardHeader>
-                        <CardTitle className="text-base">Edit Appointment</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit} className="grid gap-4 lg:grid-cols-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Patient & Service</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <Label>Patient <span className="text-destructive">*</span></Label>
                                 <Select value={data.patient_id} onValueChange={(v) => setData('patient_id', v)}>
@@ -126,7 +126,14 @@ export default function Edit({ appointment, patients, doctors, services }: Appoi
                                 </Select>
                                 <InputError message={errors.service_id} />
                             </div>
+                        </CardContent>
+                    </Card>
 
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Schedule</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="appointment_date">Date <span className="text-destructive">*</span></Label>
                                 <Input
@@ -175,12 +182,12 @@ export default function Edit({ appointment, patients, doctors, services }: Appoi
                                     value={data.notes}
                                     onChange={(e) => setData('notes', e.target.value)}
                                     placeholder="Any relevant notes for this appointment…"
-                                    rows={3}
+                                    rows={4}
                                 />
                                 <InputError message={errors.notes} />
                             </div>
 
-                            <div className="flex items-center gap-4 pt-2">
+                            <div className="mt-auto flex items-center gap-3 pt-1">
                                 <Button type="submit" disabled={processing}>
                                     {processing ? 'Saving…' : 'Save Changes'}
                                 </Button>
@@ -190,9 +197,9 @@ export default function Edit({ appointment, patients, doctors, services }: Appoi
                                     </Link>
                                 </Button>
                             </div>
-                        </form>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                </form>
             </div>
         </>
     );

@@ -11,3 +11,4 @@ export type * from './appointments';
 export type * from './patientVisits';
 export type * from './dentalRecords';
 export type * from './features';
+export type * from './dashboard';

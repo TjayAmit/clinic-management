@@ -8,10 +8,10 @@ export default function AppLogo() {
             </div>
             <div className="ml-1 grid flex-1 text-left text-sm">
                 <span className="mb-0.5 truncate leading-tight font-semibold">
-                    Faculty Scheduling
+                    Dental Clinic Management
                 </span>
                 <span className="text-[10px] text-muted-foreground">
-                    Western Mindanao State University
+                    John Doe Dental Clinic
                 </span>
             </div>
         </>

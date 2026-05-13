@@ -20,7 +20,7 @@ class EloquentAppointmentRepository implements AppointmentRepository
     public function getByDoctor(int $doctorId, ?string $date = null): iterable
     {
         $query = Appointment::with(['patient', 'service'])
-            ->where('doctor_id', $doctorId);
+            ->where('dentist_id', $doctorId);
 
         if ($date) {
             $query->whereDate('appointment_date', $date);
@@ -63,7 +63,7 @@ class EloquentAppointmentRepository implements AppointmentRepository
 
     public function checkConflict(int $doctorId, string $date, string $startTime, string $endTime, ?int $excludeId = null): bool
     {
-        $query = Appointment::where('doctor_id', $doctorId)
+        $query = Appointment::where('dentist_id', $doctorId)
             ->whereDate('appointment_date', $date)
             ->whereNotIn('status', ['cancelled', 'no_show'])
             ->where(function ($q) use ($startTime, $endTime) {

@@ -3,7 +3,7 @@ export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancell
 export interface Appointment {
     id: number;
     patient_id: number;
-    doctor_id: number;
+    dentist_id: number;
     service_id: number;
     appointment_date: string;
     start_time: string;
@@ -14,7 +14,7 @@ export interface Appointment {
     created_at: string;
     updated_at: string;
     patient?: { id: number; first_name: string; last_name: string; full_name: string; phone: string | null };
-    doctor?: { id: number; specialization: string; user?: { id: number; name: string } };
+    dentist?: { id: number; specialization: string; user?: { id: number; name: string } };
     service?: { id: number; name: string; duration_minutes: number; price: string };
     visit?: { id: number; medical_record?: { id: number } | null } | null;
 }
@@ -53,7 +53,7 @@ export interface AppointmentsIndexProps {
     filters: {
         search?: string;
         date?: string;
-        doctor_id?: string;
+        dentist_id?: string;
         status?: string;
     };
     doctors: DoctorOption[];

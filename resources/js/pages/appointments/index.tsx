@@ -64,7 +64,7 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
                 search,
                 per_page: perPage,
                 date: filters.date,
-                doctor_id: filters.doctor_id,
+                dentist_id: filters.dentist_id,
                 status: filters.status,
                 ...params,
             },
@@ -126,8 +126,8 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
                             onChange={(e) => navigate({ date: e.target.value || undefined, page: 1 })}
                         />
                         <Select
-                            value={filters.doctor_id ?? ''}
-                            onValueChange={(v) => navigate({ doctor_id: v || undefined, page: 1 })}
+                            value={filters.dentist_id ?? ''}
+                            onValueChange={(v) => navigate({ dentist_id: v || undefined, page: 1 })}
                         >
                             <SelectTrigger className="h-9 w-48">
                                 <SelectValue placeholder="All doctors" />
@@ -153,11 +153,11 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
                                 ))}
                             </SelectContent>
                         </Select>
-                        {(filters.date || filters.doctor_id || filters.status) && (
+                        {(filters.date || filters.dentist_id || filters.status) && (
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => navigate({ date: undefined, doctor_id: undefined, status: undefined, page: 1 })}
+                                onClick={() => navigate({ date: undefined, dentist_id: undefined, status: undefined, page: 1 })}
                                 className="h-9 text-muted-foreground"
                             >
                                 Clear filters
@@ -169,7 +169,7 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
                         <TableHeader>
                             <TableRow className="border-b border-border bg-muted/40 hover:bg-muted/40">
                                 <TableHead className="h-11 py-0 pl-6 pr-4 text-sm font-medium text-muted-foreground">Patient</TableHead>
-                                <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Doctor</TableHead>
+                                <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Dentist</TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Service</TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Date</TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Time</TableHead>
@@ -205,7 +205,7 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
                                                 {item.patient?.full_name ?? '—'}
                                             </TableCell>
                                             <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                                {item.doctor?.user?.name ?? '—'}
+                                                {item.dentist?.user?.name ?? '—'}
                                             </TableCell>
                                             <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
                                                 {item.service?.name ?? '—'}

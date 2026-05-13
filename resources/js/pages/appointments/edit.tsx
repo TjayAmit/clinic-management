@@ -33,7 +33,7 @@ function addMinutes(time: string, minutes: number): string {
 export default function Edit({ appointment, patients, doctors, services }: AppointmentsFormProps) {
     const { data, setData, put, processing, errors } = useForm({
         patient_id: String(appointment?.patient_id ?? ''),
-        doctor_id: String(appointment?.doctor_id ?? ''),
+        dentist_id: String(appointment?.dentist_id ?? ''),
         service_id: String(appointment?.service_id ?? ''),
         appointment_date: appointment?.appointment_date ?? '',
         start_time: appointment?.start_time ?? '',
@@ -95,7 +95,7 @@ export default function Edit({ appointment, patients, doctors, services }: Appoi
 
                             <div className="space-y-2">
                                 <Label>Doctor <span className="text-destructive">*</span></Label>
-                                <Select value={data.doctor_id} onValueChange={(v) => setData('doctor_id', v)}>
+                                <Select value={data.dentist_id} onValueChange={(v) => setData('dentist_id', v)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select doctor" />
                                     </SelectTrigger>
@@ -107,7 +107,7 @@ export default function Edit({ appointment, patients, doctors, services }: Appoi
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                <InputError message={errors.doctor_id} />
+                                <InputError message={errors.dentist_id} />
                             </div>
 
                             <div className="space-y-2">

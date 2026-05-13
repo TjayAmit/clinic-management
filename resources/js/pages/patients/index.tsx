@@ -106,6 +106,9 @@ export default function Index({ data, filters }: PatientsIndexProps) {
                                     Date of Birth
                                 </TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">
+                                    Age
+                                </TableHead>
+                                <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">
                                     Phone
                                 </TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">
@@ -151,7 +154,7 @@ export default function Index({ data, filters }: PatientsIndexProps) {
                                     >
                                         <TableCell className="py-3.5 pl-6 pr-4">
                                             <span className="text-sm font-medium text-foreground">
-                                                {item.full_name}
+                                               {item.last_name}, {item.first_name} 
                                             </span>
                                         </TableCell>
 
@@ -162,7 +165,11 @@ export default function Index({ data, filters }: PatientsIndexProps) {
                                         </TableCell>
 
                                         <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                            {item.date_of_birth}
+                                            {item.date_of_birth ? new Date(item.date_of_birth).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—'}
+                                        </TableCell>
+                                        
+                                        <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
+                                            {item.date_of_birth ? Math.floor((new Date().getTime() - new Date(item.date_of_birth).getTime()) / (1000 * 60 * 60 * 24 * 365.25)) : '—'}
                                         </TableCell>
 
                                         <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">

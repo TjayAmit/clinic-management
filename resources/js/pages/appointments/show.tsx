@@ -111,8 +111,8 @@ export default function Show({ appointment }: AppointmentsShowProps) {
                         </CardHeader>
                         <CardContent className="space-y-3 text-sm">
                             <Field label="Patient" value={appointment.patient?.full_name} />
-                            <Field label="Doctor" value={appointment.doctor?.user?.name} />
-                            <Field label="Specialization" value={appointment.doctor?.specialization} />
+                            <Field label="Dentist" value={appointment.dentist?.user?.name} />
+                            <Field label="Specialization" value={appointment.dentist?.specialization} />
                             <Field label="Service" value={appointment.service?.name} />
                             <Field label="Date" value={appointment.appointment_date} />
                             <Field label="Time" value={`${appointment.start_time} – ${appointment.end_time}`} />

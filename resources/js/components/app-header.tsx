@@ -240,7 +240,6 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                 <div className="flex w-full border-b border-sidebar-border/70">
                     <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
-                        <span className="ml-4 text-sm text-muted-foreground">hello world</span>
                     </div>
                 </div>
             )}

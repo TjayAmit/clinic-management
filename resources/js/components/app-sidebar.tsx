@@ -102,17 +102,23 @@ const navGroups: NavGroup[] = [
                 roles: ['Admin'],
             },
             {
-                title: 'Activity Logs',
-                href: '/activity-logs',
-                icon: Activity,
-                permissions: ['activity_logs.view'],
-            },
-            {
                 title: 'Features',
                 href: '/features',
                 icon: Flag,
                 permissions: ['features.view'],
             },
+        ],
+    },
+    {
+        title: 'Audit',
+        roles: ['Admin'],
+        items: [
+            {
+                title: 'Activity Logs',
+                href: '/activity-logs',
+                icon: Activity,
+                permissions: ['activity_logs.view'],
+            }
         ],
     },
 ];

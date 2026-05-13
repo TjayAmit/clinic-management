@@ -29,7 +29,7 @@ function addMinutes(time: string, minutes: number): string {
 export default function Create({ patients, doctors, services }: AppointmentsFormProps) {
     const { data, setData, post, processing, errors } = useForm({
         patient_id: '',
-        doctor_id: '',
+        dentist_id: '',
         service_id: '',
         appointment_date: '',
         start_time: '',
@@ -91,7 +91,7 @@ export default function Create({ patients, doctors, services }: AppointmentsForm
 
                             <div className="space-y-2">
                                 <Label>Doctor <span className="text-destructive">*</span></Label>
-                                <Select value={data.doctor_id} onValueChange={(v) => setData('doctor_id', v)}>
+                                <Select value={data.dentist_id} onValueChange={(v) => setData('dentist_id', v)}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select doctor" />
                                     </SelectTrigger>
@@ -103,7 +103,7 @@ export default function Create({ patients, doctors, services }: AppointmentsForm
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                <InputError message={errors.doctor_id} />
+                                <InputError message={errors.dentist_id} />
                             </div>
 
                             <div className="space-y-2">

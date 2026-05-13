@@ -9,7 +9,7 @@ readonly class AppointmentData
 {
     public function __construct(
         public ?int $patient_id = null,
-        public ?int $doctor_id = null,
+        public ?int $dentist_id = null,
         public ?int $service_id = null,
         public ?string $appointment_date = null,
         public ?string $start_time = null,
@@ -23,7 +23,7 @@ readonly class AppointmentData
     {
         return new self(
             patient_id: $request->input('patient_id'),
-            doctor_id: $request->input('doctor_id'),
+            dentist_id: $request->input('dentist_id'),
             service_id: $request->input('service_id'),
             appointment_date: $request->input('appointment_date'),
             start_time: $request->input('start_time'),
@@ -38,7 +38,7 @@ readonly class AppointmentData
     {
         return new self(
             patient_id: $appointment->patient_id,
-            doctor_id: $appointment->doctor_id,
+            dentist_id: $appointment->dentist_id,
             service_id: $appointment->service_id,
             appointment_date: $appointment->appointment_date?->toDateString(),
             start_time: $appointment->start_time,

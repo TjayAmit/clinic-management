@@ -4,6 +4,7 @@ use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\DoctorScheduleController;
+use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\MedicalRecordController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PatientVisitController;
@@ -37,6 +38,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Services
     Route::resource('services', ServiceController::class);
+
+    // Features
+    Route::resource('features', FeatureController::class);
+    Route::patch('features/{feature}/enable', [FeatureController::class, 'enable'])->name('features.enable');
+    Route::patch('features/{feature}/disable', [FeatureController::class, 'disable'])->name('features.disable');
 
     // Appointments
     Route::resource('appointments', AppointmentController::class);

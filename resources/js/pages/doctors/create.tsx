@@ -47,12 +47,12 @@ export default function Create({ users }: DoctorsFormProps) {
                     </Button>
                 </div>
 
-                <Card className="max-w-2xl">
-                    <CardHeader>
-                        <CardTitle className="text-base">Add Doctor</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit} className="grid gap-4 lg:grid-cols-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Doctor Profile</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <Label>User Account <span className="text-destructive">*</span></Label>
                                 <Select value={data.user_id} onValueChange={(v) => setData('user_id', v)}>
@@ -105,19 +105,7 @@ export default function Create({ users }: DoctorsFormProps) {
                                 <InputError message={errors.phone} />
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="bio">Bio</Label>
-                                <Textarea
-                                    id="bio"
-                                    value={data.bio}
-                                    onChange={(e) => setData('bio', e.target.value)}
-                                    placeholder="Short professional background…"
-                                    rows={3}
-                                />
-                                <InputError message={errors.bio} />
-                            </div>
-
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 pt-1">
                                 <Checkbox
                                     id="is_active"
                                     checked={data.is_active}
@@ -125,8 +113,27 @@ export default function Create({ users }: DoctorsFormProps) {
                                 />
                                 <Label htmlFor="is_active">Active (available for appointments)</Label>
                             </div>
+                        </CardContent>
+                    </Card>
 
-                            <div className="flex items-center gap-4 pt-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Professional Background</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex h-full flex-col gap-4">
+                            <div className="flex-1 space-y-2">
+                                <Label htmlFor="bio">Bio</Label>
+                                <Textarea
+                                    id="bio"
+                                    value={data.bio}
+                                    onChange={(e) => setData('bio', e.target.value)}
+                                    placeholder="Short professional background, education, and experience…"
+                                    className="min-h-[220px] resize-none"
+                                />
+                                <InputError message={errors.bio} />
+                            </div>
+
+                            <div className="flex items-center gap-3 pt-2">
                                 <Button type="submit" disabled={processing}>
                                     {processing ? 'Adding…' : 'Add Doctor'}
                                 </Button>
@@ -134,9 +141,9 @@ export default function Create({ users }: DoctorsFormProps) {
                                     <Link href={doctors()}>Cancel</Link>
                                 </Button>
                             </div>
-                        </form>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                </form>
             </div>
         </>
     );

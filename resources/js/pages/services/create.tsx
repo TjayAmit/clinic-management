@@ -38,12 +38,12 @@ export default function Create() {
                     </Button>
                 </div>
 
-                <Card className="max-w-lg">
-                    <CardHeader>
-                        <CardTitle className="text-base">New Service</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit} className="grid gap-4 lg:grid-cols-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Service Details</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="name">Service Name <span className="text-destructive">*</span></Label>
                                 <Input
@@ -62,12 +62,19 @@ export default function Create() {
                                     id="description"
                                     value={data.description}
                                     onChange={(e) => setData('description', e.target.value)}
-                                    placeholder="Brief description of the service…"
-                                    rows={3}
+                                    placeholder="Brief description of what this service covers…"
+                                    className="min-h-[180px] resize-none"
                                 />
                                 <InputError message={errors.description} />
                             </div>
+                        </CardContent>
+                    </Card>
 
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Pricing & Availability</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex h-full flex-col gap-4">
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label htmlFor="price">Price (₱) <span className="text-destructive">*</span></Label>
@@ -85,7 +92,7 @@ export default function Create() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="duration_minutes">Duration (minutes) <span className="text-destructive">*</span></Label>
+                                    <Label htmlFor="duration_minutes">Duration (min) <span className="text-destructive">*</span></Label>
                                     <Input
                                         id="duration_minutes"
                                         type="number"
@@ -109,7 +116,7 @@ export default function Create() {
                                 <Label htmlFor="is_active">Active (available for booking)</Label>
                             </div>
 
-                            <div className="flex items-center gap-4 pt-2">
+                            <div className="mt-auto flex items-center gap-3 pt-2">
                                 <Button type="submit" disabled={processing}>
                                     {processing ? 'Creating…' : 'Create Service'}
                                 </Button>
@@ -117,9 +124,9 @@ export default function Create() {
                                     <Link href={services()}>Cancel</Link>
                                 </Button>
                             </div>
-                        </form>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                </form>
             </div>
         </>
     );

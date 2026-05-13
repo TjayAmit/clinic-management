@@ -1,18 +1,17 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Shield, Check } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, Shield } from 'lucide-react';
 import { FormEvent, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
 import {
     Collapsible,
     CollapsibleContent,
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { ChevronDown } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { index as roles, update as rolesUpdate } from '@/routes/roles';
 import type { RolesFormProps } from '@/types';
 import AppLayout from '@/layouts/app-layout';
@@ -46,7 +45,6 @@ export default function Edit({ role, permissions }: RolesFormProps) {
         }
     };
 
-    // Group permissions by module (assuming format: "module.action")
     const groupedPermissions = permissions.reduce((acc, permission) => {
         const module = permission.name.split('.')[0] || 'other';
         if (!acc[module]) acc[module] = [];
@@ -60,7 +58,7 @@ export default function Edit({ role, permissions }: RolesFormProps) {
         <>
             <Head title={`Edit Role - ${role.name}`} />
 
-            <div className="flex h-full flex-1 flex-col gap-4 p-4">
+            <div className="flex h-full flex-1 flex-col gap-4 p-4 lg:p-6">
                 <div>
                     <Button variant="ghost" size="sm" asChild>
                         <Link href={roles()}>
@@ -70,17 +68,15 @@ export default function Edit({ role, permissions }: RolesFormProps) {
                     </Button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="mx-auto w-full max-w-2xl">
-                    <Card>
+                <form onSubmit={handleSubmit} className="grid gap-4 lg:grid-cols-3">
+                    <Card className="lg:col-span-2">
                         <CardHeader className="flex flex-row items-center gap-4">
                             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                                 <Shield className="h-5 w-5 text-primary" />
                             </div>
                             <div>
                                 <CardTitle className="text-base">Edit Role</CardTitle>
-                                <p className="text-sm text-muted-foreground">
-                                    Modify role name and permissions
-                                </p>
+                                <p className="text-sm text-muted-foreground">Modify role name and permissions</p>
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-6">
@@ -101,9 +97,7 @@ export default function Edit({ role, permissions }: RolesFormProps) {
                                     <p className="text-sm text-destructive">{errors.name}</p>
                                 )}
                                 {isProtectedRole && (
-                                    <p className="text-sm text-muted-foreground">
-                                        Protected role names cannot be changed.
-                                    </p>
+                                    <p className="text-sm text-muted-foreground">Protected role names cannot be changed.</p>
                                 )}
                             </div>
 
@@ -139,7 +133,7 @@ export default function Edit({ role, permissions }: RolesFormProps) {
                                                         <h4 className="mb-2 text-sm font-semibold capitalize text-muted-foreground">
                                                             {module}
                                                         </h4>
-                                                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                                                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
                                                             {perms.map((permission) => (
                                                                 <div key={permission.id} className="flex items-center gap-2">
                                                                     <Checkbox
@@ -164,15 +158,34 @@ export default function Edit({ role, permissions }: RolesFormProps) {
                                 </CollapsibleContent>
                             </Collapsible>
 
-                            <div className="flex justify-end gap-3 pt-4 border-t">
+                            <div className="flex items-center gap-3 border-t border-border pt-4">
+                                <Button type="submit" disabled={processing}>
+                                    <Check className="mr-2 h-4 w-4" />
+                                    {processing ? 'Saving…' : 'Save Changes'}
+                                </Button>
                                 <Button variant="outline" asChild>
                                     <Link href={roles()}>Cancel</Link>
                                 </Button>
-                                <Button type="submit" disabled={processing}>
-                                    <Check className="mr-2 h-4 w-4" />
-                                    {processing ? 'Saving...' : 'Save Changes'}
-                                </Button>
                             </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">About Roles</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3 text-sm text-muted-foreground">
+                            <p>Roles group permissions together. Assign a role to a user to grant them access to specific parts of the system.</p>
+                            <div className="space-y-1.5">
+                                <p className="font-medium text-foreground">Permission format</p>
+                                <p>Permissions follow the pattern <code className="rounded bg-muted px-1 py-0.5 text-xs">module.action</code>, e.g. <code className="rounded bg-muted px-1 py-0.5 text-xs">patients.view</code>.</p>
+                            </div>
+                            {data.permissions.length > 0 && (
+                                <div className="space-y-1.5 pt-2">
+                                    <p className="font-medium text-foreground">{data.permissions.length} permission{data.permissions.length !== 1 ? 's' : ''} selected</p>
+                                    <p>out of {permissions.length} total</p>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </form>

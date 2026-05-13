@@ -37,7 +37,6 @@ export default function Create({ patients, doctors, services }: AppointmentsForm
         notes: '',
     });
 
-    // Auto-calculate end_time when start_time or service changes
     useEffect(() => {
         if (!data.start_time || !data.service_id) return;
         const service = services.find((s) => String(s.id) === data.service_id);
@@ -66,12 +65,12 @@ export default function Create({ patients, doctors, services }: AppointmentsForm
                     </Button>
                 </div>
 
-                <Card className="max-w-2xl">
-                    <CardHeader>
-                        <CardTitle className="text-base">Book Appointment</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit} className="grid gap-4 lg:grid-cols-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Patient & Service</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <Label>Patient <span className="text-destructive">*</span></Label>
                                 <Select value={data.patient_id} onValueChange={(v) => setData('patient_id', v)}>
@@ -123,7 +122,14 @@ export default function Create({ patients, doctors, services }: AppointmentsForm
                                 </Select>
                                 <InputError message={errors.service_id} />
                             </div>
+                        </CardContent>
+                    </Card>
 
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Schedule</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="appointment_date">Date <span className="text-destructive">*</span></Label>
                                 <Input
@@ -172,12 +178,12 @@ export default function Create({ patients, doctors, services }: AppointmentsForm
                                     value={data.notes}
                                     onChange={(e) => setData('notes', e.target.value)}
                                     placeholder="Any relevant notes for this appointment…"
-                                    rows={3}
+                                    rows={4}
                                 />
                                 <InputError message={errors.notes} />
                             </div>
 
-                            <div className="flex items-center gap-4 pt-2">
+                            <div className="mt-auto flex items-center gap-3 pt-1">
                                 <Button type="submit" disabled={processing}>
                                     {processing ? 'Booking…' : 'Book Appointment'}
                                 </Button>
@@ -185,9 +191,9 @@ export default function Create({ patients, doctors, services }: AppointmentsForm
                                     <Link href={appointments()}>Cancel</Link>
                                 </Button>
                             </div>
-                        </form>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                </form>
             </div>
         </>
     );

@@ -1,8 +1,7 @@
 import { Head, router } from '@inertiajs/react';
-import { CalendarDays, Eye, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { ClipboardList, Eye, MoreVertical, Search, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog';
-import { TablePageHeader } from '@/components/table-page-header';
 import { TablePagination } from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,13 +14,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
     Table,
     TableBody,
     TableCell,
@@ -31,59 +23,39 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import {
-    index as appointments,
-    create as appointmentsCreate,
-    show as appointmentsShow,
-    edit as appointmentsEdit,
-    destroy as appointmentsDestroy,
-    confirm as appointmentsConfirm,
-    cancel as appointmentsCancel,
-    complete as appointmentsComplete,
-} from '@/routes/appointments';
-import type { AppointmentsIndexProps, AppointmentStatus } from '@/types';
+    index as patientVisits,
+    show as patientVisitsShow,
+    destroy as patientVisitsDestroy,
+    checkIn as patientVisitsCheckIn,
+    checkOut as patientVisitsCheckOut,
+} from '@/routes/patient-visits';
+import type { PatientVisitsIndexProps } from '@/types';
 
-const STATUS_STYLES: Record<AppointmentStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-    pending:   { label: 'Pending',   variant: 'secondary' },
-    confirmed: { label: 'Confirmed', variant: 'default' },
-    completed: { label: 'Completed', variant: 'outline' },
-    cancelled: { label: 'Cancelled', variant: 'destructive' },
-    no_show:   { label: 'No Show',   variant: 'secondary' },
-};
-
-export default function Index({ data, filters, doctors }: AppointmentsIndexProps) {
-    const [search, setSearch] = useState(filters.search || '');
+export default function Index({ data, filters }: PatientVisitsIndexProps) {
     const [perPage, setPerPage] = useState(Number((filters as Record<string, unknown>).per_page) || 10);
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
-    const searchTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const dateTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     const navigate = (params: Record<string, unknown> = {}) => {
         router.get(
-            appointments(),
-            {
-                search,
-                per_page: perPage,
-                date: filters.date,
-                doctor_id: filters.doctor_id,
-                status: filters.status,
-                ...params,
-            },
+            patientVisits(),
+            { date: filters.date, per_page: perPage, ...params },
             { preserveState: true, preserveScroll: true },
         );
     };
 
-    const handleSearchChange = (value: string) => {
-        setSearch(value);
-        clearTimeout(searchTimeout.current);
-        searchTimeout.current = setTimeout(() => {
-            navigate({ search: value, page: 1 });
+    const handleDateChange = (value: string) => {
+        clearTimeout(dateTimeout.current);
+        dateTimeout.current = setTimeout(() => {
+            navigate({ date: value || undefined, page: 1 });
         }, 350);
     };
 
     const handleDelete = () => {
         if (!deleteId) return;
         setIsDeleting(true);
-        router.delete(appointmentsDestroy(deleteId), {
+        router.delete(patientVisitsDestroy(deleteId), {
             onFinish: () => {
                 setIsDeleting(false);
                 setDeleteId(null);
@@ -91,76 +63,58 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
         });
     };
 
-    const handleStatusAction = (id: number, action: 'confirm' | 'cancel' | 'complete') => {
-        const route = action === 'confirm'
-            ? appointmentsConfirm(id)
-            : action === 'cancel'
-                ? appointmentsCancel(id)
-                : appointmentsComplete(id);
-        router.patch(route.url);
+    const handleCheckIn = (id: number) => {
+        router.patch(patientVisitsCheckIn(id).url);
+    };
+
+    const handleCheckOut = (id: number) => {
+        router.patch(patientVisitsCheckOut(id).url);
+    };
+
+    const visitStatus = (visit: PatientVisitsIndexProps['data']['data'][number]) => {
+        if (visit.check_out_at) return { label: 'Checked Out', variant: 'outline' as const };
+        if (visit.check_in_at) return { label: 'Checked In', variant: 'default' as const };
+        return { label: 'Scheduled', variant: 'secondary' as const };
     };
 
     return (
         <>
-            <Head title="Appointments" />
+            <Head title="Patient Visits" />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4 lg:p-6">
                 <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
 
-                    <TablePageHeader
-                        title="Appointments"
-                        count={data.total}
-                        search={search}
-                        searchPlaceholder="Search by patient name…"
-                        onSearchChange={handleSearchChange}
-                        createHref={appointmentsCreate().url}
-                        createLabel="New Appointment"
-                    />
+                    <div className="flex flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
+                        <div>
+                            <h2 className="text-base font-semibold text-card-foreground">Patient Visits</h2>
+                            <p className="text-sm text-muted-foreground">{data.total} records</p>
+                        </div>
+                        <div className="relative">
+                            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <input
+                                type="search"
+                                placeholder="Search by patient name…"
+                                className="h-9 w-52 rounded-md border border-input bg-background pl-8 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring lg:w-64"
+                                readOnly
+                            />
+                        </div>
+                    </div>
 
-                    {/* Filters */}
                     <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 pb-4">
                         <Input
                             type="date"
                             className="h-9 w-auto"
-                            value={filters.date ?? ''}
-                            onChange={(e) => navigate({ date: e.target.value || undefined, page: 1 })}
+                            defaultValue={filters.date ?? ''}
+                            onChange={(e) => handleDateChange(e.target.value)}
                         />
-                        <Select
-                            value={filters.doctor_id ?? ''}
-                            onValueChange={(v) => navigate({ doctor_id: v || undefined, page: 1 })}
-                        >
-                            <SelectTrigger className="h-9 w-48">
-                                <SelectValue placeholder="All doctors" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {doctors.map((d) => (
-                                    <SelectItem key={d.id} value={String(d.id)}>
-                                        {d.user?.name ?? `Doctor #${d.id}`}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <Select
-                            value={filters.status ?? ''}
-                            onValueChange={(v) => navigate({ status: v || undefined, page: 1 })}
-                        >
-                            <SelectTrigger className="h-9 w-40">
-                                <SelectValue placeholder="All statuses" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {Object.entries(STATUS_STYLES).map(([value, { label }]) => (
-                                    <SelectItem key={value} value={value}>{label}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {(filters.date || filters.doctor_id || filters.status) && (
+                        {filters.date && (
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => navigate({ date: undefined, doctor_id: undefined, status: undefined, page: 1 })}
+                                onClick={() => navigate({ date: undefined, page: 1 })}
                                 className="h-9 text-muted-foreground"
                             >
-                                Clear filters
+                                Clear filter
                             </Button>
                         )}
                     </div>
@@ -170,10 +124,9 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
                             <TableRow className="border-b border-border bg-muted/40 hover:bg-muted/40">
                                 <TableHead className="h-11 py-0 pl-6 pr-4 text-sm font-medium text-muted-foreground">Patient</TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Doctor</TableHead>
-                                <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Service</TableHead>
-                                <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Date</TableHead>
-                                <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Time</TableHead>
+                                <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Visited At</TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Status</TableHead>
+                                <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Medical Record</TableHead>
                                 <TableHead className="h-11 w-12 py-0 pl-4 pr-6">
                                     <span className="sr-only">Actions</span>
                                 </TableHead>
@@ -183,23 +136,23 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
                         <TableBody>
                             {data.data.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="h-40 text-center">
+                                    <TableCell colSpan={6} className="h-40 text-center">
                                         <div className="flex flex-col items-center gap-3 text-muted-foreground">
                                             <div className="rounded-full bg-muted p-3">
-                                                <CalendarDays className="h-5 w-5 opacity-50" />
+                                                <ClipboardList className="h-5 w-5 opacity-50" />
                                             </div>
-                                            <p className="text-sm font-medium">No appointments found</p>
+                                            <p className="text-sm font-medium">No patient visits found</p>
                                         </div>
                                     </TableCell>
                                 </TableRow>
                             ) : (
                                 data.data.map((item) => {
-                                    const statusStyle = STATUS_STYLES[item.status] ?? STATUS_STYLES.pending;
+                                    const status = visitStatus(item);
                                     return (
                                         <TableRow
                                             key={item.id}
                                             className="cursor-pointer border-b border-border/60 last:border-0 transition-colors hover:bg-muted/30"
-                                            onClick={() => router.get(appointmentsShow(item.id))}
+                                            onClick={() => router.get(patientVisitsShow(item.id))}
                                         >
                                             <TableCell className="py-3.5 pl-6 pr-4 text-sm font-medium">
                                                 {item.patient?.full_name ?? '—'}
@@ -208,16 +161,17 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
                                                 {item.doctor?.user?.name ?? '—'}
                                             </TableCell>
                                             <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                                {item.service?.name ?? '—'}
-                                            </TableCell>
-                                            <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                                {item.appointment_date}
-                                            </TableCell>
-                                            <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                                {item.start_time} – {item.end_time}
+                                                {item.visited_at}
                                             </TableCell>
                                             <TableCell className="px-4 py-3.5">
-                                                <Badge variant={statusStyle.variant}>{statusStyle.label}</Badge>
+                                                <Badge variant={status.variant}>{status.label}</Badge>
+                                            </TableCell>
+                                            <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
+                                                {item.medicalRecord ? (
+                                                    <Badge variant="outline">Recorded</Badge>
+                                                ) : (
+                                                    <span className="text-muted-foreground">—</span>
+                                                )}
                                             </TableCell>
                                             <TableCell
                                                 className="py-3.5 pl-4 pr-6"
@@ -235,32 +189,20 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end" className="w-44">
-                                                        <DropdownMenuItem onClick={() => router.get(appointmentsShow(item.id))}>
+                                                        <DropdownMenuItem onClick={() => router.get(patientVisitsShow(item.id))}>
                                                             <Eye className="mr-2 h-4 w-4" />
                                                             View
                                                         </DropdownMenuItem>
-                                                        {item.status === 'pending' && (
-                                                            <DropdownMenuItem onClick={() => handleStatusAction(item.id, 'confirm')}>
-                                                                Confirm
+                                                        {!item.check_in_at && (
+                                                            <DropdownMenuItem onClick={() => handleCheckIn(item.id)}>
+                                                                Check In
                                                             </DropdownMenuItem>
                                                         )}
-                                                        {item.status === 'confirmed' && (
-                                                            <DropdownMenuItem onClick={() => handleStatusAction(item.id, 'complete')}>
-                                                                Mark Complete
+                                                        {item.check_in_at && !item.check_out_at && (
+                                                            <DropdownMenuItem onClick={() => handleCheckOut(item.id)}>
+                                                                Check Out
                                                             </DropdownMenuItem>
                                                         )}
-                                                        {(item.status === 'pending' || item.status === 'confirmed') && (
-                                                            <DropdownMenuItem
-                                                                onClick={() => handleStatusAction(item.id, 'cancel')}
-                                                                className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-                                                            >
-                                                                Cancel
-                                                            </DropdownMenuItem>
-                                                        )}
-                                                        <DropdownMenuItem onClick={() => router.get(appointmentsEdit(item.id))}>
-                                                            <Pencil className="mr-2 h-4 w-4" />
-                                                            Edit
-                                                        </DropdownMenuItem>
                                                         <DropdownMenuSeparator />
                                                         <DropdownMenuItem
                                                             onClick={() => setDeleteId(item.id)}
@@ -297,8 +239,8 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
             <ConfirmDeleteDialog
                 open={!!deleteId}
                 onOpenChange={() => setDeleteId(null)}
-                title="Delete Appointment"
-                itemName={data.data.find((a) => a.id === deleteId)?.patient?.full_name}
+                title="Delete Patient Visit"
+                itemName={data.data.find((v) => v.id === deleteId)?.patient?.full_name}
                 onConfirm={handleDelete}
                 isLoading={isDeleting}
             />
@@ -307,7 +249,7 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
 }
 
 Index.layout = (page: React.ReactNode) => (
-    <AppLayout breadcrumbs={[{ title: 'Appointments', href: appointments() }]}>
+    <AppLayout breadcrumbs={[{ title: 'Patient Visits', href: patientVisits() }]}>
         {page}
     </AppLayout>
 );

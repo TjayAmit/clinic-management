@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,7 +26,7 @@ export default function Edit({ user }: UsersFormProps) {
         <>
             <Head title="Edit User" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 p-4">
+            <div className="flex h-full flex-1 flex-col gap-4 p-4 lg:p-6">
                 <div>
                     <Button variant="ghost" size="sm" asChild>
                         <Link href={user ? usersShow(user.id) : users()}>
@@ -36,48 +36,70 @@ export default function Edit({ user }: UsersFormProps) {
                     </Button>
                 </div>
 
-                <Card className="max-w-2xl">
-                    <CardHeader>
-                        <CardTitle>Edit User</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Name</Label>
-                                <Input
-                                    id="name"
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                    placeholder="Enter full name"
-                                    required
-                                />
-                                <InputError message={errors.name} />
-                            </div>
+                <div className="grid gap-4 lg:grid-cols-3">
+                    <form onSubmit={handleSubmit} className="lg:col-span-2">
+                        <Card className="h-full">
+                            <CardHeader>
+                                <CardTitle className="text-base">Account Details</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">Full Name <span className="text-destructive">*</span></Label>
+                                        <Input
+                                            id="name"
+                                            value={data.name}
+                                            onChange={(e) => setData('name', e.target.value)}
+                                            placeholder="Enter full name"
+                                            required
+                                        />
+                                        <InputError message={errors.name} />
+                                    </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    value={data.email}
-                                    onChange={(e) => setData('email', e.target.value)}
-                                    placeholder="Enter email address"
-                                    required
-                                />
-                                <InputError message={errors.email} />
-                            </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email">Email Address <span className="text-destructive">*</span></Label>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            value={data.email}
+                                            onChange={(e) => setData('email', e.target.value)}
+                                            placeholder="user@example.com"
+                                            required
+                                        />
+                                        <InputError message={errors.email} />
+                                    </div>
+                                </div>
 
-                            <div className="flex items-center gap-4 pt-4">
-                                <Button type="submit" disabled={processing}>
-                                    {processing ? 'Saving...' : 'Save Changes'}
-                                </Button>
-                                <Button variant="outline" asChild>
-                                    <Link href={user ? usersShow(user.id) : users()}>Cancel</Link>
-                                </Button>
+                                <div className="flex items-center gap-3 pt-2">
+                                    <Button type="submit" disabled={processing}>
+                                        {processing ? 'Saving…' : 'Save Changes'}
+                                    </Button>
+                                    <Button variant="outline" asChild>
+                                        <Link href={user ? usersShow(user.id) : users()}>Cancel</Link>
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </form>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Note</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3 text-sm text-muted-foreground">
+                            <div className="flex gap-3">
+                                <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                                <p>To change the password, the user can do so from their <span className="font-medium text-foreground">Security Settings</span> page.</p>
                             </div>
-                        </form>
-                    </CardContent>
-                </Card>
+                            {user && (
+                                <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs">
+                                    <p className="font-medium text-foreground">Account created</p>
+                                    <p className="mt-0.5">{user.created_at}</p>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </>
     );

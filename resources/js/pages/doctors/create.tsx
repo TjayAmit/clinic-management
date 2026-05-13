@@ -6,21 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { index as doctors, store as doctorsStore } from '@/routes/doctors';
-import type { DoctorsFormProps } from '@/types';
 
-export default function Create({ users }: DoctorsFormProps) {
+export default function Create() {
     const { data, setData, post, processing, errors } = useForm({
-        user_id: '',
+        name: '',
+        email: '',
         specialization: '',
         license_number: '',
         phone: '',
@@ -54,20 +47,28 @@ export default function Create({ users }: DoctorsFormProps) {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label>User Account <span className="text-destructive">*</span></Label>
-                                <Select value={data.user_id} onValueChange={(v) => setData('user_id', v)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a user" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {users.map((u) => (
-                                            <SelectItem key={u.id} value={String(u.id)}>
-                                                {u.name} — {u.email}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.user_id} />
+                                <Label htmlFor="name">Full Name <span className="text-destructive">*</span></Label>
+                                <Input
+                                    id="name"
+                                    value={data.name}
+                                    onChange={(e) => setData('name', e.target.value)}
+                                    placeholder="Dr. John Doe"
+                                    required
+                                />
+                                <InputError message={errors.name} />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="email">Email <span className="text-destructive">*</span></Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    value={data.email}
+                                    onChange={(e) => setData('email', e.target.value)}
+                                    placeholder="doctor@clinic.test"
+                                    required
+                                />
+                                <InputError message={errors.email} />
                             </div>
 
                             <div className="space-y-2">

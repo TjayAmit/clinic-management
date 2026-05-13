@@ -7,6 +7,7 @@ use App\Repositories\Eloquent\{
     EloquentDoctorRepository,
     EloquentDoctorScheduleRepository,
     EloquentDentalRecordRepository,
+    EloquentFeatureRepository,
     EloquentPatientRepository,
     EloquentPatientVisitRepository,
     EloquentServiceRepository,
@@ -18,6 +19,7 @@ use App\Repositories\{
     DoctorRepository,
     DoctorScheduleRepository,
     DentalRecordRepository,
+    FeatureRepository,
     PatientRepository,
     PatientVisitRepository,
     ServiceRepository,
@@ -68,6 +70,11 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(
             DentalRecordRepository::class,
             EloquentDentalRecordRepository::class
+        );
+
+        $this->app->bind(
+            FeatureRepository::class,
+            EloquentFeatureRepository::class
         );
     }
 }

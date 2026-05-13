@@ -35,11 +35,7 @@ class DoctorController extends Controller
 
     public function create()
     {
-        $users = User::whereDoesntHave('doctor')->get(['id', 'name', 'email']);
-
-        return Inertia::render('doctors/create', [
-            'users' => $users,
-        ]);
+        return Inertia::render('doctors/create');
     }
 
     public function store(DoctorRequest $request)

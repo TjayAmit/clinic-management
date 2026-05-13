@@ -46,13 +46,29 @@ class DoctorService
         $dto = null;
 
         DB::transaction(function () use ($request, &$model, &$dto) {
+            // Create user account with generated password
+            // TODO: In the future, implement proper password system and send credentials via email
+            $password = $this->generateRandomPassword();
+            $user = \App\Models\User::create([
+                'name' => $request->input('name'),
+                'email' => $request->input('email'),
+                'password' => bcrypt($password),
+            ]);
+
             $dto = DoctorData::fromRequest($request);
-            $model = $this->repository->create($dto->toArray());
+            $data = $dto->toArray();
+            $data['user_id'] = $user->id;
+            $model = $this->repository->create($data);
         });
 
         $this->logActivity('created', $model, $dto->toArray());
 
         return $model;
+    }
+
+    private function generateRandomPassword(): string
+    {
+        return \Illuminate\Support\Str::random(16);
     }
 
     public function updateFromRequest(int $id, Request $request): Doctor

@@ -9,60 +9,54 @@ use Spatie\Permission\PermissionRegistrar;
 
 class RoleAndPermissionSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Reset cached roles and permissions
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Create permissions
         $permissions = [
-            // Subjects
-            'subjects.view',
-            'subjects.create',
-            'subjects.edit',
-            'subjects.delete',
+            // Patients
+            'patients.view',
+            'patients.create',
+            'patients.edit',
+            'patients.delete',
 
-            // Teachers
-            'teachers.view',
-            'teachers.create',
-            'teachers.edit',
-            'teachers.delete',
+            // Doctors
+            'doctors.view',
+            'doctors.create',
+            'doctors.edit',
+            'doctors.delete',
 
-            // Semesters
-            'semesters.view',
-            'semesters.create',
-            'semesters.edit',
-            'semesters.delete',
+            // Appointments
+            'appointments.view',
+            'appointments.create',
+            'appointments.edit',
+            'appointments.delete',
+            'appointments.confirm',
+            'appointments.cancel',
 
-            // Schedules
-            'schedules.view',
-            'schedules.create',
-            'schedules.edit',
-            'schedules.delete',
+            // Medical Records
+            'medical_records.view',
+            'medical_records.create',
+            'medical_records.edit',
+            'medical_records.delete',
 
-            // Time Slots
-            'time_slots.view',
-            'time_slots.create',
-            'time_slots.edit',
-            'time_slots.delete',
+            // Services
+            'services.view',
+            'services.create',
+            'services.edit',
+            'services.delete',
 
-            // Teacher Assignments
-            'teacher_assignments.view',
-            'teacher_assignments.create',
-            'teacher_assignments.edit',
-            'teacher_assignments.delete',
+            // Doctor Schedules
+            'doctor_schedules.view',
+            'doctor_schedules.create',
+            'doctor_schedules.edit',
+            'doctor_schedules.delete',
 
-            // Attendance Records
-            'attendance_records.view',
-            'attendance_records.create',
-            'attendance_records.edit',
-            'attendance_records.delete',
+            // Notifications
+            'notifications.view',
 
-            // Activity Logs
-            'activity_logs.view',
+            // Reports
+            'reports.view',
 
             // Users
             'users.view',
@@ -70,70 +64,46 @@ class RoleAndPermissionSeeder extends Seeder
             'users.edit',
             'users.delete',
 
-            // Staff Management
-            'staff.view',
-            'staff.create',
-            'staff.edit',
-            'staff.delete',
+            // Activity Logs
+            'activity_logs.view',
         ];
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // Create roles and assign permissions
+        // Admin — full access
+        $admin = Role::firstOrCreate(['name' => 'Admin']);
+        $admin->givePermissionTo(Permission::all());
 
-        // Admin - Full access to everything
-        $adminRole = Role::firstOrCreate(['name' => 'Admin']);
-        $adminRole->givePermissionTo(Permission::all());
-
-        // Faculty Admin - View all, actions on faculty data scheduling management, teachers profiles, view activity logs
-        $facultyAdminRole = Role::firstOrCreate(['name' => 'Faculty Admin']);
-        $facultyAdminRole->givePermissionTo([
-            // Full access to scheduling management (Subjects, Schedules, Time Slots, Teacher Assignments)
-            'subjects.view', 'subjects.create', 'subjects.edit', 'subjects.delete',
-            'schedules.view', 'schedules.create', 'schedules.edit', 'schedules.delete',
-            'time_slots.view', 'time_slots.create', 'time_slots.edit', 'time_slots.delete',
-            'teacher_assignments.view', 'teacher_assignments.create', 'teacher_assignments.edit', 'teacher_assignments.delete',
-
-            // Full access to teachers profiles
-            'teachers.view', 'teachers.create', 'teachers.edit', 'teachers.delete',
-
-            // Full access to semesters
-            'semesters.view', 'semesters.create', 'semesters.edit', 'semesters.delete',
-
-            // View attendance records
-            'attendance_records.view',
-
-            // Staff Management
-            'staff.view', 'staff.create', 'staff.edit', 'staff.delete',
+        // Doctor — own appointments, own patients, manage medical records, view notifications
+        $doctor = Role::firstOrCreate(['name' => 'Doctor']);
+        $doctor->givePermissionTo([
+            'patients.view',
+            'appointments.view',
+            'medical_records.view',
+            'medical_records.create',
+            'medical_records.edit',
+            'services.view',
+            'doctor_schedules.view',
+            'notifications.view',
         ]);
 
-        // Faculty Staff - Actions without delete in scheduling management and teacher profiles
-        $facultyStaffRole = Role::firstOrCreate(['name' => 'Faculty Staff']);
-        $facultyStaffRole->givePermissionTo([
-            // Scheduling management without delete
-            'subjects.view', 'subjects.create', 'subjects.edit',
-            'schedules.view', 'schedules.create', 'schedules.edit',
-            'time_slots.view', 'time_slots.create', 'time_slots.edit',
-            'teacher_assignments.view', 'teacher_assignments.create', 'teacher_assignments.edit',
-
-            // Teachers profiles without delete
-            'teachers.view', 'teachers.create', 'teachers.edit',
-
-            // View semesters
-            'semesters.view',
-
-            // View and manage attendance
-            'attendance_records.view', 'attendance_records.create', 'attendance_records.edit',
-        ]);
-
-        // Teacher - View personal data only (subjects assigned, schedules, personal information)
-        $teacherRole = Role::firstOrCreate(['name' => 'Teacher']);
-        $teacherRole->givePermissionTo([
-            'teachers.view', // Can view own profile
-            'schedules.view', // Can view own schedules
-            'subjects.view', // Can view assigned subjects
+        // Staff — manage appointments and patients, no access to medical records or admin areas
+        $staff = Role::firstOrCreate(['name' => 'Staff']);
+        $staff->givePermissionTo([
+            'patients.view',
+            'patients.create',
+            'patients.edit',
+            'doctors.view',
+            'appointments.view',
+            'appointments.create',
+            'appointments.edit',
+            'appointments.confirm',
+            'appointments.cancel',
+            'services.view',
+            'doctor_schedules.view',
+            'notifications.view',
         ]);
     }
 }

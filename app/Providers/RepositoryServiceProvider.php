@@ -3,55 +3,28 @@
 namespace App\Providers;
 
 use App\Repositories\Eloquent\{
-    EloquentAttendanceRecordRepository,
-    EloquentClassroomRepository,
-    EloquentCurriculumRepository,
-    EloquentDepartmentRepository,
-    EloquentDraftScheduleRepository,
-    EloquentFeatureFlagRepository,
-    EloquentLeaveRequestRepository,
-    EloquentScheduleRepository,
-    EloquentSectionRepository,
-    EloquentSemesterRepository,
-    EloquentSubjectRepository,
-    EloquentSubstituteRequestRepository,
-    EloquentTeacherAssignmentRepository,
-    EloquentTeacherHistoryRepository,
-    EloquentTeacherRepository,
-    EloquentTeacherScheduleRepository,
-    EloquentTimeSlotRepository,
+    EloquentAppointmentRepository,
+    EloquentDoctorRepository,
+    EloquentDoctorScheduleRepository,
+    EloquentMedicalRecordRepository,
+    EloquentPatientRepository,
+    EloquentPatientVisitRepository,
+    EloquentServiceRepository,
     EloquentUserRepository,
-    EloquentProgramRepository,
-    EloquentRoomScheduleRepository,
-    EloquentTeachingHistoryRepository
 };
 
 use App\Repositories\{
-    AttendanceRecordRepository,
-    ClassroomRepository,
-    CurriculumRepository,
-    DepartmentRepository,
-    DraftScheduleRepository,
-    FeatureFlagRepository,
-    LeaveRequestRepository,
-    ScheduleRepository,
-    SectionRepository,
-    SemesterRepository,
-    SubjectRepository,
-    SubstituteRequestRepository,
-    TeacherAssignmentRepository,
-    TeacherHistoryRepository,
-    TeacherRepository,
-    TeacherScheduleRepository,
-    TimeSlotRepository,
+    AppointmentRepository,
+    DoctorRepository,
+    DoctorScheduleRepository,
+    MedicalRecordRepository,
+    PatientRepository,
+    PatientVisitRepository,
+    ServiceRepository,
     UserRepository,
-    ProgramRepository,
-    RoomScheduleRepository,
-    TeachingHistoryRepository,
 };
 
 use Illuminate\Support\ServiceProvider;
-    
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -63,103 +36,38 @@ class RepositoryServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
-            TeacherRepository::class,
-            EloquentTeacherRepository::class
+            DoctorRepository::class,
+            EloquentDoctorRepository::class
         );
 
         $this->app->bind(
-            SubjectRepository::class,
-            EloquentSubjectRepository::class
+            PatientRepository::class,
+            EloquentPatientRepository::class
         );
 
         $this->app->bind(
-            SemesterRepository::class,
-            EloquentSemesterRepository::class
+            ServiceRepository::class,
+            EloquentServiceRepository::class
         );
 
         $this->app->bind(
-            TimeSlotRepository::class,
-            EloquentTimeSlotRepository::class
+            DoctorScheduleRepository::class,
+            EloquentDoctorScheduleRepository::class
         );
 
         $this->app->bind(
-            ScheduleRepository::class,
-            EloquentScheduleRepository::class
+            AppointmentRepository::class,
+            EloquentAppointmentRepository::class
         );
 
         $this->app->bind(
-            TeacherAssignmentRepository::class,
-            EloquentTeacherAssignmentRepository::class
+            PatientVisitRepository::class,
+            EloquentPatientVisitRepository::class
         );
 
         $this->app->bind(
-            ClassroomRepository::class,
-            EloquentClassroomRepository::class
-        );
-
-        $this->app->bind(
-            AttendanceRecordRepository::class,
-            EloquentAttendanceRecordRepository::class
-        );
-
-        $this->app->bind(
-            DraftScheduleRepository::class,
-            EloquentDraftScheduleRepository::class
-        );
-
-        $this->app->bind(
-            TeacherScheduleRepository::class,
-            EloquentTeacherScheduleRepository::class
-        );
-
-        $this->app->bind(
-            CurriculumRepository::class,
-            EloquentCurriculumRepository::class
-        );
-
-        $this->app->bind(
-            DepartmentRepository::class,
-            EloquentDepartmentRepository::class
-        );
-
-        $this->app->bind(
-            ProgramRepository::class,
-            EloquentProgramRepository::class
-        );
-        
-        $this->app->bind(
-            RoomScheduleRepository::class,
-            EloquentRoomScheduleRepository::class
-        );
-        
-        $this->app->bind(
-            TeachingHistoryRepository::class,
-            EloquentTeachingHistoryRepository::class
-        );
-        
-        $this->app->bind(
-            SubstituteRequestRepository::class,
-            EloquentSubstituteRequestRepository::class
-        );
-        
-        $this->app->bind(
-            LeaveRequestRepository::class,
-            EloquentLeaveRequestRepository::class
-        );
-        
-        $this->app->bind(
-            SectionRepository::class,
-            EloquentSectionRepository::class
-        );
-        
-        $this->app->bind(
-            TeacherHistoryRepository::class,
-            EloquentTeacherHistoryRepository::class
-        );
-        
-        $this->app->bind(
-            FeatureFlagRepository::class,
-            EloquentFeatureFlagRepository::class
+            MedicalRecordRepository::class,
+            EloquentMedicalRecordRepository::class
         );
     }
 }

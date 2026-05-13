@@ -8,47 +8,28 @@ use Illuminate\Support\Facades\Hash;
 
 class UsersSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Faculty Admin User
-        $facultyAdmin = User::firstOrCreate(
-            ['email' => 'faculty.admin@example.com'],
+        $doctor = User::firstOrCreate(
+            ['email' => 'doctor@clinic.test'],
             [
-                'name' => 'Faculty Admin',
-                'email' => 'faculty.admin@example.com',
+                'name' => 'Dr. Juan Dela Cruz',
                 'password' => Hash::make('password'),
             ]
         );
-        $facultyAdmin->assignRole('Faculty Admin');
+        $doctor->assignRole('Doctor');
 
-        // Faculty Member User (using Faculty Staff role)
-        $facultyMember = User::firstOrCreate(
-            ['email' => 'faculty.member@example.com'],
+        $staff = User::firstOrCreate(
+            ['email' => 'staff@clinic.test'],
             [
-                'name' => 'Faculty Member',
-                'email' => 'faculty.member@example.com',
+                'name' => 'Maria Santos',
                 'password' => Hash::make('password'),
             ]
         );
-        $facultyMember->assignRole('Faculty Staff');
+        $staff->assignRole('Staff');
 
-        // Teacher User
-        $teacher = User::firstOrCreate(
-            ['email' => 'teacher@example.com'],
-            [
-                'name' => 'Teacher',
-                'email' => 'teacher@example.com',
-                'password' => Hash::make('password'),
-            ]
-        );
-        $teacher->assignRole('Teacher');
-
-        $this->command->info('Users seeded successfully:');
-        $this->command->info('  - Faculty Admin: faculty.admin@example.com (password: password)');
-        $this->command->info('  - Faculty Member: faculty.member@example.com (password: password)');
-        $this->command->info('  - Teacher: teacher@example.com (password: password)');
+        $this->command->info('Sample users seeded:');
+        $this->command->info('  Doctor : doctor@clinic.test  (password: password)');
+        $this->command->info('  Staff  : staff@clinic.test   (password: password)');
     }
 }

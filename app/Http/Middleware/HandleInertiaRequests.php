@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Repositories\FeatureFlagRepository;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -36,14 +35,6 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $featureFlagRepository = app(FeatureFlagRepository::class);
-        $enabledFlags = $featureFlagRepository->getAllEnabled();
-
-        $featureFlags = [];
-        foreach ($enabledFlags as $flag) {
-            $featureFlags[$flag->key] = true;
-        }
-
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -53,7 +44,6 @@ class HandleInertiaRequests extends Middleware
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name') ?? collect(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'featureFlags' => $featureFlags,
             'devUsers' => app()->environment('local')
                 ? \App\Models\User::with('roles')->get(['id', 'name', 'email'])
                     ->map(fn ($u) => [

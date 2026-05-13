@@ -42,12 +42,9 @@ export default function AuthSplitLayout({ children, title, description }: AuthLa
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[10px] uppercase tracking-widest text-zinc-500">
-                                College of Education
+                                Clinic Management
                             </span>
                             <span className="font-semibold text-white leading-tight">{name as string}</span>
-                            <span className="text-[10px] italic text-zinc-600">
-                                Western Mindanao State University
-                            </span>
                         </div>
                     </Link>
 
@@ -56,29 +53,29 @@ export default function AuthSplitLayout({ children, title, description }: AuthLa
                         <div className="mb-8">
                             <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/15 px-3 py-1 text-xs font-medium text-primary ring-1 ring-primary/20">
                                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                Faculty Scheduling System
+                                Doctor Schedules &amp; Patient Records
                             </span>
 
                             <h2 className="mb-4 text-3xl font-bold leading-tight text-white lg:text-4xl">
-                                Manage Schedules
+                                Know Your Patients
                                 <span className="mt-1 block text-zinc-400 font-normal">
-                                    with Confidence
+                                    Before They Walk In
                                 </span>
                             </h2>
 
                             <p className="max-w-xs text-sm leading-relaxed text-zinc-400">
-                                Organize faculty loads, assign subject schedules, and catch
-                                conflicts before they become problems.
+                                View your daily patient queue, review visit history, and access
+                                medical records — all before the consultation begins.
                             </p>
                         </div>
 
                         {/* Feature list */}
                         <ul className="flex flex-col gap-3.5">
                             {[
-                                'Automatic conflict detection',
-                                'Room & time slot optimization',
-                                'Faculty teaching load monitoring',
-                                'Printable schedule reports',
+                                'Doctor daily & weekly schedule view',
+                                'Full patient visit history',
+                                'Medical records per visit',
+                                'Appointment notifications for doctors',
                             ].map((item) => (
                                 <li key={item} className="flex items-center gap-3">
                                     <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20">
@@ -105,7 +102,7 @@ export default function AuthSplitLayout({ children, title, description }: AuthLa
                     {/* ── Footer ── */}
                     <div className="relative z-20 mt-8 border-t border-zinc-800 pt-5">
                         <p className="text-xs text-zinc-700">
-                            &copy; {new Date().getFullYear()} Western Mindanao State University
+                            &copy; {new Date().getFullYear()} Clinic Management System
                         </p>
                     </div>
                 </div>

@@ -1,5 +1,4 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Fragment } from 'react';
 import { dashboard, login, register } from '@/routes';
 
 interface User {
@@ -14,70 +13,67 @@ interface PageProps {
     [key: string]: unknown;
 }
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const;
-
-const SCHEDULE_ROWS = [
-    { time: '7 AM',  cells: ['orange',  '',        'blue',    '',        ''      ] },
-    { time: '8 AM',  cells: ['',        'emerald', '',        'orange',  'blue'  ] },
-    { time: '9 AM',  cells: ['blue',    '',        '',        '',        'orange'] },
-    { time: '10 AM', cells: ['',        'orange',  'emerald', '',        ''      ] },
-    { time: '11 AM', cells: ['',        '',        '',        'emerald', 'blue'  ] },
+const SCHEDULE = [
+    { patient: 'Maria Santos',   time: '8:00 AM',  service: 'General Check-up',    status: 'confirmed', visits: 4  },
+    { patient: 'Jose Dela Cruz', time: '9:30 AM',  service: 'Follow-up Visit',      status: 'confirmed', visits: 1  },
+    { patient: 'Ana Bautista',   time: '10:00 AM', service: 'Hypertension Check',   status: 'pending',   visits: 12 },
+    { patient: 'Carlos Ramos',   time: '11:30 AM', service: 'Lab Results Review',   status: 'completed', visits: 3  },
 ] as const;
 
-const SUBJECT_MAP: Record<string, { bg: string; text: string; label: string }> = {
-    orange:  { bg: 'bg-orange-100 dark:bg-orange-500/20',   text: 'text-orange-700 dark:text-orange-300',  label: 'MATH 101' },
-    blue:    { bg: 'bg-sky-100 dark:bg-sky-500/20',         text: 'text-sky-700 dark:text-sky-300',        label: 'SCI 301'  },
-    emerald: { bg: 'bg-emerald-100 dark:bg-emerald-500/20', text: 'text-emerald-700 dark:text-emerald-300',label: 'ENG 201'  },
+const STATUS_MAP: Record<string, { bg: string; text: string; label: string }> = {
+    confirmed: { bg: 'bg-sky-100 dark:bg-sky-500/20',     text: 'text-sky-700 dark:text-sky-300',     label: 'Confirmed' },
+    pending:   { bg: 'bg-amber-100 dark:bg-amber-500/20', text: 'text-amber-700 dark:text-amber-300', label: 'Pending'   },
+    completed: { bg: 'bg-emerald-100 dark:bg-emerald-500/20', text: 'text-emerald-700 dark:text-emerald-300', label: 'Completed' },
 };
 
 const FEATURES = [
     {
-        path: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
-        title: 'Subject Scheduling',
-        desc: 'Assign subjects to faculty with specific rooms, sections, and time slots in a structured workflow.',
+        path: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+        title: 'Doctor Schedules',
+        desc: "Each doctor sees their own daily and weekly patient queue — who's coming, when, and for what service.",
     },
     {
-        path: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
-        title: 'Faculty Management',
-        desc: 'Maintain complete faculty records: rank, specialization, contact info, and full subject load history.',
-    },
-    {
-        path: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
-        title: 'Conflict Detection',
-        desc: 'Instantly flags overlapping faculty schedules, room conflicts, and section clashes before publishing.',
-    },
-    {
-        path: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
-        title: 'Room Assignment',
-        desc: 'Track classroom availability and auto-assign rooms based on capacity and existing schedule gaps.',
-    },
-    {
-        path: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
-        title: 'Load Monitoring',
-        desc: "Monitor each faculty member's teaching load in real time to ensure fair and compliant distribution.",
+        path: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
+        title: 'Visit History',
+        desc: 'A full chronological log of every visit per patient — vitals, check-in/check-out times, and linked medical records.',
     },
     {
         path: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-        title: 'Schedule Reports',
-        desc: 'Generate printable and exportable reports per department, section, or individual faculty member.',
+        title: 'Medical Records',
+        desc: 'Attach diagnosis, prescription, and clinical notes to each visit so doctors always have prior context.',
+    },
+    {
+        path: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+        title: 'Patient Profiles',
+        desc: 'Centralized patient records with blood type, allergies, emergency contacts, and full appointment history.',
+    },
+    {
+        path: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+        title: 'Appointment Booking',
+        desc: 'Book appointments against each doctor\'s open slots — no double-bookings, no manual conflict checking.',
+    },
+    {
+        path: 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9',
+        title: 'Notifications',
+        desc: 'Doctors are notified when appointments are confirmed so they can prepare before the patient arrives.',
     },
 ];
 
 const STEPS = [
     {
         num: '01',
-        title: 'Build Faculty Profiles',
-        desc: "Add each faculty member's academic rank, subjects handled, and preferred time availability.",
+        title: 'Register Patient',
+        desc: 'Add the patient profile with personal details, contact info, allergies, and relevant medical history.',
     },
     {
         num: '02',
-        title: 'Assign & Schedule',
-        desc: 'Match faculty to subjects, pick time slots and rooms, and let the system flag any conflicts.',
+        title: 'Book Appointment',
+        desc: 'Select a doctor, choose a service, and pick an available time slot — the system prevents double-bookings.',
     },
     {
         num: '03',
-        title: 'Publish & Monitor',
-        desc: 'Finalize the conflict-free schedule, distribute it, and track loads throughout the semester.',
+        title: 'Record the Visit',
+        desc: 'Log vitals at check-in, attach a medical record with diagnosis and prescription, then check out.',
     },
 ];
 
@@ -86,7 +82,7 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
 
     return (
         <>
-            <Head title="WMSU Faculty Scheduling System">
+            <Head title="Clinic Management System">
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link
                     href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600"
@@ -99,16 +95,15 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                 {/* ── STICKY NAV ── */}
                 <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
                     <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-                        <Link href="/" className="flex items-center gap-3">
-                            <img src="/wmsu_logo.png" alt="WMSU" className="h-9 w-9" />
-                            <div className="hidden sm:flex sm:flex-col">
-                                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                                    College of Education
-                                </span>
-                                <span className="text-sm font-semibold leading-tight">
-                                    Faculty Scheduling System
-                                </span>
+                        <Link href="/" className="flex items-center gap-2.5">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
                             </div>
+                            <span className="text-sm font-semibold leading-tight hidden sm:block">
+                                Clinic Management
+                            </span>
                         </Link>
                         <nav className="flex items-center gap-2">
                             {auth.user ? (
@@ -142,7 +137,6 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
 
                 {/* ── HERO ── */}
                 <section className="relative overflow-hidden pt-16 pb-12 sm:pt-24 sm:pb-20">
-                    {/* Soft radial bg wash */}
                     <div className="pointer-events-none absolute inset-0 -z-10 flex items-start justify-center">
                         <div className="mt-[-4rem] h-[40rem] w-[80rem] rounded-full bg-primary/[0.06] blur-3xl" />
                     </div>
@@ -154,20 +148,19 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                             <div className="mx-auto max-w-xl text-center lg:mx-0 lg:text-left">
                                 <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/[0.07] px-4 py-1.5 text-sm font-medium text-primary">
                                     <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                    WMSU College of Education
+                                    Doctor Schedules &amp; Patient Records
                                 </span>
 
                                 <h1 className="mb-5 text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-[3.2rem] lg:leading-[1.1]">
-                                    Smarter Teacher
-                                    <span className="block bg-gradient-to-r from-primary via-orange-500 to-amber-400 bg-clip-text text-transparent">
-                                        Scheduling &
+                                    Know Your Patients
+                                    <span className="block bg-gradient-to-r from-primary via-sky-500 to-cyan-400 bg-clip-text text-transparent">
+                                        Before They
                                     </span>
-                                    Monitoring
+                                    Walk In
                                 </h1>
 
                                 <p className="mb-8 text-lg leading-relaxed text-muted-foreground">
-                                    A centralized system for the College of Education to build conflict-free
-                                    subject schedules, manage faculty loads, and publish finalized timetables.
+                                    Doctors see who's coming, when, and why — with full visit history and medical records at their fingertips before every consultation.
                                 </p>
 
                                 <div className="flex flex-wrap justify-center gap-3 lg:justify-start">
@@ -204,9 +197,8 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                                     )}
                                 </div>
 
-                                {/* Quick trust row */}
                                 <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 lg:justify-start">
-                                    {['Conflict Detection', 'Real-time Monitoring', 'Printable Reports'].map((t) => (
+                                    {['Doctor Schedules', 'Visit History', 'Medical Records'].map((t) => (
                                         <span key={t} className="flex items-center gap-1.5 text-sm text-muted-foreground">
                                             <svg className="h-4 w-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
@@ -217,9 +209,8 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                                 </div>
                             </div>
 
-                            {/* Right — schedule mockup */}
+                            {/* Right — appointments mockup */}
                             <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-                                {/* Glow halo */}
                                 <div className="absolute -inset-6 rounded-3xl bg-gradient-to-br from-primary/20 via-primary/5 to-transparent blur-2xl" />
 
                                 <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
@@ -231,74 +222,50 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                                             <div className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
                                         </div>
                                         <span className="text-xs font-medium text-muted-foreground">
-                                            Schedule — BEED 2A
+                                            Dr. Reyes — Today's Patients
                                         </span>
                                         <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
-                                            S1 · 2024–25
+                                            {SCHEDULE.length} visits
                                         </span>
                                     </div>
 
-                                    {/* Timetable grid */}
-                                    <div className="p-4">
-                                        <div className="grid grid-cols-[3rem_repeat(5,1fr)] gap-1.5">
-                                            <div />
-                                            {DAYS.map((d) => (
-                                                <div key={d} className="py-1 text-center text-[11px] font-semibold text-muted-foreground">
-                                                    {d}
-                                                </div>
-                                            ))}
-                                            {SCHEDULE_ROWS.map(({ time, cells }) => (
-                                                <Fragment key={time}>
-                                                    <div className="flex items-center text-[10px] text-muted-foreground">
-                                                        {time}
-                                                    </div>
-                                                    {(cells as readonly string[]).map((color, i) => {
-                                                        const s = color ? SUBJECT_MAP[color] : null;
-                                                        return (
-                                                            <div
-                                                                key={i}
-                                                                className={`rounded py-2 text-center text-[10px] font-semibold leading-tight ${s ? `${s.bg} ${s.text}` : ''}`}
-                                                            >
-                                                                {s?.label ?? ''}
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </Fragment>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Faculty legend */}
-                                    <div className="flex flex-wrap gap-1.5 border-t border-border px-4 py-3">
-                                        {[
-                                            { name: 'Dr. Santos', color: 'orange' },
-                                            { name: 'Prof. Reyes', color: 'blue' },
-                                            { name: 'Ms. Garcia', color: 'emerald' },
-                                        ].map(({ name, color }) => {
-                                            const s = SUBJECT_MAP[color];
+                                    {/* Patient schedule list */}
+                                    <div className="divide-y divide-border">
+                                        {SCHEDULE.map(({ patient, time, service, status, visits }) => {
+                                            const s = STATUS_MAP[status];
                                             return (
-                                                <span
-                                                    key={name}
-                                                    className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${s.bg} ${s.text}`}
-                                                >
-                                                    <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                                                    {name}
-                                                </span>
+                                                <div key={patient} className="flex items-center gap-3 px-4 py-3">
+                                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-bold text-muted-foreground">
+                                                        {patient.charAt(0)}
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="truncate text-xs font-semibold text-card-foreground">{patient}</p>
+                                                        <p className="truncate text-[10px] text-muted-foreground">
+                                                            {service} · <span className="text-primary">{visits} prior visit{visits !== 1 ? 's' : ''}</span>
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex shrink-0 flex-col items-end gap-1">
+                                                        <span className="text-[10px] font-medium text-muted-foreground">{time}</span>
+                                                        <span className={`rounded-full px-2 py-0.5 text-[9px] font-semibold ${s.bg} ${s.text}`}>
+                                                            {s.label}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             );
                                         })}
                                     </div>
                                 </div>
 
-                                {/* Floating "no conflicts" badge */}
+                                {/* Floating badge */}
                                 <div className="absolute -bottom-4 -left-3 flex items-center gap-2.5 rounded-xl border border-border bg-card px-3.5 py-2.5 shadow-lg">
-                                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/40">
-                                        <svg className="h-4 w-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900/40">
+                                        <svg className="h-4 w-4 text-sky-600 dark:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                                         </svg>
                                     </div>
                                     <div className="leading-tight">
-                                        <p className="text-xs font-semibold text-card-foreground">No conflicts detected</p>
-                                        <p className="text-[10px] text-muted-foreground">All schedules are clear</p>
+                                        <p className="text-xs font-semibold text-card-foreground">Visit history loaded</p>
+                                        <p className="text-[10px] text-muted-foreground">Records ready before each visit</p>
                                     </div>
                                 </div>
                             </div>
@@ -311,10 +278,10 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                         <dl className="grid grid-cols-2 gap-8 sm:grid-cols-4">
                             {[
-                                { value: '60+',  label: 'Faculty Members' },
-                                { value: '4',    label: 'Academic Programs' },
-                                { value: '200+', label: 'Scheduled Classes' },
-                                { value: '0',    label: 'Unresolved Conflicts' },
+                                { value: '10+',   label: 'Doctors' },
+                                { value: '500+',  label: 'Registered Patients' },
+                                { value: '1,200+', label: 'Appointments' },
+                                { value: '800+',  label: 'Medical Records' },
                             ].map(({ value, label }) => (
                                 <div key={label} className="text-center">
                                     <dt className="text-2xl font-extrabold text-foreground sm:text-3xl">{value}</dt>
@@ -330,10 +297,10 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="mb-12 text-center">
                             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                                Built for Academic Scheduling
+                                Built Around the Doctor's Workflow
                             </h2>
                             <p className="mt-3 text-lg text-muted-foreground">
-                                Every tool your scheduling office needs in one place
+                                From their daily patient queue to every visit record — all in one place
                             </p>
                         </div>
 
@@ -362,7 +329,7 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                         <div className="mb-14 text-center">
                             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">How It Works</h2>
                             <p className="mt-3 text-muted-foreground">
-                                Three steps to a conflict-free semester
+                                From first registration to a complete visit record
                             </p>
                         </div>
                         <div className="grid gap-10 sm:grid-cols-3">
@@ -391,7 +358,7 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                                     Ready to get started?
                                 </h2>
                                 <p className="mb-8 text-muted-foreground">
-                                    Join the College of Education and bring order to your faculty scheduling.
+                                    Sign in and bring order to your clinic's appointments, records, and workflows.
                                 </p>
                                 <div className="flex flex-wrap justify-center gap-3">
                                     <Link
@@ -419,13 +386,17 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="flex flex-col items-center gap-2 text-center sm:flex-row sm:justify-between sm:text-left">
                             <div className="flex items-center gap-2.5">
-                                <img src="/wmsu_logo.png" alt="WMSU" className="h-6 w-6" />
+                                <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                </div>
                                 <span className="text-sm text-muted-foreground">
-                                    Western Mindanao State University &mdash; College of Education
+                                    Clinic Management System
                                 </span>
                             </div>
                             <p className="text-sm text-muted-foreground">
-                                &copy; {new Date().getFullYear()} Faculty Scheduling System
+                                &copy; {new Date().getFullYear()} Clinic Management System
                             </p>
                         </div>
                     </div>

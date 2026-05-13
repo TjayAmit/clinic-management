@@ -112,5 +112,5 @@ export default function Register() {
 
 Register.layout = {
     title: 'Create an account',
-    description: 'Enter your details below to create your account',
+    description: 'Register to join the clinic management system',
 };

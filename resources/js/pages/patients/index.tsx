@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { Eye, MoreVertical, Pencil, Trash2, UserRound } from 'lucide-react';
+import { Eye, MoreVertical, Pencil, Star, Trash2, UserRound } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog';
 import { TablePageHeader } from '@/components/table-page-header';
@@ -40,6 +40,7 @@ const GENDER_LABELS: Record<string, string> = {
 export default function Index({ data, filters }: PatientsIndexProps) {
     const [search, setSearch] = useState(filters.search || '');
     const [perPage, setPerPage] = useState(Number((filters as Record<string, unknown>).per_page) || 10);
+    const [isRegular, setIsRegular] = useState(filters.is_regular ?? false);
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const searchTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -47,7 +48,7 @@ export default function Index({ data, filters }: PatientsIndexProps) {
     const navigate = (params: Record<string, unknown> = {}) => {
         router.get(
             patients(),
-            { search, per_page: perPage, ...params },
+            { search, per_page: perPage, is_regular: isRegular || undefined, ...params },
             { preserveState: true, preserveScroll: true },
         );
     };
@@ -91,7 +92,21 @@ export default function Index({ data, filters }: PatientsIndexProps) {
                         onSearchChange={handleSearchChange}
                         createHref={patientsCreate().url}
                         createLabel="New Patient"
-                    />
+                    >
+                        <Button
+                            variant={isRegular ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => {
+                                const next = !isRegular;
+                                setIsRegular(next);
+                                navigate({ is_regular: next || undefined, page: 1 });
+                            }}
+                            className="gap-1.5"
+                        >
+                            <Star className={`h-3.5 w-3.5 ${isRegular ? 'fill-current' : ''}`} />
+                            Regular
+                        </Button>
+                    </TablePageHeader>
 
                     <Table>
                         <TableHeader>
@@ -153,9 +168,17 @@ export default function Index({ data, filters }: PatientsIndexProps) {
                                         onClick={() => router.get(patientsShow(item.id))}
                                     >
                                         <TableCell className="py-3.5 pl-6 pr-4">
-                                            <span className="text-sm font-medium text-foreground">
-                                               {item.last_name}, {item.first_name} 
-                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium text-foreground">
+                                                    {item.last_name}, {item.first_name}
+                                                </span>
+                                                {item.is_regular && (
+                                                    <span title="Regular patient" className="flex items-center gap-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                                                        <Star className="h-2.5 w-2.5 fill-current" />
+                                                        Regular
+                                                    </span>
+                                                )}
+                                            </div>
                                         </TableCell>
 
                                         <TableCell className="px-4 py-3.5">

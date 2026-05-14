@@ -23,13 +23,14 @@ class PatientController extends Controller
                     ->orWhere('phone', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
             })
+            ->when($request->boolean('is_regular'), fn ($q) => $q->where('is_regular', true))
             ->latest()
             ->paginate($request->integer('per_page', 10))
             ->withQueryString();
 
         return Inertia::render('patients/index', [
             'data'    => $patients,
-            'filters' => $request->only(['search', 'per_page']),
+            'filters' => $request->only(['search', 'per_page', 'is_regular']),
         ]);
     }
 
@@ -73,5 +74,14 @@ class PatientController extends Controller
         $this->service->delete($patient->id);
 
         return redirect()->route('patients.index')->with('success', 'Patient deleted successfully.');
+    }
+
+    public function toggleRegular(Patient $patient)
+    {
+        $patient->update(['is_regular' => !$patient->is_regular]);
+
+        $message = $patient->is_regular ? 'Patient marked as regular.' : 'Regular status removed.';
+
+        return back()->with('success', $message);
     }
 }

@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -59,6 +59,12 @@ export default function Show({ doctor }: DoctorsShowProps) {
                         </Link>
                     </Button>
                     <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href={`/doctors/${doctor.id}/calendar`}>
+                                <CalendarDays className="mr-2 h-4 w-4" />
+                                Calendar
+                            </Link>
+                        </Button>
                         <Button variant="outline" size="sm" asChild>
                             <Link href={doctorsEdit(doctor.id)}>
                                 <Pencil className="mr-2 h-4 w-4" />

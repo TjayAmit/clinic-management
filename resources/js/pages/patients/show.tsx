@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, ClipboardList, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, CalendarPlus, ClipboardList, Pencil, Star, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,12 +17,21 @@ import {
     index as patients,
     edit as patientsEdit,
     destroy as patientsDestroy,
+    toggleRegular as patientsToggleRegular,
 } from '@/routes/patients';
 import type { PatientsShowProps } from '@/types';
 
 export default function Show({ patient }: PatientsShowProps) {
     const [showDelete, setShowDelete] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isTogglingRegular, setIsTogglingRegular] = useState(false);
+
+    const handleToggleRegular = () => {
+        setIsTogglingRegular(true);
+        router.patch(patientsToggleRegular.url(patient.id), {}, {
+            onFinish: () => setIsTogglingRegular(false),
+        });
+    };
 
     const handleDelete = () => {
         setIsDeleting(true);
@@ -47,6 +56,24 @@ export default function Show({ patient }: PatientsShowProps) {
                         </Link>
                     </Button>
                     <div className="flex items-center gap-2">
+                        {patient.is_regular && (
+                            <Button variant="outline" size="sm" asChild>
+                                <Link href={`/appointments/create?patient_id=${patient.id}`}>
+                                    <CalendarPlus className="mr-2 h-4 w-4" />
+                                    Book Return Visit
+                                </Link>
+                            </Button>
+                        )}
+                        <Button
+                            variant={patient.is_regular ? 'secondary' : 'outline'}
+                            size="sm"
+                            onClick={handleToggleRegular}
+                            disabled={isTogglingRegular}
+                            className="gap-1.5"
+                        >
+                            <Star className={`h-3.5 w-3.5 ${patient.is_regular ? 'fill-current text-amber-500' : ''}`} />
+                            {patient.is_regular ? 'Regular' : 'Mark Regular'}
+                        </Button>
                         <Button variant="outline" size="sm" asChild>
                             <Link href={patientsEdit(patient.id)}>
                                 <Pencil className="mr-2 h-4 w-4" />
@@ -66,7 +93,15 @@ export default function Show({ patient }: PatientsShowProps) {
                         <CardHeader>
                             <CardTitle className="flex items-center justify-between text-base">
                                 Patient Information
-                                <Badge variant="outline" className="capitalize">{patient.gender}</Badge>
+                                <div className="flex items-center gap-2">
+                                    {patient.is_regular && (
+                                        <span className="flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                                            <Star className="h-3 w-3 fill-current" />
+                                            Regular
+                                        </span>
+                                    )}
+                                    <Badge variant="outline" className="capitalize">{patient.gender}</Badge>
+                                </div>
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3 text-sm">

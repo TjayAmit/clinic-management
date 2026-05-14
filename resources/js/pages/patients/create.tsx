@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
     Select,
     SelectContent,
@@ -32,6 +33,7 @@ export default function Create() {
         emergency_contact_phone: '',
         allergies: '',
         medical_history: '',
+        is_regular: false as boolean,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -211,6 +213,18 @@ export default function Create() {
                                     rows={5}
                                 />
                                 <InputError message={errors.medical_history} />
+                            </div>
+
+                            <div className="flex items-center justify-between rounded-lg border border-border p-4">
+                                <div className="space-y-0.5">
+                                    <Label htmlFor="is_regular" className="cursor-pointer text-sm font-medium">Regular Patient</Label>
+                                    <p className="text-xs text-muted-foreground">Mark to allow advance appointment booking for return visits.</p>
+                                </div>
+                                <Switch
+                                    id="is_regular"
+                                    checked={data.is_regular}
+                                    onCheckedChange={(v) => setData('is_regular', v)}
+                                />
                             </div>
 
                             <div className="flex items-center gap-4 pt-2">

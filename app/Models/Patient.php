@@ -14,7 +14,7 @@ use Illuminate\Notifications\Notifiable;
 #[Fillable([
     'first_name', 'last_name', 'date_of_birth', 'gender', 'blood_type',
     'phone', 'email', 'address', 'emergency_contact_name',
-    'emergency_contact_phone', 'allergies', 'dental_history',
+    'emergency_contact_phone', 'allergies', 'dental_history', 'is_regular',
 ])]
 class Patient extends Model
 {
@@ -29,7 +29,8 @@ class Patient extends Model
     {
         return [
             'date_of_birth' => 'date',
-            'gender' => Gender::class,
+            'gender'        => Gender::class,
+            'is_regular'    => 'boolean',
         ];
     }
 

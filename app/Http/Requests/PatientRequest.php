@@ -26,6 +26,7 @@ class PatientRequest extends FormRequest
             'emergency_contact_phone'  => ['nullable', 'string', 'max:20'],
             'allergies'                => ['nullable', 'string'],
             'medical_history'          => ['nullable', 'string'],
+            'is_regular'               => ['nullable', 'boolean'],
         ];
     }
 }

@@ -27,9 +27,9 @@ function addMinutes(time: string, minutes: number): string {
     return `${hh}:${mm}`;
 }
 
-export default function Create({ patients, doctors, services }: AppointmentsFormProps) {
+export default function Create({ patients, doctors, services, defaultPatientId }: AppointmentsFormProps) {
     const { data, setData, post, processing, errors } = useForm({
-        patient_id: '',
+        patient_id: defaultPatientId ? String(defaultPatientId) : '',
         dentist_id: '',
         service_id: '',
         appointment_date: '',

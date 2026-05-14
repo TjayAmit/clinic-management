@@ -83,4 +83,5 @@ export interface AppointmentsFormProps {
     patients: PatientOption[];
     doctors: DoctorOption[];
     services: ServiceOption[];
+    defaultPatientId?: number | null;
 }

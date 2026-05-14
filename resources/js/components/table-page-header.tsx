@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import React from 'react';
 import { Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,7 @@ interface TablePageHeaderProps {
     onSearchChange: (value: string) => void;
     createHref: string;
     createLabel?: string;
+    children?: React.ReactNode;
 }
 
 export function TablePageHeader({
@@ -21,6 +23,7 @@ export function TablePageHeader({
     onSearchChange,
     createHref,
     createLabel = 'New',
+    children,
 }: TablePageHeaderProps) {
     return (
         <div className="flex flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
@@ -32,6 +35,7 @@ export function TablePageHeader({
             </div>
 
             <div className="flex items-center gap-2">
+                {children}
                 <div className="relative">
                     <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input

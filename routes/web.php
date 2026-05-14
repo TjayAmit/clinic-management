@@ -9,8 +9,10 @@ use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\DentalRecordController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PatientVisitController;
+use App\Http\Controllers\DoctorCalendarController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +28,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Doctors
     Route::resource('doctors', DoctorController::class);
+    Route::get('doctors/{doctor}/calendar', DoctorCalendarController::class)->name('doctors.calendar');
 
     // Doctor Schedules (managed from doctor profile)
     Route::prefix('doctor-schedules')->name('doctor-schedules.')->group(function () {
@@ -35,8 +38,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('{doctorSchedule}', [DoctorScheduleController::class, 'destroy'])->name('destroy');
     });
 
+    // Today's schedule
+    Route::get('schedule', ScheduleController::class)->name('schedule');
+
     // Patients
     Route::resource('patients', PatientController::class);
+    Route::patch('patients/{patient}/toggle-regular', [PatientController::class, 'toggleRegular'])->name('patients.toggle-regular');
 
     // Services
     Route::resource('services', ServiceController::class);

@@ -13,6 +13,7 @@ export interface Patient {
     emergency_contact_phone: string | null;
     allergies: string | null;
     medical_history: string | null;
+    is_regular: boolean;
     created_at: string;
     updated_at: string;
     visits?: PatientVisitItem[];
@@ -54,7 +55,7 @@ export interface PatientsIndexProps {
         from: number;
         to: number;
     };
-    filters: { search?: string };
+    filters: { search?: string; is_regular?: boolean };
 }
 
 export interface PatientsShowProps {

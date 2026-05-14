@@ -42,12 +42,13 @@ class AppointmentController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         return Inertia::render('appointments/create', [
-            'patients' => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone']),
-            'doctors'  => Doctor::with('user')->where('is_active', true)->get(),
-            'services' => Service::where('is_active', true)->get(['id', 'name', 'category', 'duration_minutes', 'price']),
+            'patients'          => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone']),
+            'doctors'           => Doctor::with('user')->where('is_active', true)->get(),
+            'services'          => Service::where('is_active', true)->get(['id', 'name', 'category', 'duration_minutes', 'price']),
+            'defaultPatientId'  => $request->integer('patient_id') ?: null,
         ]);
     }
 

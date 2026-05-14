@@ -38,16 +38,12 @@ width: 100% !important;
 <tr>
 <td align="center">
 <table class="content" width="100%" cellpadding="0" cellspacing="0" role="presentation">
-{!! $header ?? '' !!}
 
 <!-- Email Body -->
 <tr>
-<td class="body" width="100%" cellpadding="0" cellspacing="0" style="border: hidden !important;">
+<td class="body" width="100%" cellpadding="0" cellspacing="0" style="border: hidden !important; padding-top: 32px;">
 <table class="inner-body" align="center" width="570" cellpadding="0" cellspacing="0" role="presentation">
-<!-- Orange accent bar -->
-<tr>
-<td style="background-color: #F97316; height: 4px; font-size: 0; line-height: 0;">&nbsp;</td>
-</tr>
+{!! $header ?? '' !!}
 <!-- Body content -->
 <tr>
 <td class="content-cell">
@@ -56,11 +52,10 @@ width: 100% !important;
 {!! $subcopy ?? '' !!}
 </td>
 </tr>
+{!! $footer ?? '' !!}
 </table>
 </td>
 </tr>
-
-{!! $footer ?? '' !!}
 </table>
 </td>
 </tr>

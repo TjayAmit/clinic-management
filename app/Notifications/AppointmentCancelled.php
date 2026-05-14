@@ -24,32 +24,13 @@ class AppointmentCancelled extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $appointment = $this->appointment;
-        $date = $appointment->appointment_date->format('F j, Y');
-        $time = date('g:i A', strtotime($appointment->start_time));
-
-        if ($this->recipientType === 'doctor') {
-            return (new MailMessage)
-                ->subject('Appointment Cancelled')
-                ->greeting('Hello, Dr. ' . $appointment->doctor->user->name . '!')
-                ->line('The following appointment has been cancelled.')
-                ->line("**Patient:** {$appointment->patient->full_name}")
-                ->line("**Service:** {$appointment->service->name}")
-                ->line("**Date:** {$date}")
-                ->line("**Time:** {$time}")
-                ->line('Your schedule has been updated accordingly.');
-        }
+        $view = $this->recipientType === 'doctor'
+            ? 'emails.appointment.cancelled-doctor'
+            : 'emails.appointment.cancelled-patient';
 
         return (new MailMessage)
             ->subject('Appointment Cancelled')
-            ->greeting('Hello, ' . $appointment->patient->full_name . '!')
-            ->line('Your appointment has been cancelled.')
-            ->line("**Service:** {$appointment->service->name}")
-            ->line("**Doctor:** Dr. {$appointment->doctor->user->name}")
-            ->line("**Date:** {$date}")
-            ->line("**Time:** {$time}")
-            ->line('If you would like to reschedule, please contact us or book a new appointment.')
-            ->line('We hope to see you soon!');
+            ->markdown($view, ['appointment' => $this->appointment]);
     }
 
     public function toArray(object $notifiable): array

@@ -24,33 +24,13 @@ class AppointmentConfirmed extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $appointment = $this->appointment;
-        $date = $appointment->appointment_date->format('F j, Y');
-        $time = date('g:i A', strtotime($appointment->start_time));
-
-        if ($this->recipientType === 'patient') {
-            return (new MailMessage)
-                ->subject('Appointment Confirmed')
-                ->greeting('Hello, ' . $appointment->patient->full_name . '!')
-                ->line('Great news! Your appointment has been confirmed.')
-                ->line("**Service:** {$appointment->service->name}")
-                ->line("**Doctor:** Dr. {$appointment->doctor->user->name}")
-                ->line("**Date:** {$date}")
-                ->line("**Time:** {$time}")
-                ->line('Please arrive a few minutes early. If you need to cancel or reschedule, contact us as soon as possible.')
-                ->line('We look forward to seeing you!');
-        }
+        $view = $this->recipientType === 'patient'
+            ? 'emails.appointment.confirmed-patient'
+            : 'emails.appointment.confirmed-doctor';
 
         return (new MailMessage)
             ->subject('Appointment Confirmed')
-            ->greeting('Hello, Dr. ' . $appointment->doctor->user->name . '!')
-            ->line('The following appointment has been confirmed.')
-            ->line("**Patient:** {$appointment->patient->full_name}")
-            ->line("**Service:** {$appointment->service->name}")
-            ->line("**Date:** {$date}")
-            ->line("**Time:** {$time}")
-            ->action('View Appointment', url('/appointments/' . $appointment->id))
-            ->line('Please prepare accordingly.');
+            ->markdown($view, ['appointment' => $this->appointment]);
     }
 
     public function toArray(object $notifiable): array

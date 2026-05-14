@@ -24,33 +24,17 @@ class AppointmentBooked extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $appointment = $this->appointment;
-        $date = $appointment->appointment_date->format('F j, Y');
-        $time = date('g:i A', strtotime($appointment->start_time));
+        $view = $this->recipientType === 'doctor'
+            ? 'emails.appointment.booked-doctor'
+            : 'emails.appointment.booked-patient';
 
-        if ($this->recipientType === 'doctor') {
-            return (new MailMessage)
-                ->subject('New Appointment Assigned')
-                ->greeting('Hello, Dr. ' . $appointment->doctor->user->name . '!')
-                ->line('A new appointment has been booked and assigned to you.')
-                ->line("**Patient:** {$appointment->patient->full_name}")
-                ->line("**Service:** {$appointment->service->name}")
-                ->line("**Date:** {$date}")
-                ->line("**Time:** {$time}")
-                ->action('View Appointment', url('/appointments/' . $appointment->id))
-                ->line('Please review the appointment details in the system.');
-        }
+        $subject = $this->recipientType === 'doctor'
+            ? 'New Appointment Assigned'
+            : 'Appointment Request Received';
 
         return (new MailMessage)
-            ->subject('Appointment Booked Successfully')
-            ->greeting('Hello, ' . $appointment->patient->full_name . '!')
-            ->line('Your appointment has been booked successfully.')
-            ->line("**Service:** {$appointment->service->name}")
-            ->line("**Doctor:** Dr. {$appointment->doctor->user->name}")
-            ->line("**Date:** {$date}")
-            ->line("**Time:** {$time}")
-            ->line('Your appointment is currently **pending confirmation**. You will receive another notification once confirmed.')
-            ->line('Thank you for choosing our clinic!');
+            ->subject($subject)
+            ->markdown($view, ['appointment' => $this->appointment]);
     }
 
     public function toArray(object $notifiable): array

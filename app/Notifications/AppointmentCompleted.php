@@ -23,18 +23,9 @@ class AppointmentCompleted extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $appointment = $this->appointment;
-        $date = $appointment->appointment_date->format('F j, Y');
-
         return (new MailMessage)
-            ->subject('Thank You for Your Visit!')
-            ->greeting('Hello, ' . $appointment->patient->full_name . '!')
-            ->line('Thank you for visiting our clinic. Your appointment has been completed.')
-            ->line("**Service:** {$appointment->service->name}")
-            ->line("**Doctor:** Dr. {$appointment->doctor->user->name}")
-            ->line("**Date:** {$date}")
-            ->line('We hope your experience was pleasant. If you have any follow-up concerns, please do not hesitate to contact us.')
-            ->line('We look forward to serving you again!');
+            ->subject('Thank You for Your Visit')
+            ->markdown('emails.appointment.completed-patient', ['appointment' => $this->appointment]);
     }
 
     public function toArray(object $notifiable): array

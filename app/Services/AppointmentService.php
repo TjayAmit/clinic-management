@@ -100,7 +100,7 @@ class AppointmentService
         $appointment = $this->repository->updateStatus($id, 'confirmed');
 
         $appointment->load('doctor.user', 'patient', 'service');
-        $appointment->doctor->user->notify(new AppointmentCancelled($appointment, 'doctor'));
+        $appointment->doctor->user->notify(new AppointmentConfirmed($appointment, 'doctor'));
         $appointment->patient->notify(new AppointmentConfirmed($appointment, 'patient'));
 
         $this->logActivity('confirmed', $appointment, ['status' => 'confirmed']);
@@ -136,9 +136,9 @@ class AppointmentService
     {
         $appointment = $this->repository->updateStatus($id, 'cancelled');
 
-        $appointment->load('dentist.user', 'patient', 'service');
+        $appointment->load('doctor.user', 'patient', 'service');
         $appointment->patient->notify(new AppointmentCancelled($appointment, 'patient'));
-        $appointment->dentist->user->notify(new AppointmentCancelled($appointment, 'doctor'));
+        $appointment->doctor->user->notify(new AppointmentCancelled($appointment, 'doctor'));
 
         $this->logActivity('cancelled', $appointment, ['status' => 'cancelled']);
 

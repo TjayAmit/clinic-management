@@ -94,12 +94,13 @@ if (app()->environment('local')) {
         Route::post('/dev/switch-user/{user}', [\App\Http\Controllers\Dev\SwitchUserController::class, '__invoke'])
             ->name('dev.switch-user');
 
-        // Email previews
-        Route::get('/dev/email-preview', [\App\Http\Controllers\Dev\EmailPreviewController::class, 'index'])
-            ->name('dev.email-preview.index');
-        Route::get('/dev/email-preview/{key}', [\App\Http\Controllers\Dev\EmailPreviewController::class, 'show'])
-            ->name('dev.email-preview.show');
     });
+    
+    // Email previews
+    Route::get('/dev/email-preview', [\App\Http\Controllers\Dev\EmailPreviewController::class, 'index'])
+        ->name('dev.email-preview.index');
+    Route::get('/dev/email-preview/{key}', [\App\Http\Controllers\Dev\EmailPreviewController::class, 'show'])
+        ->name('dev.email-preview.show');
 }
 
 require __DIR__.'/settings.php';

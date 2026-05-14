@@ -43,11 +43,14 @@ import {
 import type { AppointmentsIndexProps, AppointmentStatus } from '@/types';
 
 const STATUS_STYLES: Record<AppointmentStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-    pending:   { label: 'Pending',   variant: 'secondary' },
-    confirmed: { label: 'Confirmed', variant: 'default' },
-    completed: { label: 'Completed', variant: 'outline' },
-    cancelled: { label: 'Cancelled', variant: 'destructive' },
-    no_show:   { label: 'No Show',   variant: 'secondary' },
+    pending:        { label: 'Pending',        variant: 'secondary' },
+    confirmed:      { label: 'Confirmed',      variant: 'default' },
+    in_queue:       { label: 'In Queue',       variant: 'secondary' },
+    in_progress:    { label: 'In Progress',    variant: 'default' },
+    completed:      { label: 'Completed',      variant: 'outline' },
+    needs_follow_up:{ label: 'Follow-up',      variant: 'secondary' },
+    cancelled:      { label: 'Cancelled',      variant: 'destructive' },
+    no_show:        { label: 'No Show',        variant: 'secondary' },
 };
 
 export default function Index({ data, filters, doctors }: AppointmentsIndexProps) {

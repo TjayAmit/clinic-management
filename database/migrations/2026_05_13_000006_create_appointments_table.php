@@ -12,12 +12,12 @@ return new class extends Migration
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('patient_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('dentist_id')->constrained('doctors')->cascadeOnDelete();
+            $table->foreignId('doctor_id')->constrained('doctors')->cascadeOnDelete();
             $table->foreignId('service_id')->constrained()->cascadeOnDelete();
             $table->date('appointment_date');
             $table->time('start_time');
             $table->time('end_time');
-            $table->enum('status', AppointmentStatus::cases())->default(AppointmentStatus::Pending);
+            $table->enum('status', array_column(AppointmentStatus::cases(), 'value'))->default(AppointmentStatus::Pending->value);
             $table->text('notes')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();

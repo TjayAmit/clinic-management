@@ -19,10 +19,11 @@ class AppointmentController extends Controller
 
     public function index(Request $request)
     {
-        $appointments = Appointment::with(['patient', 'dentist.user', 'service'])
+        $appointments = Appointment::with(['patient', 'doctor.user', 'service'])
             ->when($request->input('date'), fn ($q, $date) => $q->whereDate('appointment_date', $date))
-            ->when($request->input('dentist_id'), fn ($q, $id) => $q->where('dentist_id', $id))
+            ->when($request->input('doctor_id'), fn ($q, $id) => $q->where('doctor_id', $id))
             ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status))
+            ->when($request->boolean('walk_in'), fn ($q) => $q->where('is_walk_in', true))
             ->when($request->input('search'), function ($q, $search) {
                 $q->whereHas('patient', fn ($p) =>
                     $p->where('first_name', 'like', "%{$search}%")
@@ -36,7 +37,7 @@ class AppointmentController extends Controller
 
         return Inertia::render('appointments/index', [
             'data'    => $appointments,
-            'filters' => $request->only(['search', 'date', 'dentist_id', 'status', 'per_page']),
+            'filters' => $request->only(['search', 'date', 'doctor_id', 'status', 'walk_in', 'per_page']),
             'doctors' => Doctor::with('user')->where('is_active', true)->get(['id', 'user_id', 'specialization']),
         ]);
     }
@@ -46,21 +47,21 @@ class AppointmentController extends Controller
         return Inertia::render('appointments/create', [
             'patients' => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone']),
             'doctors'  => Doctor::with('user')->where('is_active', true)->get(),
-            'services' => Service::where('is_active', true)->get(['id', 'name', 'duration_minutes', 'price']),
+            'services' => Service::where('is_active', true)->get(['id', 'name', 'category', 'duration_minutes', 'price']),
         ]);
     }
 
     public function store(AppointmentRequest $request)
     {
         $conflict = $this->service->checkConflict(
-            $request->integer('dentist_id'),
+            $request->integer('doctor_id'),
             $request->input('appointment_date'),
             $request->input('start_time'),
             $request->input('end_time'),
         );
 
         if ($conflict) {
-            return back()->withErrors(['start_time' => 'The dentist already has an appointment at this time.']);
+            return back()->withErrors(['start_time' => 'The doctor already has an appointment at this time.']);
         }
 
         $this->service->createFromRequest($request);
@@ -70,7 +71,7 @@ class AppointmentController extends Controller
 
     public function show(Appointment $appointment)
     {
-        $appointment->load(['patient', 'dentist.user', 'service', 'visit.dentalRecord']);
+        $appointment->load(['patient', 'doctor.user', 'service', 'visit.dentalRecord', 'parent', 'followUps.patient', 'queue']);
 
         return Inertia::render('appointments/show', [
             'appointment' => $appointment,
@@ -80,17 +81,17 @@ class AppointmentController extends Controller
     public function edit(Appointment $appointment)
     {
         return Inertia::render('appointments/edit', [
-            'appointment' => $appointment->load(['patient', 'dentist', 'service']),
+            'appointment' => $appointment->load(['patient', 'doctor', 'service']),
             'patients'    => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone']),
             'doctors'     => Doctor::with('user')->where('is_active', true)->get(),
-            'services'    => Service::where('is_active', true)->get(['id', 'name', 'duration_minutes', 'price']),
+            'services'    => Service::where('is_active', true)->get(['id', 'name', 'category', 'duration_minutes', 'price']),
         ]);
     }
 
     public function update(AppointmentRequest $request, Appointment $appointment)
     {
         $conflict = $this->service->checkConflict(
-            $request->integer('dentist_id'),
+            $request->integer('doctor_id'),
             $request->input('appointment_date'),
             $request->input('start_time'),
             $request->input('end_time'),
@@ -98,7 +99,7 @@ class AppointmentController extends Controller
         );
 
         if ($conflict) {
-            return back()->withErrors(['start_time' => 'The dentist already has an appointment at this time.']);
+            return back()->withErrors(['start_time' => 'The doctor already has an appointment at this time.']);
         }
 
         $this->service->updateFromRequest($appointment->id, $request);
@@ -120,6 +121,27 @@ class AppointmentController extends Controller
         return redirect()->back()->with('success', 'Appointment confirmed.');
     }
 
+    public function markInQueue(Appointment $appointment)
+    {
+        $this->service->markInQueue($appointment->id);
+
+        return redirect()->back()->with('success', 'Appointment moved to queue.');
+    }
+
+    public function markInProgress(Appointment $appointment)
+    {
+        $this->service->markInProgress($appointment->id);
+
+        return redirect()->back()->with('success', 'Appointment marked as in progress.');
+    }
+
+    public function needsFollowUp(Appointment $appointment)
+    {
+        $this->service->needsFollowUp($appointment->id);
+
+        return redirect()->back()->with('success', 'Appointment marked as needs follow-up.');
+    }
+
     public function cancel(Appointment $appointment)
     {
         $this->service->cancel($appointment->id);
@@ -132,5 +154,19 @@ class AppointmentController extends Controller
         $this->service->complete($appointment->id);
 
         return redirect()->back()->with('success', 'Appointment marked as completed.');
+    }
+
+    public function noShow(Appointment $appointment)
+    {
+        $this->service->noShow($appointment->id);
+
+        return redirect()->back()->with('success', 'Appointment marked as no show.');
+    }
+
+    public function createFollowUp(AppointmentRequest $request, Appointment $appointment)
+    {
+        $followUp = $this->service->createFollowUp($appointment, $request);
+
+        return redirect()->route('appointments.show', $followUp)->with('success', 'Follow-up appointment created.');
     }
 }

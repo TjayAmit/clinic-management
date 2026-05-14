@@ -37,13 +37,13 @@ class DashboardController extends Controller
                 ['label' => 'Active Services', 'value' => Service::where('is_active', true)->count(), 'icon' => 'briefcase'],
             ];
 
-            $todayAppointments = Appointment::with(['patient', 'dentist.user', 'service'])
+            $todayAppointments = Appointment::with(['patient', 'doctor.user', 'service'])
                 ->whereDate('appointment_date', $today)
                 ->orderBy('start_time')
                 ->limit(10)
                 ->get();
 
-            $recentAppointments = Appointment::with(['patient', 'dentist.user', 'service'])
+            $recentAppointments = Appointment::with(['patient', 'doctor.user', 'service'])
                 ->latest('created_at')
                 ->limit(5)
                 ->get();
@@ -66,7 +66,7 @@ class DashboardController extends Controller
                 ['label' => 'Upcoming Week', 'value' => Appointment::whereBetween('appointment_date', [$today, $weekEnd])->count(), 'icon' => 'calendar-days'],
             ];
 
-            $todayAppointments = Appointment::with(['patient', 'dentist.user', 'service'])
+            $todayAppointments = Appointment::with(['patient', 'doctor.user', 'service'])
                 ->whereDate('appointment_date', $today)
                 ->orderBy('start_time')
                 ->limit(10)
@@ -77,24 +77,24 @@ class DashboardController extends Controller
 
         // ─── Doctor ───
         if (in_array('Doctor', $roles) && $user->doctor) {
-            $dentistId = $user->doctor->id;
+            $doctorId = $user->doctor->id;
 
             $stats = [
-                ['label' => "My Today's", 'value' => Appointment::where('dentist_id', $dentistId)->whereDate('appointment_date', $today)->count(), 'icon' => 'calendar'],
-                ['label' => 'My Upcoming', 'value' => Appointment::where('dentist_id', $dentistId)->whereDate('appointment_date', '>', $today)->count(), 'icon' => 'calendar-days'],
-                ['label' => 'My Patients', 'value' => Appointment::where('dentist_id', $dentistId)->distinct('patient_id')->count('patient_id'), 'icon' => 'users'],
-                ['label' => 'My Records', 'value' => DentalRecord::where('dentist_id', $dentistId)->count(), 'icon' => 'clipboard'],
+                ['label' => "My Today's", 'value' => Appointment::where('doctor_id', $doctorId)->whereDate('appointment_date', $today)->count(), 'icon' => 'calendar'],
+                ['label' => 'My Upcoming', 'value' => Appointment::where('doctor_id', $doctorId)->whereDate('appointment_date', '>', $today)->count(), 'icon' => 'calendar-days'],
+                ['label' => 'My Patients', 'value' => Appointment::where('doctor_id', $doctorId)->distinct('patient_id')->count('patient_id'), 'icon' => 'users'],
+                ['label' => 'My Records', 'value' => DentalRecord::where('dentist_id', $doctorId)->count(), 'icon' => 'clipboard'],
             ];
 
             $todayAppointments = Appointment::with(['patient', 'service'])
-                ->where('dentist_id', $dentistId)
+                ->where('doctor_id', $doctorId)
                 ->whereDate('appointment_date', $today)
                 ->orderBy('start_time')
                 ->limit(10)
                 ->get();
 
             $recentRecords = DentalRecord::with(['patient'])
-                ->where('dentist_id', $dentistId)
+                ->where('dentist_id', $doctorId)
                 ->latest('created_at')
                 ->limit(5)
                 ->get();

@@ -13,12 +13,20 @@ import {
     show as servicesShow,
     update as servicesUpdate,
 } from '@/routes/services';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import type { ServicesFormProps } from '@/types';
 
 export default function Edit({ service }: ServicesFormProps) {
     const { data, setData, put, processing, errors } = useForm({
         name: service?.name ?? '',
         description: service?.description ?? '',
+        category: (service?.category ?? 'single_visit') as 'single_visit' | 'long_term',
         price: service?.price ?? '',
         duration_minutes: String(service?.duration_minutes ?? 30),
         is_active: service?.is_active ?? true,
@@ -59,6 +67,20 @@ export default function Edit({ service }: ServicesFormProps) {
                                     required
                                 />
                                 <InputError message={errors.name} />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Category <span className="text-destructive">*</span></Label>
+                                <Select value={data.category} onValueChange={(v) => setData('category', v as 'single_visit' | 'long_term')}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="single_visit">Single Visit</SelectItem>
+                                        <SelectItem value="long_term">Long Term</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.category} />
                             </div>
 
                             <div className="space-y-2">

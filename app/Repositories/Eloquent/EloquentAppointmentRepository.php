@@ -20,7 +20,7 @@ class EloquentAppointmentRepository implements AppointmentRepository
     public function getByDoctor(int $doctorId, ?string $date = null): iterable
     {
         $query = Appointment::with(['patient', 'service'])
-            ->where('dentist_id', $doctorId);
+            ->where('doctor_id', $doctorId);
 
         if ($date) {
             $query->whereDate('appointment_date', $date);
@@ -53,6 +53,15 @@ class EloquentAppointmentRepository implements AppointmentRepository
             ->get();
     }
 
+    public function getWalkInsByDate(string $date): iterable
+    {
+        return Appointment::with(['patient', 'doctor.user', 'service'])
+            ->where('is_walk_in', true)
+            ->whereDate('appointment_date', $date)
+            ->orderBy('start_time')
+            ->get();
+    }
+
     public function updateStatus(int $id, string $status): Appointment
     {
         $appointment = $this->findById($id);
@@ -63,7 +72,7 @@ class EloquentAppointmentRepository implements AppointmentRepository
 
     public function checkConflict(int $doctorId, string $date, string $startTime, string $endTime, ?int $excludeId = null): bool
     {
-        $query = Appointment::where('dentist_id', $doctorId)
+        $query = Appointment::where('doctor_id', $doctorId)
             ->whereDate('appointment_date', $date)
             ->whereNotIn('status', ['cancelled', 'no_show'])
             ->where(function ($q) use ($startTime, $endTime) {

@@ -1,5 +1,11 @@
 <?php
 
+use App\Models\Appointment;
+use App\Models\Doctor;
+use App\Models\Patient;
+use App\Models\Queue;
+use App\Models\Service;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,8 +21,8 @@ use Tests\TestCase;
 */
 
 pest()->extend(TestCase::class)
- // ->use(RefreshDatabase::class)
-    ->in('Feature');
+    ->use(RefreshDatabase::class)
+    ->in('Feature', 'Unit');
 
 /*
 |--------------------------------------------------------------------------
@@ -44,7 +50,44 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function actingAsStaff(): TestCase
 {
-    // ..
+    $user = User::factory()->staff()->create();
+    return test()->actingAs($user);
+}
+
+function actingAsDoctor(): TestCase
+{
+    $user = User::factory()->doctor()->create();
+    return test()->actingAs($user);
+}
+
+function appointmentInQueue(): array
+{
+    $patient = Patient::factory()->create();
+    $doctor = Doctor::factory()->create();
+    $service = Service::factory()->create();
+
+    $appointment = Appointment::factory()->create([
+        'patient_id' => $patient->id,
+        'doctor_id' => $doctor->id,
+        'service_id' => $service->id,
+        'appointment_date' => now()->toDateString(),
+        'status' => 'pending',
+    ]);
+
+    $queue = Queue::factory()->create([
+        'appointment_id' => $appointment->id,
+        'queue_date' => now()->toDateString(),
+        'position' => 1,
+        'status' => 'waiting',
+    ]);
+
+    return [
+        'appointment' => $appointment,
+        'queue' => $queue,
+        'patient' => $patient,
+        'doctor' => $doctor,
+        'service' => $service,
+    ];
 }

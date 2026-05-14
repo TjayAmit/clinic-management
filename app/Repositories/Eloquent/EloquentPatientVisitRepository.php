@@ -9,7 +9,7 @@ class EloquentPatientVisitRepository implements PatientVisitRepository
 {
     public function all(): iterable
     {
-        return PatientVisit::with(['patient', 'dentist.user'])->get();
+        return PatientVisit::with(['patient', 'doctor.user'])->get();
     }
 
     public function findById(int $id): ?PatientVisit
@@ -19,7 +19,7 @@ class EloquentPatientVisitRepository implements PatientVisitRepository
 
     public function getByPatient(int $patientId): iterable
     {
-        return PatientVisit::with(['dentist.user', 'dentalRecord'])
+        return PatientVisit::with(['doctor.user', 'dentalRecord'])
             ->where('patient_id', $patientId)
             ->orderByDesc('visited_at')
             ->get();
@@ -28,7 +28,7 @@ class EloquentPatientVisitRepository implements PatientVisitRepository
     public function getByDoctor(int $doctorId, ?string $date = null): iterable
     {
         $query = PatientVisit::with(['patient', 'dentalRecord'])
-            ->where('dentist_id', $doctorId);
+            ->where('doctor_id', $doctorId);
 
         if ($date) {
             $query->whereDate('visited_at', $date);
@@ -44,7 +44,7 @@ class EloquentPatientVisitRepository implements PatientVisitRepository
 
     public function getRecentByPatient(int $patientId, int $limit = 10): iterable
     {
-        return PatientVisit::with(['dentist.user', 'dentalRecord'])
+        return PatientVisit::with(['doctor.user', 'dentalRecord'])
             ->where('patient_id', $patientId)
             ->orderByDesc('visited_at')
             ->limit($limit)

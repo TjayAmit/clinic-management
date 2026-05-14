@@ -2,6 +2,7 @@
 
 namespace App\DTOs;
 
+use App\Enums\ServiceCategory;
 use App\Models\Service;
 use Illuminate\Http\Request;
 
@@ -10,6 +11,7 @@ readonly class ServiceData
     public function __construct(
         public ?string $name = null,
         public ?string $description = null,
+        public string $category = 'single_visit',
         public ?float $price = null,
         public int $duration_minutes = 30,
         public bool $is_active = true,
@@ -20,6 +22,7 @@ readonly class ServiceData
         return new self(
             name: $request->input('name'),
             description: $request->input('description'),
+            category: $request->input('category', ServiceCategory::SingleVisit->value),
             price: $request->input('price'),
             duration_minutes: $request->integer('duration_minutes', 30),
             is_active: $request->boolean('is_active', true),
@@ -31,6 +34,9 @@ readonly class ServiceData
         return new self(
             name: $service->name,
             description: $service->description,
+            category: $service->category instanceof ServiceCategory
+                ? $service->category->value
+                : $service->category,
             price: (float) $service->price,
             duration_minutes: $service->duration_minutes,
             is_active: $service->is_active,

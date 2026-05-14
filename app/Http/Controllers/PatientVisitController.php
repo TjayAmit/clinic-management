@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PatientVisitRequest;
-use App\Models\Doctor;
-use App\Models\Patient;
 use App\Models\PatientVisit;
 use App\Services\PatientVisitService;
 use Illuminate\Http\Request;
@@ -18,9 +16,9 @@ class PatientVisitController extends Controller
 
     public function index(Request $request)
     {
-        $visits = PatientVisit::with(['patient', 'dentist.user', 'appointment'])
+        $visits = PatientVisit::with(['patient', 'doctor.user', 'appointment'])
             ->when($request->input('patient_id'), fn ($q, $id) => $q->where('patient_id', $id))
-            ->when($request->input('dentist_id'), fn ($q, $id) => $q->where('dentist_id', $id))
+            ->when($request->input('doctor_id'), fn ($q, $id) => $q->where('doctor_id', $id))
             ->when($request->input('date'), fn ($q, $date) => $q->whereDate('visited_at', $date))
             ->orderByDesc('visited_at')
             ->paginate($request->integer('per_page', 10))
@@ -28,7 +26,7 @@ class PatientVisitController extends Controller
 
         return Inertia::render('patientVisits/index', [
             'data'    => $visits,
-            'filters' => $request->only(['patient_id', 'dentist_id', 'date', 'per_page']),
+            'filters' => $request->only(['patient_id', 'doctor_id', 'date', 'per_page']),
         ]);
     }
 
@@ -36,12 +34,12 @@ class PatientVisitController extends Controller
     {
         $visit = $this->service->createFromRequest($request);
 
-        return redirect()->route('patientVisits.show', $visit)->with('success', 'Visit created successfully.');
+        return redirect()->route('patient-visits.show', $visit)->with('success', 'Visit created successfully.');
     }
 
     public function show(PatientVisit $patientVisit)
     {
-        $patientVisit->load(['patient', 'dentist.user', 'appointment.service', 'dentalRecord']);
+        $patientVisit->load(['patient', 'doctor.user', 'appointment.service', 'dentalRecord']);
 
         return Inertia::render('patientVisits/show', [
             'visit' => $patientVisit,
@@ -59,7 +57,7 @@ class PatientVisitController extends Controller
     {
         $this->service->delete($patientVisit->id);
 
-        return redirect()->route('patientVisits.index')->with('success', 'Visit deleted successfully.');
+        return redirect()->route('patient-visits.index')->with('success', 'Visit deleted successfully.');
     }
 
     public function checkIn(PatientVisit $patientVisit)

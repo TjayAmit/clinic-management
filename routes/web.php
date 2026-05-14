@@ -9,6 +9,7 @@ use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\DentalRecordController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PatientVisitController;
+use App\Http\Controllers\QueueController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\UserController;
@@ -48,8 +49,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Appointments
     Route::resource('appointments', AppointmentController::class);
     Route::patch('appointments/{appointment}/confirm', [AppointmentController::class, 'confirm'])->name('appointments.confirm');
+    Route::patch('appointments/{appointment}/in-queue', [AppointmentController::class, 'markInQueue'])->name('appointments.in-queue');
+    Route::patch('appointments/{appointment}/in-progress', [AppointmentController::class, 'markInProgress'])->name('appointments.in-progress');
+    Route::patch('appointments/{appointment}/needs-follow-up', [AppointmentController::class, 'needsFollowUp'])->name('appointments.needs-follow-up');
     Route::patch('appointments/{appointment}/cancel', [AppointmentController::class, 'cancel'])->name('appointments.cancel');
     Route::patch('appointments/{appointment}/complete', [AppointmentController::class, 'complete'])->name('appointments.complete');
+    Route::patch('appointments/{appointment}/no-show', [AppointmentController::class, 'noShow'])->name('appointments.no-show');
+    Route::post('appointments/{appointment}/follow-up', [AppointmentController::class, 'createFollowUp'])->name('appointments.follow-up');
+
+    // Queue
+    Route::prefix('queue')->name('queue.')->group(function () {
+        Route::get('/', [QueueController::class, 'index'])->name('index');
+        Route::post('/', [QueueController::class, 'store'])->name('store');
+        Route::put('{queue}', [QueueController::class, 'update'])->name('update');
+        Route::delete('{queue}', [QueueController::class, 'destroy'])->name('destroy');
+        Route::patch('{queue}/call', [QueueController::class, 'call'])->name('call');
+        Route::patch('{queue}/complete', [QueueController::class, 'complete'])->name('complete');
+        Route::patch('{queue}/no-show', [QueueController::class, 'noShow'])->name('no-show');
+        Route::post('reorder', [QueueController::class, 'reorder'])->name('reorder');
+    });
 
     // Patient Visits
     Route::resource('patient-visits', PatientVisitController::class)->except(['create', 'edit']);
@@ -72,9 +90,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 if (app()->environment('local')) {
-    Route::middleware('auth')
-        ->post('/dev/switch-user/{user}', [\App\Http\Controllers\Dev\SwitchUserController::class, '__invoke'])
-        ->name('dev.switch-user');
+    Route::middleware('auth')->group(function () {
+        Route::post('/dev/switch-user/{user}', [\App\Http\Controllers\Dev\SwitchUserController::class, '__invoke'])
+            ->name('dev.switch-user');
+
+        // Email previews
+        Route::get('/dev/email-preview', [\App\Http\Controllers\Dev\EmailPreviewController::class, 'index'])
+            ->name('dev.email-preview.index');
+        Route::get('/dev/email-preview/{key}', [\App\Http\Controllers\Dev\EmailPreviewController::class, 'show'])
+            ->name('dev.email-preview.show');
+    });
 }
 
 require __DIR__.'/settings.php';

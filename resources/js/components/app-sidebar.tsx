@@ -11,6 +11,7 @@ import {
     FileText,
     UserRound,
     Flag,
+    ListOrdered,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -45,6 +46,12 @@ const navGroups: NavGroup[] = [
                 title: 'Appointments',
                 href: '/appointments',
                 icon: CalendarDays,
+                permissions: ['appointments.view'],
+            },
+            {
+                title: 'Queue',
+                href: '/queue',
+                icon: ListOrdered,
                 permissions: ['appointments.view'],
             },
             {

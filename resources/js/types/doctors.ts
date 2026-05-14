@@ -49,3 +49,8 @@ export interface DoctorsFormProps {
     doctor?: Doctor;
     users: UserOption[];
 }
+
+export interface DoctorSchedulesIndexProps {
+    doctor: Doctor;
+    schedules: DoctorSchedule[];
+}

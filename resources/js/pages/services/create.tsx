@@ -9,11 +9,19 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { index as services, store as servicesStore } from '@/routes/services';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         description: '',
+        category: 'single_visit' as 'single_visit' | 'long_term',
         price: '',
         duration_minutes: '30',
         is_active: true,
@@ -54,6 +62,20 @@ export default function Create() {
                                     required
                                 />
                                 <InputError message={errors.name} />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Category <span className="text-destructive">*</span></Label>
+                                <Select value={data.category} onValueChange={(v) => setData('category', v as 'single_visit' | 'long_term')}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="single_visit">Single Visit</SelectItem>
+                                        <SelectItem value="long_term">Long Term</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.category} />
                             </div>
 
                             <div className="space-y-2">

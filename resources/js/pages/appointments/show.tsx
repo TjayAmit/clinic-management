@@ -20,15 +20,22 @@ import {
     confirm as appointmentsConfirm,
     cancel as appointmentsCancel,
     complete as appointmentsComplete,
+    inQueue as appointmentsInQueue,
+    inProgress as appointmentsInProgress,
+    needsFollowUp as appointmentsNeedsFollowUp,
+    noShow as appointmentsNoShow,
 } from '@/routes/appointments';
 import type { AppointmentsShowProps, AppointmentStatus } from '@/types';
 
 const STATUS_STYLES: Record<AppointmentStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-    pending:   { label: 'Pending',   variant: 'secondary' },
-    confirmed: { label: 'Confirmed', variant: 'default' },
-    completed: { label: 'Completed', variant: 'outline' },
-    cancelled: { label: 'Cancelled', variant: 'destructive' },
-    no_show:   { label: 'No Show',   variant: 'secondary' },
+    pending:        { label: 'Pending',     variant: 'secondary' },
+    confirmed:      { label: 'Confirmed',   variant: 'default' },
+    in_queue:       { label: 'In Queue',    variant: 'secondary' },
+    in_progress:    { label: 'In Progress', variant: 'default' },
+    completed:      { label: 'Completed',   variant: 'outline' },
+    needs_follow_up:{ label: 'Follow-up',   variant: 'secondary' },
+    cancelled:      { label: 'Cancelled',   variant: 'destructive' },
+    no_show:        { label: 'No Show',     variant: 'secondary' },
 };
 
 export default function Show({ appointment }: AppointmentsShowProps) {
@@ -45,13 +52,17 @@ export default function Show({ appointment }: AppointmentsShowProps) {
         });
     };
 
-    const handleAction = (action: 'confirm' | 'cancel' | 'complete') => {
-        const route = action === 'confirm'
-            ? appointmentsConfirm(appointment.id)
-            : action === 'cancel'
-                ? appointmentsCancel(appointment.id)
-                : appointmentsComplete(appointment.id);
-        router.patch(route.url);
+    const handleAction = (action: 'confirm' | 'cancel' | 'complete' | 'in_queue' | 'in_progress' | 'needs_follow_up' | 'no_show') => {
+        const routes = {
+            confirm:        appointmentsConfirm(appointment.id),
+            cancel:         appointmentsCancel(appointment.id),
+            complete:       appointmentsComplete(appointment.id),
+            in_queue:       appointmentsInQueue(appointment.id),
+            in_progress:    appointmentsInProgress(appointment.id),
+            needs_follow_up: appointmentsNeedsFollowUp(appointment.id),
+            no_show:        appointmentsNoShow(appointment.id),
+        };
+        router.patch(routes[action].url);
     };
 
     const statusStyle = STATUS_STYLES[appointment.status] ?? STATUS_STYLES.pending;
@@ -68,7 +79,7 @@ export default function Show({ appointment }: AppointmentsShowProps) {
                             Back to list
                         </Link>
                     </Button>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         {appointment.status === 'pending' && (
                             <Button size="sm" onClick={() => handleAction('confirm')}>
                                 <CheckCircle className="mr-2 h-4 w-4" />
@@ -76,9 +87,32 @@ export default function Show({ appointment }: AppointmentsShowProps) {
                             </Button>
                         )}
                         {appointment.status === 'confirmed' && (
-                            <Button size="sm" variant="outline" onClick={() => handleAction('complete')}>
+                            <Button size="sm" onClick={() => handleAction('in_queue')}>
                                 <CheckCircle className="mr-2 h-4 w-4" />
-                                Mark Complete
+                                Add to Queue
+                            </Button>
+                        )}
+                        {appointment.status === 'in_queue' && (
+                            <Button size="sm" onClick={() => handleAction('in_progress')}>
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                Start
+                            </Button>
+                        )}
+                        {appointment.status === 'in_progress' && (
+                            <>
+                                <Button size="sm" variant="outline" onClick={() => handleAction('complete')}>
+                                    <CheckCircle className="mr-2 h-4 w-4" />
+                                    Complete
+                                </Button>
+                                <Button size="sm" variant="outline" onClick={() => handleAction('needs_follow_up')}>
+                                    Needs Follow-up
+                                </Button>
+                            </>
+                        )}
+                        {(appointment.status === 'pending' || appointment.status === 'confirmed' || appointment.status === 'in_queue') && (
+                            <Button size="sm" variant="outline" onClick={() => handleAction('no_show')}>
+                                <XCircle className="mr-2 h-4 w-4" />
+                                No Show
                             </Button>
                         )}
                         {(appointment.status === 'pending' || appointment.status === 'confirmed') && (

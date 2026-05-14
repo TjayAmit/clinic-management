@@ -1,7 +1,10 @@
+export type ServiceCategory = 'single_visit' | 'long_term';
+
 export interface Service {
     id: number;
     name: string;
     description: string | null;
+    category: ServiceCategory;
     price: string;
     duration_minutes: number;
     is_active: boolean;

@@ -57,4 +57,24 @@ class UserFactory extends Factory
             'two_factor_confirmed_at' => now(),
         ]);
     }
+
+    /**
+     * Indicate that the user is a staff member.
+     */
+    public function staff(): static
+    {
+        return $this->afterCreating(function (User $user) {
+            $user->assignRole('staff');
+        });
+    }
+
+    /**
+     * Indicate that the user is a doctor.
+     */
+    public function doctor(): static
+    {
+        return $this->afterCreating(function (User $user) {
+            $user->assignRole('doctor');
+        });
+    }
 }

@@ -18,6 +18,8 @@ interface AppointmentRepository
 
     public function getByStatus(string $status): iterable;
 
+    public function getWalkInsByDate(string $date): iterable;
+
     public function updateStatus(int $id, string $status): Appointment;
 
     public function checkConflict(int $doctorId, string $date, string $startTime, string $endTime, ?int $excludeId = null): bool;

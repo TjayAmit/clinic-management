@@ -14,23 +14,60 @@ class AppointmentConfirmed extends Notification implements ShouldQueue
 
     public function __construct(
         public readonly Appointment $appointment,
+        public readonly string $recipientType = 'doctor',
     ) {}
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['mail', 'database'];
+    }
+
+    public function toMail(object $notifiable): MailMessage
+    {
+        $appointment = $this->appointment;
+        $date = $appointment->appointment_date->format('F j, Y');
+        $time = date('g:i A', strtotime($appointment->start_time));
+
+        if ($this->recipientType === 'patient') {
+            return (new MailMessage)
+                ->subject('Appointment Confirmed')
+                ->greeting('Hello, ' . $appointment->patient->full_name . '!')
+                ->line('Great news! Your appointment has been confirmed.')
+                ->line("**Service:** {$appointment->service->name}")
+                ->line("**Doctor:** Dr. {$appointment->doctor->user->name}")
+                ->line("**Date:** {$date}")
+                ->line("**Time:** {$time}")
+                ->line('Please arrive a few minutes early. If you need to cancel or reschedule, contact us as soon as possible.')
+                ->line('We look forward to seeing you!');
+        }
+
+        return (new MailMessage)
+            ->subject('Appointment Confirmed')
+            ->greeting('Hello, Dr. ' . $appointment->doctor->user->name . '!')
+            ->line('The following appointment has been confirmed.')
+            ->line("**Patient:** {$appointment->patient->full_name}")
+            ->line("**Service:** {$appointment->service->name}")
+            ->line("**Date:** {$date}")
+            ->line("**Time:** {$time}")
+            ->action('View Appointment', url('/appointments/' . $appointment->id))
+            ->line('Please prepare accordingly.');
     }
 
     public function toArray(object $notifiable): array
     {
+        $appointment = $this->appointment;
+
         return [
-            'appointment_id'   => $this->appointment->id,
-            'patient_name'     => $this->appointment->patient->full_name,
-            'service'          => $this->appointment->service->name,
-            'appointment_date' => $this->appointment->appointment_date->toDateString(),
-            'start_time'       => $this->appointment->start_time,
-            'end_time'         => $this->appointment->end_time,
-            'message'          => "Appointment confirmed for {$this->appointment->patient->full_name} on {$this->appointment->appointment_date->toDateString()} at {$this->appointment->start_time}.",
+            'type'             => 'appointment_confirmed',
+            'appointment_id'   => $appointment->id,
+            'patient_name'     => $appointment->patient->full_name,
+            'doctor_name'      => 'Dr. ' . $appointment->doctor->user->name,
+            'service'          => $appointment->service->name,
+            'appointment_date' => $appointment->appointment_date->toDateString(),
+            'start_time'       => $appointment->start_time,
+            'message'          => $this->recipientType === 'patient'
+                ? "Your appointment for {$appointment->service->name} on {$appointment->appointment_date->format('F j, Y')} at {$appointment->start_time} has been confirmed."
+                : "Appointment confirmed: {$appointment->patient->full_name} on {$appointment->appointment_date->format('F j, Y')} at {$appointment->start_time}.",
         ];
     }
 }

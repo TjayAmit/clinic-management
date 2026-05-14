@@ -7,12 +7,14 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'patient_id', 'dentist_id', 'service_id', 'appointment_date',
+    'patient_id', 'doctor_id', 'service_id', 'appointment_date',
     'start_time', 'end_time', 'status', 'notes', 'created_by',
+    'is_walk_in', 'teeth_involved', 'parent_appointment_id',
 ])]
 class Appointment extends Model
 {
@@ -22,7 +24,9 @@ class Appointment extends Model
     {
         return [
             'appointment_date' => 'date',
-            'status' => AppointmentStatus::class,
+            'status'           => AppointmentStatus::class,
+            'is_walk_in'       => 'boolean',
+            'teeth_involved'   => 'array',
         ];
     }
 
@@ -31,9 +35,9 @@ class Appointment extends Model
         return $this->belongsTo(Patient::class);
     }
 
-    public function dentist(): BelongsTo
+    public function doctor(): BelongsTo
     {
-        return $this->belongsTo(Doctor::class, 'dentist_id');
+        return $this->belongsTo(Doctor::class);
     }
 
     public function service(): BelongsTo
@@ -49,5 +53,20 @@ class Appointment extends Model
     public function visit(): HasOne
     {
         return $this->hasOne(PatientVisit::class);
+    }
+
+    public function queue(): HasOne
+    {
+        return $this->hasOne(Queue::class);
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Appointment::class, 'parent_appointment_id');
+    }
+
+    public function followUps(): HasMany
+    {
+        return $this->hasMany(Appointment::class, 'parent_appointment_id');
     }
 }

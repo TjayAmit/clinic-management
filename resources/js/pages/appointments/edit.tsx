@@ -2,6 +2,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { useEffect } from 'react';
 import InputError from '@/components/input-error';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -39,6 +40,7 @@ export default function Edit({ appointment, patients, doctors, services }: Appoi
         start_time: appointment?.start_time ?? '',
         end_time: appointment?.end_time ?? '',
         notes: appointment?.notes ?? '',
+        is_walk_in: appointment?.is_walk_in ?? false,
     });
 
     useEffect(() => {
@@ -185,6 +187,15 @@ export default function Edit({ appointment, patients, doctors, services }: Appoi
                                     rows={4}
                                 />
                                 <InputError message={errors.notes} />
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    id="is_walk_in"
+                                    checked={data.is_walk_in}
+                                    onCheckedChange={(v) => setData('is_walk_in', Boolean(v))}
+                                />
+                                <Label htmlFor="is_walk_in">Walk-in patient</Label>
                             </div>
 
                             <div className="mt-auto flex items-center gap-3 pt-1">

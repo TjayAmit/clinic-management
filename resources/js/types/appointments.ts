@@ -1,4 +1,12 @@
-export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
+export type AppointmentStatus =
+    | 'pending'
+    | 'confirmed'
+    | 'in_queue'
+    | 'in_progress'
+    | 'completed'
+    | 'needs_follow_up'
+    | 'cancelled'
+    | 'no_show';
 
 export interface Appointment {
     id: number;
@@ -10,13 +18,19 @@ export interface Appointment {
     end_time: string;
     status: AppointmentStatus;
     notes: string | null;
+    is_walk_in: boolean;
+    teeth_involved: number[] | null;
+    parent_appointment_id: number | null;
     created_by: number | null;
     created_at: string;
     updated_at: string;
     patient?: { id: number; first_name: string; last_name: string; full_name: string; phone: string | null };
     dentist?: { id: number; specialization: string; user?: { id: number; name: string } };
-    service?: { id: number; name: string; duration_minutes: number; price: string };
+    service?: { id: number; name: string; category: string; duration_minutes: number; price: string };
     visit?: { id: number; medical_record?: { id: number } | null } | null;
+    parent?: Appointment | null;
+    followUps?: Appointment[];
+    queue?: { id: number; position: number; status: string } | null;
 }
 
 export interface DoctorOption {
@@ -36,6 +50,7 @@ export interface PatientOption {
 export interface ServiceOption {
     id: number;
     name: string;
+    category: string;
     duration_minutes: number;
     price: string;
 }

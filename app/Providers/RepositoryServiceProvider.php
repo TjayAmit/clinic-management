@@ -10,6 +10,7 @@ use App\Repositories\Eloquent\{
     EloquentFeatureRepository,
     EloquentPatientRepository,
     EloquentPatientVisitRepository,
+    EloquentQueueRepository,
     EloquentServiceRepository,
     EloquentUserRepository,
 };
@@ -22,6 +23,7 @@ use App\Repositories\{
     FeatureRepository,
     PatientRepository,
     PatientVisitRepository,
+    QueueRepository,
     ServiceRepository,
     UserRepository,
 };
@@ -75,6 +77,11 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(
             FeatureRepository::class,
             EloquentFeatureRepository::class
+        );
+
+        $this->app->bind(
+            QueueRepository::class,
+            EloquentQueueRepository::class
         );
     }
 }

@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Notification;
 uses(RefreshDatabase::class);
 
 test('createFromRequest calls repository create once', function () {
+    Notification::fake();
+
     $repository = mock(AppointmentRepository::class);
     $service = new AppointmentService($repository);
     $request = Request::create('/', 'POST', [

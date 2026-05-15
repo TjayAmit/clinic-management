@@ -64,7 +64,7 @@ class UserFactory extends Factory
     public function staff(): static
     {
         return $this->afterCreating(function (User $user) {
-            $user->assignRole('staff');
+            $user->assignRole('Staff');
         });
     }
 
@@ -74,7 +74,7 @@ class UserFactory extends Factory
     public function doctor(): static
     {
         return $this->afterCreating(function (User $user) {
-            $user->assignRole('doctor');
+            $user->assignRole('Doctor');
         });
     }
 }

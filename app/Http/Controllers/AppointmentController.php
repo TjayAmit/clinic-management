@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AppointmentRequest;
+use App\Http\Requests\FollowUpAppointmentRequest;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\Patient;
@@ -165,7 +166,7 @@ class AppointmentController extends Controller
         return redirect()->back()->with('success', 'Appointment marked as no show.');
     }
 
-    public function createFollowUp(AppointmentRequest $request, Appointment $appointment)
+    public function createFollowUp(FollowUpAppointmentRequest $request, Appointment $appointment)
     {
         $followUp = $this->service->createFollowUp($appointment, $request);
 

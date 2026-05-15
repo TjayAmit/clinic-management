@@ -3,13 +3,12 @@
 use App\Enums\ServiceCategory;
 use App\Models\Service;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $staffUser = User::factory()->staff()->create();
-    $this->actingAs($staffUser);
+    $this->seed(\Database\Seeders\RoleAndPermissionSeeder::class);
+    $admin = User::factory()->create();
+    $admin->assignRole('Admin');
+    $this->actingAs($admin);
 });
 
 test('staff can list services', function () {
@@ -20,11 +19,11 @@ test('staff can list services', function () {
     $response->assertStatus(200);
 });
 
-test('staff can create single-visit service', function () {
+test('admin can create single-visit service', function () {
     $response = $this->post('/services', [
         'name' => 'Dental Cleaning',
         'description' => 'Routine cleaning',
-        'duration' => 30,
+        'duration_minutes' => 30,
         'category' => ServiceCategory::SingleVisit->value,
         'price' => 50.00,
     ]);
@@ -36,11 +35,11 @@ test('staff can create single-visit service', function () {
     ]);
 });
 
-test('staff can create long-term service', function () {
+test('admin can create long-term service', function () {
     $response = $this->post('/services', [
         'name' => 'Orthodontic Treatment',
         'description' => 'Braces and alignment',
-        'duration' => 60,
+        'duration_minutes' => 60,
         'category' => ServiceCategory::LongTerm->value,
         'price' => 5000.00,
     ]);
@@ -52,14 +51,14 @@ test('staff can create long-term service', function () {
     ]);
 });
 
-test('staff can deactivate a service', function () {
+test('admin can deactivate a service', function () {
     $service = Service::factory()->create(['is_active' => true]);
 
     $response = $this->put("/services/{$service->id}", [
         'name' => $service->name,
         'description' => $service->description,
-        'duration' => $service->duration,
-        'category' => $service->category,
+        'duration_minutes' => $service->duration_minutes,
+        'category' => $service->category->value,
         'price' => $service->price,
         'is_active' => false,
     ]);

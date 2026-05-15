@@ -6,11 +6,9 @@ use App\Models\Patient;
 use App\Models\Queue;
 use App\Models\Service;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    $this->seed(\Database\Seeders\RoleAndPermissionSeeder::class);
     $staffUser = User::factory()->staff()->create();
     $this->actingAs($staffUser);
 });
@@ -39,7 +37,7 @@ test('only one patient is in_progress per doctor at a time', function () {
     $this->patch("/queue/{$queue2->id}/call");
 
     $queue2->refresh();
-    expect($queue2->status)->toBe('in_progress');
+    expect($queue2->status->value)->toBe('in_progress');
 });
 
 test('queue resets daily no carryover', function () {

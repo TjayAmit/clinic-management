@@ -4,11 +4,9 @@ use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\Queue;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    $this->seed(\Database\Seeders\RoleAndPermissionSeeder::class);
     $staffUser = User::factory()->staff()->create();
     $this->actingAs($staffUser);
 });
@@ -76,7 +74,7 @@ test('auto-assigns position as next in sequence', function () {
 test('staff can call next patient', function () {
     $queue = Queue::factory()->create(['status' => 'waiting']);
 
-    $response = $this->patch("/queue/{$queue->id}/call");
+    $response = $this->from('/queue')->patch("/queue/{$queue->id}/call");
 
     $response->assertRedirect('/queue');
     $this->assertDatabaseHas('queues', [
@@ -88,7 +86,7 @@ test('staff can call next patient', function () {
 test('staff can complete queue entry', function () {
     $queue = Queue::factory()->create(['status' => 'in_progress']);
 
-    $response = $this->patch("/queue/{$queue->id}/complete");
+    $response = $this->from('/queue')->patch("/queue/{$queue->id}/complete");
 
     $response->assertRedirect('/queue');
     $this->assertDatabaseHas('queues', [
@@ -100,7 +98,7 @@ test('staff can complete queue entry', function () {
 test('staff can mark no-show', function () {
     $queue = Queue::factory()->create(['status' => 'waiting']);
 
-    $response = $this->patch("/queue/{$queue->id}/no-show");
+    $response = $this->from('/queue')->patch("/queue/{$queue->id}/no-show");
 
     $response->assertRedirect('/queue');
     $this->assertDatabaseHas('queues', [
@@ -112,7 +110,7 @@ test('staff can mark no-show', function () {
 test('staff can remove patient from queue', function () {
     $queue = Queue::factory()->create();
 
-    $response = $this->delete("/queue/{$queue->id}");
+    $response = $this->from('/queue')->delete("/queue/{$queue->id}");
 
     $response->assertRedirect('/queue');
     $this->assertDatabaseMissing('queues', ['id' => $queue->id]);

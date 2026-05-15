@@ -20,7 +20,7 @@ class Patient extends Model
 {
     use HasFactory, Notifiable, SoftDeletes;
 
-    public function routeNotificationForMail(): string
+    public function routeNotificationForMail(): ?string
     {
         return $this->email;
     }

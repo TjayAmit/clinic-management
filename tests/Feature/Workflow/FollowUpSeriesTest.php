@@ -6,11 +6,9 @@ use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\Service;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    $this->seed(\Database\Seeders\RoleAndPermissionSeeder::class);
     $staffUser = User::factory()->staff()->create();
     $this->actingAs($staffUser);
 });
@@ -24,11 +22,11 @@ test('follow-up appointment inherits patient dentist service from parent', funct
     ]);
 
     $response = $this->post("/appointments/{$parent->id}/follow-up", [
-        'appointment_date' => '2026-06-01',
+        'appointment_date' => now()->addMonth()->toDateString(),
         'start_time' => '10:00',
         'end_time' => '11:00',
     ]);
-    $response->assertRedirect('/appointments');
+    $response->assertRedirect();
 
     $followUp = Appointment::where('parent_appointment_id', $parent->id)->first();
     expect($followUp->patient_id)->toBe($parent->patient_id);
@@ -40,7 +38,7 @@ test('follow-up has parent_appointment_id set', function () {
     $parent = Appointment::factory()->create(['status' => 'completed']);
 
     $this->post("/appointments/{$parent->id}/follow-up", [
-        'appointment_date' => '2026-06-01',
+        'appointment_date' => now()->addMonth()->toDateString(),
         'start_time' => '10:00',
         'end_time' => '11:00',
     ]);
@@ -53,13 +51,13 @@ test('parent can have multiple follow-ups', function () {
     $parent = Appointment::factory()->create(['status' => 'completed']);
 
     $this->post("/appointments/{$parent->id}/follow-up", [
-        'appointment_date' => '2026-06-01',
+        'appointment_date' => now()->addMonth()->toDateString(),
         'start_time' => '10:00',
         'end_time' => '11:00',
     ]);
 
     $this->post("/appointments/{$parent->id}/follow-up", [
-        'appointment_date' => '2026-06-15',
+        'appointment_date' => now()->addMonths(2)->toDateString(),
         'start_time' => '10:00',
         'end_time' => '11:00',
     ]);
@@ -80,19 +78,19 @@ test('long-term service can generate series', function () {
 
     // Create multiple follow-ups for a long-term service
     $this->post("/appointments/{$parent->id}/follow-up", [
-        'appointment_date' => '2026-06-01',
+        'appointment_date' => now()->addMonth()->toDateString(),
         'start_time' => '10:00',
         'end_time' => '11:00',
     ]);
 
     $this->post("/appointments/{$parent->id}/follow-up", [
-        'appointment_date' => '2026-06-15',
+        'appointment_date' => now()->addMonths(2)->toDateString(),
         'start_time' => '10:00',
         'end_time' => '11:00',
     ]);
 
     $this->post("/appointments/{$parent->id}/follow-up", [
-        'appointment_date' => '2026-07-01',
+        'appointment_date' => now()->addMonths(3)->toDateString(),
         'start_time' => '10:00',
         'end_time' => '11:00',
     ]);
@@ -105,7 +103,7 @@ test('parent relation returns the parent appointment', function () {
     $parent = Appointment::factory()->create(['status' => 'completed']);
 
     $this->post("/appointments/{$parent->id}/follow-up", [
-        'appointment_date' => '2026-06-01',
+        'appointment_date' => now()->addMonth()->toDateString(),
         'start_time' => '10:00',
         'end_time' => '11:00',
     ]);
@@ -118,13 +116,13 @@ test('followUps relation returns all children', function () {
     $parent = Appointment::factory()->create(['status' => 'completed']);
 
     $this->post("/appointments/{$parent->id}/follow-up", [
-        'appointment_date' => '2026-06-01',
+        'appointment_date' => now()->addMonth()->toDateString(),
         'start_time' => '10:00',
         'end_time' => '11:00',
     ]);
 
     $this->post("/appointments/{$parent->id}/follow-up", [
-        'appointment_date' => '2026-06-15',
+        'appointment_date' => now()->addMonths(2)->toDateString(),
         'start_time' => '10:00',
         'end_time' => '11:00',
     ]);

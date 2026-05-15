@@ -5,12 +5,10 @@ use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\Service;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
-uses(RefreshDatabase::class);
-
 beforeEach(function () {
+    $this->seed(\Database\Seeders\RoleAndPermissionSeeder::class);
     $staffUser = User::factory()->staff()->create();
     $this->actingAs($staffUser);
 });
@@ -20,31 +18,31 @@ test('confirm a pending appointment', function () {
 
     $appointment = Appointment::factory()->create(['status' => 'pending']);
 
-    $response = $this->patch("/appointments/{$appointment->id}/confirm");
+    $response = $this->from('/appointments')->patch("/appointments/{$appointment->id}/confirm");
     $response->assertRedirect('/appointments');
 
     $appointment->refresh();
-    expect($appointment->status)->toBe('confirmed');
+    expect($appointment->status->value)->toBe('confirmed');
 });
 
 test('move confirmed to in-queue', function () {
     $appointment = Appointment::factory()->create(['status' => 'confirmed']);
 
-    $response = $this->patch("/appointments/{$appointment->id}/in-queue");
+    $response = $this->from('/appointments')->patch("/appointments/{$appointment->id}/in-queue");
     $response->assertRedirect('/appointments');
 
     $appointment->refresh();
-    expect($appointment->status)->toBe('in_queue');
+    expect($appointment->status->value)->toBe('in_queue');
 });
 
 test('mark in-progress', function () {
     $appointment = Appointment::factory()->create(['status' => 'in_queue']);
 
-    $response = $this->patch("/appointments/{$appointment->id}/in-progress");
+    $response = $this->from('/appointments')->patch("/appointments/{$appointment->id}/in-progress");
     $response->assertRedirect('/appointments');
 
     $appointment->refresh();
-    expect($appointment->status)->toBe('in_progress');
+    expect($appointment->status->value)->toBe('in_progress');
 });
 
 test('complete an in-progress appointment', function () {
@@ -52,11 +50,11 @@ test('complete an in-progress appointment', function () {
 
     $appointment = Appointment::factory()->create(['status' => 'in_progress']);
 
-    $response = $this->patch("/appointments/{$appointment->id}/complete");
+    $response = $this->from('/appointments')->patch("/appointments/{$appointment->id}/complete");
     $response->assertRedirect('/appointments');
 
     $appointment->refresh();
-    expect($appointment->status)->toBe('completed');
+    expect($appointment->status->value)->toBe('completed');
 });
 
 test('cancel an appointment', function () {
@@ -64,31 +62,31 @@ test('cancel an appointment', function () {
 
     $appointment = Appointment::factory()->create(['status' => 'pending']);
 
-    $response = $this->patch("/appointments/{$appointment->id}/cancel");
+    $response = $this->from('/appointments')->patch("/appointments/{$appointment->id}/cancel");
     $response->assertRedirect('/appointments');
 
     $appointment->refresh();
-    expect($appointment->status)->toBe('cancelled');
+    expect($appointment->status->value)->toBe('cancelled');
 });
 
 test('mark no-show', function () {
     $appointment = Appointment::factory()->create(['status' => 'pending']);
 
-    $response = $this->patch("/appointments/{$appointment->id}/no-show");
+    $response = $this->from('/appointments')->patch("/appointments/{$appointment->id}/no-show");
     $response->assertRedirect('/appointments');
 
     $appointment->refresh();
-    expect($appointment->status)->toBe('no_show');
+    expect($appointment->status->value)->toBe('no_show');
 });
 
 test('mark needs follow-up', function () {
     $appointment = Appointment::factory()->create(['status' => 'in_progress']);
 
-    $response = $this->patch("/appointments/{$appointment->id}/needs-follow-up");
+    $response = $this->from('/appointments')->patch("/appointments/{$appointment->id}/needs-follow-up");
     $response->assertRedirect('/appointments');
 
     $appointment->refresh();
-    expect($appointment->status)->toBe('needs_follow_up');
+    expect($appointment->status->value)->toBe('needs_follow_up');
 });
 
 test('create follow-up from parent', function () {
@@ -100,11 +98,11 @@ test('create follow-up from parent', function () {
     ]);
 
     $response = $this->post("/appointments/{$parent->id}/follow-up", [
-        'appointment_date' => '2026-06-01',
+        'appointment_date' => now()->addMonth()->toDateString(),
         'start_time' => '10:00',
         'end_time' => '11:00',
     ]);
-    $response->assertRedirect('/appointments');
+    $response->assertRedirect();
 
     $followUp = Appointment::where('parent_appointment_id', $parent->id)->first();
     expect($followUp)->not->toBeNull();

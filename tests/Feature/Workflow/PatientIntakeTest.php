@@ -6,12 +6,11 @@ use App\Models\Patient;
 use App\Models\Queue;
 use App\Models\Service;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
-uses(RefreshDatabase::class);
-
 beforeEach(function () {
+    Notification::fake();
+    $this->seed(\Database\Seeders\RoleAndPermissionSeeder::class);
     $staffUser = User::factory()->staff()->create();
     $this->actingAs($staffUser);
 });
@@ -52,19 +51,19 @@ test('Scenario A: Existing Patient Walk-in', function () {
     expect($queue->position)->toBe(1);
 
     // 5. Call patient
-    $response = $this->patch("/queue/{$queue->id}/call");
+    $response = $this->from('/queue')->patch("/queue/{$queue->id}/call");
     $response->assertRedirect('/queue');
     $queue->refresh();
-    expect($queue->status)->toBe('in_progress');
+    expect($queue->status->value)->toBe('in_progress');
 
     // 6. Complete
-    $this->patch("/queue/{$queue->id}/complete");
-    $this->patch("/appointments/{$appointment->id}/complete");
+    $this->from('/queue')->patch("/queue/{$queue->id}/complete");
+    $this->from('/appointments')->patch("/appointments/{$appointment->id}/complete");
 
     $queue->refresh();
     $appointment->refresh();
-    expect($queue->status)->toBe('completed');
-    expect($appointment->status)->toBe('completed');
+    expect($queue->status->value)->toBe('completed');
+    expect($appointment->status->value)->toBe('completed');
 });
 
 test('Scenario B: New Patient Walk-in', function () {
@@ -111,15 +110,15 @@ test('Scenario B: New Patient Walk-in', function () {
     $response->assertStatus(302);
 
     $queue = Queue::where('appointment_id', $appointment->id)->first();
-    expect($queue->status)->toBe('waiting');
+    expect($queue->status->value)->toBe('waiting');
 
     // 5. Complete intake (same as Scenario A steps 5-6)
-    $this->patch("/queue/{$queue->id}/call");
-    $this->patch("/queue/{$queue->id}/complete");
-    $this->patch("/appointments/{$appointment->id}/complete");
+    $this->from('/queue')->patch("/queue/{$queue->id}/call");
+    $this->from('/queue')->patch("/queue/{$queue->id}/complete");
+    $this->from('/appointments')->patch("/appointments/{$appointment->id}/complete");
 
     $queue->refresh();
     $appointment->refresh();
-    expect($queue->status)->toBe('completed');
-    expect($appointment->status)->toBe('completed');
+    expect($queue->status->value)->toBe('completed');
+    expect($appointment->status->value)->toBe('completed');
 });

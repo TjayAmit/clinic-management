@@ -5,11 +5,9 @@ use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\Service;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    $this->seed(\Database\Seeders\RoleAndPermissionSeeder::class);
     $staffUser = User::factory()->staff()->create();
     $this->actingAs($staffUser);
 });
@@ -65,12 +63,13 @@ test('staff can create a scheduled appointment', function () {
     $patient = Patient::factory()->create();
     $doctor = Doctor::factory()->create();
     $service = Service::factory()->create();
+    $futureDate = now()->addDay()->toDateString();
 
     $response = $this->post('/appointments', [
         'patient_id' => $patient->id,
         'doctor_id' => $doctor->id,
         'service_id' => $service->id,
-        'appointment_date' => '2026-05-14',
+        'appointment_date' => $futureDate,
         'start_time' => '09:00',
         'end_time' => '10:00',
         'is_walk_in' => false,
@@ -87,12 +86,13 @@ test('staff can create a walk-in appointment', function () {
     $patient = Patient::factory()->create();
     $doctor = Doctor::factory()->create();
     $service = Service::factory()->create();
+    $futureDate = now()->addDay()->toDateString();
 
     $response = $this->post('/appointments', [
         'patient_id' => $patient->id,
         'doctor_id' => $doctor->id,
         'service_id' => $service->id,
-        'appointment_date' => '2026-05-14',
+        'appointment_date' => $futureDate,
         'start_time' => '09:00',
         'end_time' => '10:00',
         'is_walk_in' => true,
@@ -109,10 +109,11 @@ test('conflict detection blocks double-booking', function () {
     $patient = Patient::factory()->create();
     $doctor = Doctor::factory()->create();
     $service = Service::factory()->create();
+    $futureDate = now()->addDay()->toDateString();
 
     Appointment::factory()->create([
         'doctor_id' => $doctor->id,
-        'appointment_date' => '2026-05-14',
+        'appointment_date' => $futureDate,
         'start_time' => '09:00',
         'end_time' => '10:00',
     ]);
@@ -121,7 +122,7 @@ test('conflict detection blocks double-booking', function () {
         'patient_id' => $patient->id,
         'doctor_id' => $doctor->id,
         'service_id' => $service->id,
-        'appointment_date' => '2026-05-14',
+        'appointment_date' => $futureDate,
         'start_time' => '09:30',
         'end_time' => '10:30',
     ]);
@@ -136,15 +137,19 @@ test('staff can update appointment', function () {
         'patient_id' => $appointment->patient_id,
         'doctor_id' => $appointment->doctor_id,
         'service_id' => $appointment->service_id,
-        'appointment_date' => '2026-05-15',
+        'appointment_date' => now()->addDay()->toDateString(),
         'start_time' => '11:00',
         'end_time' => '12:00',
     ]);
 
-    $response->assertRedirect('/appointments');
+    $response->assertRedirect("/appointments/{$appointment->id}");
 });
 
-test('staff can delete appointment', function () {
+test('admin can delete appointment', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('Admin');
+    $this->actingAs($admin);
+
     $appointment = Appointment::factory()->create();
 
     $response = $this->delete("/appointments/{$appointment->id}");

@@ -9,7 +9,7 @@ class EloquentQueueRepository implements QueueRepository
 {
     public function getByDate(string $date): iterable
     {
-        return Queue::with(['appointment.patient', 'appointment.dentist.user', 'appointment.service'])
+        return Queue::with(['appointment.patient', 'appointment.doctor.user', 'appointment.service'])
             ->whereDate('queue_date', $date)
             ->orderBy('position')
             ->get();

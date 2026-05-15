@@ -21,6 +21,8 @@ readonly class AppointmentData
         public bool $is_walk_in = false,
         public ?array $teeth_involved = null,
         public ?int $parent_appointment_id = null,
+        public ?int $series_total = null,
+        public ?int $series_position = null,
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -38,6 +40,8 @@ readonly class AppointmentData
             is_walk_in: $request->boolean('is_walk_in', false),
             teeth_involved: $request->input('teeth_involved'),
             parent_appointment_id: $request->input('parent_appointment_id'),
+            series_total: $request->input('series_total') !== null ? (int) $request->input('series_total') : null,
+            series_position: $request->input('series_position') !== null ? (int) $request->input('series_position') : null,
         );
     }
 
@@ -58,6 +62,8 @@ readonly class AppointmentData
             is_walk_in: $appointment->is_walk_in,
             teeth_involved: $appointment->teeth_involved,
             parent_appointment_id: $appointment->parent_appointment_id,
+            series_total: $appointment->series_total,
+            series_position: $appointment->series_position,
         );
     }
 

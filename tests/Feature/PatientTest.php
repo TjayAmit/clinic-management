@@ -3,11 +3,9 @@
 use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    $this->seed(\Database\Seeders\RoleAndPermissionSeeder::class);
     $staffUser = User::factory()->staff()->create();
     $this->actingAs($staffUser);
 });
@@ -49,7 +47,7 @@ test('validation fails without required fields', function () {
         'first_name' => 'John',
     ]);
 
-    $response->assertSessionHasErrors(['last_name', 'email']);
+    $response->assertSessionHasErrors(['last_name', 'date_of_birth', 'gender', 'phone']);
 });
 
 test('staff can update a patient', function () {
@@ -65,14 +63,18 @@ test('staff can update a patient', function () {
         'address' => '456 Oak Ave',
     ]);
 
-    $response->assertRedirect('/patients');
+    $response->assertRedirect("/patients/{$patient->id}");
     $this->assertDatabaseHas('patients', [
         'id' => $patient->id,
         'first_name' => 'Jane',
     ]);
 });
 
-test('staff can delete a patient', function () {
+test('admin can delete a patient', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('Admin');
+    $this->actingAs($admin);
+
     $patient = Patient::factory()->create();
 
     $response = $this->delete("/patients/{$patient->id}");

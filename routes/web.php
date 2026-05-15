@@ -28,15 +28,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     // Doctors
-    Route::resource('doctors', DoctorController::class)->middleware([
-        'index'   => 'can:doctors.view',
-        'show'    => 'can:doctors.view',
-        'create'  => 'can:doctors.create',
-        'store'   => 'can:doctors.create',
-        'edit'    => 'can:doctors.edit',
-        'update'  => 'can:doctors.edit',
-        'destroy' => 'can:doctors.delete',
-    ]);
+    Route::resource('doctors', DoctorController::class)
+        ->middlewareFor(['index', 'show'], 'can:doctors.view')
+        ->middlewareFor(['create', 'store'], 'can:doctors.create')
+        ->middlewareFor(['edit', 'update'], 'can:doctors.edit')
+        ->middlewareFor('destroy', 'can:doctors.delete');
     Route::get('doctors/{doctor}/calendar', DoctorCalendarController::class)
         ->middleware('can:doctors.view')
         ->name('doctors.calendar');
@@ -56,40 +52,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('daily-board', DailyBoardController::class)->name('daily-board');
 
     // Patients
-    Route::resource('patients', PatientController::class)->middleware([
-        'index'   => 'can:patients.view',
-        'show'    => 'can:patients.view',
-        'create'  => 'can:patients.create',
-        'store'   => 'can:patients.create',
-        'edit'    => 'can:patients.edit',
-        'update'  => 'can:patients.edit',
-        'destroy' => 'can:patients.delete',
-    ]);
+    Route::resource('patients', PatientController::class)
+        ->middlewareFor(['index', 'show'], 'can:patients.view')
+        ->middlewareFor(['create', 'store'], 'can:patients.create')
+        ->middlewareFor(['edit', 'update'], 'can:patients.edit')
+        ->middlewareFor('destroy', 'can:patients.delete');
     Route::patch('patients/{patient}/toggle-regular', [PatientController::class, 'toggleRegular'])
         ->middleware('can:patients.edit')
         ->name('patients.toggle-regular');
 
     // Services
-    Route::resource('services', ServiceController::class)->middleware([
-        'index'   => 'can:services.view',
-        'show'    => 'can:services.view',
-        'create'  => 'can:services.create',
-        'store'   => 'can:services.create',
-        'edit'    => 'can:services.edit',
-        'update'  => 'can:services.edit',
-        'destroy' => 'can:services.delete',
-    ]);
+    Route::resource('services', ServiceController::class)
+        ->middlewareFor(['index', 'show'], 'can:services.view')
+        ->middlewareFor(['create', 'store'], 'can:services.create')
+        ->middlewareFor(['edit', 'update'], 'can:services.edit')
+        ->middlewareFor('destroy', 'can:services.delete');
 
     // Features
-    Route::resource('features', FeatureController::class)->middleware([
-        'index'   => 'can:features.view',
-        'show'    => 'can:features.view',
-        'create'  => 'can:features.create',
-        'store'   => 'can:features.create',
-        'edit'    => 'can:features.edit',
-        'update'  => 'can:features.edit',
-        'destroy' => 'can:features.delete',
-    ]);
+    Route::resource('features', FeatureController::class)
+        ->middlewareFor(['index', 'show'], 'can:features.view')
+        ->middlewareFor(['create', 'store'], 'can:features.create')
+        ->middlewareFor(['edit', 'update'], 'can:features.edit')
+        ->middlewareFor('destroy', 'can:features.delete');
     Route::patch('features/{feature}/enable', [FeatureController::class, 'enable'])
         ->middleware('can:features.edit')
         ->name('features.enable');
@@ -98,15 +82,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('features.disable');
 
     // Appointments
-    Route::resource('appointments', AppointmentController::class)->middleware([
-        'index'   => 'can:appointments.view',
-        'show'    => 'can:appointments.view',
-        'create'  => 'can:appointments.create',
-        'store'   => 'can:appointments.create',
-        'edit'    => 'can:appointments.edit',
-        'update'  => 'can:appointments.edit',
-        'destroy' => 'can:appointments.delete',
-    ]);
+    Route::resource('appointments', AppointmentController::class)
+        ->middlewareFor(['index', 'show'], 'can:appointments.view')
+        ->middlewareFor(['create', 'store'], 'can:appointments.create')
+        ->middlewareFor(['edit', 'update'], 'can:appointments.edit')
+        ->middlewareFor('destroy', 'can:appointments.delete');
     Route::patch('appointments/{appointment}/confirm', [AppointmentController::class, 'confirm'])
         ->middleware('can:appointments.confirm')
         ->name('appointments.confirm');
@@ -150,26 +130,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('patient-visits/{patientVisit}/check-out', [PatientVisitController::class, 'checkOut'])->name('patient-visits.check-out');
 
     // Dental Records
-    Route::resource('dental-records', DentalRecordController::class)->middleware([
-        'index'   => 'can:medical_records.view',
-        'show'    => 'can:medical_records.view',
-        'create'  => 'can:medical_records.create',
-        'store'   => 'can:medical_records.create',
-        'edit'    => 'can:medical_records.edit',
-        'update'  => 'can:medical_records.edit',
-        'destroy' => 'can:medical_records.delete',
-    ]);
+    Route::resource('dental-records', DentalRecordController::class)
+        ->middlewareFor(['index', 'show'], 'can:medical_records.view')
+        ->middlewareFor(['create', 'store'], 'can:medical_records.create')
+        ->middlewareFor(['edit', 'update'], 'can:medical_records.edit')
+        ->middlewareFor('destroy', 'can:medical_records.delete');
 
     // Users
-    Route::resource('users', UserController::class)->middleware([
-        'index'   => 'can:users.view',
-        'show'    => 'can:users.view',
-        'create'  => 'can:users.create',
-        'store'   => 'can:users.create',
-        'edit'    => 'can:users.edit',
-        'update'  => 'can:users.edit',
-        'destroy' => 'can:users.delete',
-    ]);
+    Route::resource('users', UserController::class)
+        ->middlewareFor(['index', 'show'], 'can:users.view')
+        ->middlewareFor(['create', 'store'], 'can:users.create')
+        ->middlewareFor(['edit', 'update'], 'can:users.edit')
+        ->middlewareFor('destroy', 'can:users.delete');
 
     // Roles
     Route::resource('roles', RoleController::class);

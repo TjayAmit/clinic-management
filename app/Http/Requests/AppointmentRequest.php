@@ -25,6 +25,8 @@ class AppointmentRequest extends FormRequest
             'teeth_involved'        => ['nullable', 'array'],
             'teeth_involved.*'      => ['integer', 'between:1,32'],
             'parent_appointment_id' => ['nullable', 'exists:appointments,id'],
+            'series_total'          => ['nullable', 'integer', 'min:1'],
+            'series_position'       => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

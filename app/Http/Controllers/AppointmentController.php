@@ -20,6 +20,7 @@ class AppointmentController extends Controller
     public function index(Request $request)
     {
         $appointments = Appointment::with(['patient', 'doctor.user', 'service'])
+            ->forUser(auth()->user())
             ->when($request->input('date'), fn ($q, $date) => $q->whereDate('appointment_date', $date))
             ->when($request->input('doctor_id'), fn ($q, $id) => $q->where('doctor_id', $id))
             ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status))

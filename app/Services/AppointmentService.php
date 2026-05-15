@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\DTOs\AppointmentData;
 use App\Models\Appointment;
+use App\Models\DoctorSchedule;
 use App\Notifications\AppointmentBooked;
 use App\Notifications\AppointmentCancelled;
 use App\Notifications\AppointmentCompleted;
@@ -11,6 +12,7 @@ use App\Notifications\AppointmentConfirmed;
 use App\Repositories\AppointmentRepository;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class AppointmentService
@@ -59,8 +61,37 @@ class AppointmentService
         return $this->repository->checkConflict($doctorId, $date, $start, $end, $excludeId);
     }
 
+    private function assertDoctorAvailable(int $doctorId, string $appointmentDate): void
+    {
+        // Only enforce schedule restrictions when the doctor has schedules configured.
+        // If no schedules are defined yet, we treat the doctor as available everywhere.
+        $doctorHasSchedules = DoctorSchedule::where('doctor_id', $doctorId)->exists();
+
+        if (! $doctorHasSchedules) {
+            return;
+        }
+
+        $dayOfWeek = Carbon::parse($appointmentDate)->dayOfWeek;
+
+        $hasSchedule = DoctorSchedule::where('doctor_id', $doctorId)
+            ->where('day_of_week', $dayOfWeek)
+            ->where('is_available', true)
+            ->exists();
+
+        if (! $hasSchedule) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'appointment_date' => 'Doctor is not available on this day.',
+            ]);
+        }
+    }
+
     public function createFromRequest(Request $request): Appointment
     {
+        $this->assertDoctorAvailable(
+            (int) $request->input('doctor_id'),
+            $request->input('appointment_date'),
+        );
+
         $model = null;
         $dto = null;
 
@@ -80,6 +111,11 @@ class AppointmentService
 
     public function updateFromRequest(int $id, Request $request): Appointment
     {
+        $this->assertDoctorAvailable(
+            (int) $request->input('doctor_id'),
+            $request->input('appointment_date'),
+        );
+
         $model = $this->repository->findById($id);
         $oldData = $model->getOriginal();
         $dto = null;

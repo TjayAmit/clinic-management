@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\AppointmentStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'patient_id', 'doctor_id', 'service_id', 'appointment_date',
     'start_time', 'end_time', 'status', 'notes', 'created_by',
     'is_walk_in', 'teeth_involved', 'parent_appointment_id',
+    'series_total', 'series_position',
 ])]
 class Appointment extends Model
 {
@@ -27,6 +29,8 @@ class Appointment extends Model
             'status'           => AppointmentStatus::class,
             'is_walk_in'       => 'boolean',
             'teeth_involved'   => 'array',
+            'series_total'     => 'integer',
+            'series_position'  => 'integer',
         ];
     }
 
@@ -68,5 +72,14 @@ class Appointment extends Model
     public function followUps(): HasMany
     {
         return $this->hasMany(Appointment::class, 'parent_appointment_id');
+    }
+
+    public function scopeForUser(Builder $query, User $user): Builder
+    {
+        if ($user->hasRole('Doctor')) {
+            return $query->whereHas('doctor', fn ($q) => $q->where('user_id', $user->id));
+        }
+
+        return $query;
     }
 }

@@ -17,9 +17,10 @@ class UserRequest extends FormRequest
         $userId = $this->route('user')?->id;
 
         return [
-            'name' => 'required|string|max:255',
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
+            'name'     => 'required|string|max:255',
+            'email'    => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
             'password' => $userId ? 'nullable|string|min:8' : 'required|string|min:8',
+            'role'     => 'required|string|in:Admin,Doctor,Staff',
         ];
     }
 }

@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PatientVisitRequest;
+use App\Models\Appointment;
+use App\Models\Doctor;
+use App\Models\Patient;
 use App\Models\PatientVisit;
 use App\Services\PatientVisitService;
 use Illuminate\Http\Request;
@@ -30,6 +33,25 @@ class PatientVisitController extends Controller
         ]);
     }
 
+    public function create(Request $request)
+    {
+        $appointmentId = $request->integer('appointment_id') ?: null;
+        $preselectedAppointment = $appointmentId
+            ? Appointment::with(['patient', 'doctor.user', 'service'])->find($appointmentId)
+            : null;
+
+        return Inertia::render('patientVisits/create', [
+            'patients'               => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone']),
+            'doctors'                => Doctor::with('user')->where('is_active', true)->get(['id', 'user_id', 'specialization']),
+            'appointments'           => Appointment::with(['patient', 'doctor.user', 'service'])
+                ->whereNotIn('status', ['cancelled', 'no_show', 'completed'])
+                ->orderBy('appointment_date')
+                ->orderBy('start_time')
+                ->get(),
+            'preselectedAppointment' => $preselectedAppointment,
+        ]);
+    }
+
     public function store(PatientVisitRequest $request)
     {
         $visit = $this->service->createFromRequest($request);
@@ -43,6 +65,22 @@ class PatientVisitController extends Controller
 
         return Inertia::render('patientVisits/show', [
             'visit' => $patientVisit,
+        ]);
+    }
+
+    public function edit(PatientVisit $patientVisit)
+    {
+        $patientVisit->load(['patient', 'doctor.user', 'appointment.service']);
+
+        return Inertia::render('patientVisits/edit', [
+            'visit'        => $patientVisit,
+            'patients'     => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone']),
+            'doctors'      => Doctor::with('user')->where('is_active', true)->get(['id', 'user_id', 'specialization']),
+            'appointments' => Appointment::with(['patient', 'doctor.user', 'service'])
+                ->whereNotIn('status', ['cancelled', 'no_show'])
+                ->orderBy('appointment_date')
+                ->orderBy('start_time')
+                ->get(),
         ]);
     }
 

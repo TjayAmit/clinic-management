@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -10,7 +11,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::query();
+        $query = User::with('roles');
 
         if ($request->has('search')) {
             $query->where('name', 'like', '%'.$request->search.'%')
@@ -18,35 +19,37 @@ class UserController extends Controller
         }
 
         return Inertia::render('users/index', [
-            'data' => $query->latest()->paginate(10)->withQueryString(),
+            'data'    => $query->latest()->paginate(10)->withQueryString(),
             'filters' => $request->only(['search']),
         ]);
     }
 
     public function create()
     {
-        return Inertia::render('users/create');
+        return Inertia::render('users/create', [
+            'roles' => ['Admin', 'Doctor', 'Staff'],
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(UserRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8',
-        ]);
+        $validated = $request->validated();
 
-        User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
+        $user = User::create([
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
             'password' => bcrypt($validated['password']),
         ]);
+
+        $user->syncRoles($validated['role']);
 
         return redirect()->route('users.index')->with('success', 'User created successfully');
     }
 
     public function show(User $user)
     {
+        $user->load('roles');
+
         return Inertia::render('users/show', [
             'user' => $user,
         ]);
@@ -54,27 +57,28 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
+        $user->load('roles');
+
         return Inertia::render('users/edit', [
-            'user' => $user,
+            'user'  => $user,
+            'roles' => ['Admin', 'Doctor', 'Staff'],
         ]);
     }
 
-    public function update(Request $request, User $user)
+    public function update(UserRequest $request, User $user)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
-            'password' => 'nullable|string|min:8',
-        ]);
+        $validated = $request->validated();
 
         $user->update([
-            'name' => $validated['name'],
+            'name'  => $validated['name'],
             'email' => $validated['email'],
         ]);
 
         if (! empty($validated['password'])) {
             $user->update(['password' => bcrypt($validated['password'])]);
         }
+
+        $user->syncRoles($validated['role']);
 
         return redirect()->route('users.index')->with('success', 'User updated successfully');
     }

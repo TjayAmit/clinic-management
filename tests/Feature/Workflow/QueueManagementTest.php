@@ -6,9 +6,10 @@ use App\Models\Patient;
 use App\Models\Queue;
 use App\Models\Service;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 
 beforeEach(function () {
-    $this->seed(\Database\Seeders\RoleAndPermissionSeeder::class);
+    $this->seed(RoleAndPermissionSeeder::class);
     $staffUser = User::factory()->staff()->create();
     $this->actingAs($staffUser);
 });

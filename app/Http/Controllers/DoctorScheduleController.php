@@ -19,7 +19,7 @@ class DoctorScheduleController extends Controller
         $schedules = $this->service->getByDoctor($doctor->id);
 
         return Inertia::render('doctorSchedules/index', [
-            'doctor'    => $doctor->load('user'),
+            'doctor' => $doctor->load('user'),
             'schedules' => $schedules,
         ]);
     }

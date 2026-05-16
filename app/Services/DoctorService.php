@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\DTOs\DoctorData;
 use App\Models\Doctor;
+use App\Models\User;
 use App\Repositories\DoctorRepository;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class DoctorService
 {
@@ -49,7 +51,7 @@ class DoctorService
             // Create user account with generated password
             // TODO: In the future, implement proper password system and send credentials via email
             $password = $this->generateRandomPassword();
-            $user = \App\Models\User::create([
+            $user = User::create([
                 'name' => $request->input('name'),
                 'email' => $request->input('email'),
                 'password' => bcrypt($password),
@@ -68,7 +70,7 @@ class DoctorService
 
     private function generateRandomPassword(): string
     {
-        return \Illuminate\Support\Str::random(16);
+        return Str::random(16);
     }
 
     public function updateFromRequest(int $id, Request $request): Doctor
@@ -109,13 +111,13 @@ class DoctorService
             'created' => ['new_data' => $data],
             'updated' => $data,
             'deleted' => ['deleted_data' => $data, 'deleted_by' => auth()->id()],
-            default   => [],
+            default => [],
         };
 
         activity()
             ->causedBy(auth()->user())
             ->performedOn($model)
             ->withProperties($properties)
-            ->log("{$action} " . class_basename($model));
+            ->log("{$action} ".class_basename($model));
     }
 }

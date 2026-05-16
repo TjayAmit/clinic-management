@@ -47,9 +47,9 @@ class QueueService
 
             $model = $this->repository->create([
                 'appointment_id' => $request->input('appointment_id'),
-                'queue_date'     => $date,
-                'position'       => $position,
-                'status'         => QueueStatus::Waiting->value,
+                'queue_date' => $date,
+                'position' => $position,
+                'status' => QueueStatus::Waiting->value,
             ]);
         });
 
@@ -61,7 +61,7 @@ class QueueService
     public function callNext(int $id): Queue
     {
         $queue = $this->repository->update($id, [
-            'status'    => QueueStatus::InProgress->value,
+            'status' => QueueStatus::InProgress->value,
             'called_at' => Date::now(),
         ]);
 
@@ -73,7 +73,7 @@ class QueueService
     public function markCompleted(int $id): Queue
     {
         $queue = $this->repository->update($id, [
-            'status'       => QueueStatus::Completed->value,
+            'status' => QueueStatus::Completed->value,
             'completed_at' => Date::now(),
         ]);
 
@@ -135,6 +135,6 @@ class QueueService
             ->causedBy(auth()->user())
             ->performedOn($model)
             ->withProperties($data)
-            ->log("{$action} " . class_basename($model));
+            ->log("{$action} ".class_basename($model));
     }
 }

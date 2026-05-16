@@ -53,12 +53,14 @@ expect()->extend('toBeOne', function () {
 function actingAsStaff(): TestCase
 {
     $user = User::factory()->staff()->create();
+
     return test()->actingAs($user);
 }
 
 function actingAsDoctor(): TestCase
 {
     $user = User::factory()->doctor()->create();
+
     return test()->actingAs($user);
 }
 

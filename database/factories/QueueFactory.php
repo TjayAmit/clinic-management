@@ -16,18 +16,18 @@ class QueueFactory extends Factory
     {
         return [
             'appointment_id' => Appointment::factory(),
-            'queue_date'     => now()->toDateString(),
-            'position'       => fake()->numberBetween(1, 20),
-            'status'         => QueueStatus::Waiting,
-            'called_at'      => null,
-            'completed_at'   => null,
+            'queue_date' => now()->toDateString(),
+            'position' => fake()->numberBetween(1, 20),
+            'status' => QueueStatus::Waiting,
+            'called_at' => null,
+            'completed_at' => null,
         ];
     }
 
     public function inProgress(): static
     {
         return $this->state([
-            'status'    => QueueStatus::InProgress,
+            'status' => QueueStatus::InProgress,
             'called_at' => now()->subMinutes(fake()->numberBetween(5, 45)),
         ]);
     }
@@ -38,8 +38,8 @@ class QueueFactory extends Factory
             $calledAt = now()->subMinutes(fake()->numberBetween(30, 120));
 
             return [
-                'status'       => QueueStatus::Completed,
-                'called_at'    => $calledAt,
+                'status' => QueueStatus::Completed,
+                'called_at' => $calledAt,
                 'completed_at' => fake()->dateTimeBetween($calledAt, now()),
             ];
         });

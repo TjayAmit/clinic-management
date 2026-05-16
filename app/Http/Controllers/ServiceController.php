@@ -26,7 +26,7 @@ class ServiceController extends Controller
             ->withQueryString();
 
         return Inertia::render('services/index', [
-            'data'    => $services,
+            'data' => $services,
             'filters' => $request->only(['search', 'per_page', 'active_only']),
         ]);
     }

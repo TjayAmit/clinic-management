@@ -118,13 +118,13 @@ class FeatureService
             'deleted' => ['deleted_data' => $data, 'deleted_by' => auth()->id()],
             'enabled' => $data,
             'disabled' => $data,
-            default   => [],
+            default => [],
         };
 
         activity()
             ->causedBy(auth()->user())
             ->performedOn($model)
             ->withProperties($properties)
-            ->log("{$action} " . class_basename($model));
+            ->log("{$action} ".class_basename($model));
     }
 }

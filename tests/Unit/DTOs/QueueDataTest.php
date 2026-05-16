@@ -2,7 +2,6 @@
 
 use App\DTOs\QueueData;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Date;
 
 test('fromRequest maps appointment_id queue_date position status', function () {
     $request = Request::create('/', 'POST', [

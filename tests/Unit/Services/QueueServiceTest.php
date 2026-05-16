@@ -6,7 +6,6 @@ use App\Repositories\QueueRepository;
 use App\Services\QueueService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Date;
 
 uses(RefreshDatabase::class);
 
@@ -40,7 +39,7 @@ test('addToQueue sets initial status to Waiting', function () {
     $repository->shouldReceive('getNextPosition')->once()->andReturn(1);
     $repository->shouldReceive('create')
         ->once()
-        ->with(\Mockery::on(function ($data) {
+        ->with(Mockery::on(function ($data) {
             return $data['status'] === QueueStatus::Waiting->value;
         }))
         ->andReturn($queue);
@@ -56,7 +55,7 @@ test('callNext sets status to in_progress and stamps called_at', function () {
 
     $repository->shouldReceive('update')
         ->once()
-        ->with(1, \Mockery::on(function ($data) {
+        ->with(1, Mockery::on(function ($data) {
             return $data['status'] === QueueStatus::InProgress->value &&
                    isset($data['called_at']);
         }))
@@ -73,7 +72,7 @@ test('markCompleted sets status to completed and stamps completed_at', function 
 
     $repository->shouldReceive('update')
         ->once()
-        ->with(1, \Mockery::on(function ($data) {
+        ->with(1, Mockery::on(function ($data) {
             return $data['status'] === QueueStatus::Completed->value &&
                    isset($data['completed_at']);
         }))
@@ -90,10 +89,10 @@ test('markNoShow sets status to no_show without timestamps', function () {
 
     $repository->shouldReceive('update')
         ->once()
-        ->with(1, \Mockery::on(function ($data) {
+        ->with(1, Mockery::on(function ($data) {
             return $data['status'] === QueueStatus::NoShow->value &&
-                   !isset($data['called_at']) &&
-                   !isset($data['completed_at']);
+                   ! isset($data['called_at']) &&
+                   ! isset($data['completed_at']);
         }))
         ->andReturn($queue);
 

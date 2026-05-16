@@ -28,7 +28,7 @@ class DoctorController extends Controller
             ->withQueryString();
 
         return Inertia::render('doctors/index', [
-            'data'    => $doctors,
+            'data' => $doctors,
             'filters' => $request->only(['search', 'per_page']),
         ]);
     }
@@ -64,7 +64,7 @@ class DoctorController extends Controller
 
         return Inertia::render('doctors/edit', [
             'doctor' => $doctor,
-            'users'  => $users,
+            'users' => $users,
         ]);
     }
 

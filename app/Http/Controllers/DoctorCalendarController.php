@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use App\Models\Appointment;
 use App\Models\Doctor;
 use Carbon\Carbon;
@@ -28,13 +30,13 @@ class DoctorCalendarController extends Controller
             ->groupBy(fn ($a) => $a->appointment_date->format('Y-m-d'));
 
         return Inertia::render('doctors/calendar', [
-            'doctor'       => $doctor->load('user'),
+            'doctor' => $doctor->load('user'),
             'appointments' => $appointments,
-            'month'        => $date->format('Y-m'),
-            'monthLabel'   => $date->format('F Y'),
-            'year'         => $date->year,
-            'daysInMonth'  => $date->daysInMonth,
-            'startDay'     => (int) $date->copy()->startOfMonth()->dayOfWeek,
+            'month' => $date->format('Y-m'),
+            'monthLabel' => $date->format('F Y'),
+            'year' => $date->year,
+            'daysInMonth' => $date->daysInMonth,
+            'startDay' => (int) $date->copy()->startOfMonth()->dayOfWeek,
         ]);
     }
 }

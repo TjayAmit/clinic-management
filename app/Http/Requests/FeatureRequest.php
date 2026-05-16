@@ -14,10 +14,10 @@ class FeatureRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'        => ['required', 'string', 'max:100'],
-            'key'         => ['required', 'string', 'max:50', 'regex:/^[a-z0-9_-]+$/'],
+            'name' => ['required', 'string', 'max:100'],
+            'key' => ['required', 'string', 'max:50', 'regex:/^[a-z0-9_-]+$/'],
             'description' => ['nullable', 'string'],
-            'is_enabled'  => ['boolean'],
+            'is_enabled' => ['boolean'],
         ];
     }
 

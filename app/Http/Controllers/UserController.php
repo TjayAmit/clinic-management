@@ -19,7 +19,7 @@ class UserController extends Controller
         }
 
         return Inertia::render('users/index', [
-            'data'    => $query->latest()->paginate(10)->withQueryString(),
+            'data' => $query->latest()->paginate(10)->withQueryString(),
             'filters' => $request->only(['search']),
         ]);
     }
@@ -36,8 +36,8 @@ class UserController extends Controller
         $validated = $request->validated();
 
         $user = User::create([
-            'name'     => $validated['name'],
-            'email'    => $validated['email'],
+            'name' => $validated['name'],
+            'email' => $validated['email'],
             'password' => bcrypt($validated['password']),
         ]);
 
@@ -60,7 +60,7 @@ class UserController extends Controller
         $user->load('roles');
 
         return Inertia::render('users/edit', [
-            'user'  => $user,
+            'user' => $user,
             'roles' => ['Admin', 'Doctor', 'Staff'],
         ]);
     }
@@ -70,7 +70,7 @@ class UserController extends Controller
         $validated = $request->validated();
 
         $user->update([
-            'name'  => $validated['name'],
+            'name' => $validated['name'],
             'email' => $validated['email'],
         ]);
 

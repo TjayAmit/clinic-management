@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -45,7 +46,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'devUsers' => app()->environment('local')
-                ? \App\Models\User::with('roles')->get(['id', 'name', 'email'])
+                ? User::with('roles')->get(['id', 'name', 'email'])
                     ->map(fn ($u) => [
                         'id' => $u->id,
                         'name' => $u->name,

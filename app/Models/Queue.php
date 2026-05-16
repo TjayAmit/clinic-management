@@ -16,9 +16,9 @@ class Queue extends Model
     protected function casts(): array
     {
         return [
-            'queue_date'   => 'date',
-            'status'       => QueueStatus::class,
-            'called_at'    => 'datetime',
+            'queue_date' => 'date',
+            'status' => QueueStatus::class,
+            'called_at' => 'datetime',
             'completed_at' => 'datetime',
         ];
     }

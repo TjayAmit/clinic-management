@@ -6,11 +6,12 @@ use App\Models\Patient;
 use App\Models\Queue;
 use App\Models\Service;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Support\Facades\Notification;
 
 beforeEach(function () {
     Notification::fake();
-    $this->seed(\Database\Seeders\RoleAndPermissionSeeder::class);
+    $this->seed(RoleAndPermissionSeeder::class);
     $staffUser = User::factory()->staff()->create();
     $this->actingAs($staffUser);
 });
@@ -18,11 +19,11 @@ beforeEach(function () {
 test('Scenario A: Existing Patient Walk-in', function () {
     // 1. Search for patient by name
     $patient = Patient::factory()->create(['first_name' => 'Jane', 'last_name' => 'Doe']);
-    $response = $this->get("/patients?search=Jane");
+    $response = $this->get('/patients?search=Jane');
     $response->assertStatus(200);
 
     // 2. Patient has no appointment today
-    $response = $this->get('/appointments?date=' . now()->toDateString() . "&patient_id={$patient->id}");
+    $response = $this->get('/appointments?date='.now()->toDateString()."&patient_id={$patient->id}");
     $response->assertStatus(200);
 
     // 3. Create walk-in appointment

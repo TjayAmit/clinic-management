@@ -17,9 +17,9 @@ class DentalRecordFactory extends Factory
     {
         return [
             'patient_visit_id' => null,
-            'patient_id'       => Patient::factory(),
-            'dentist_id'       => Doctor::factory(),
-            'chief_complaint'  => fake()->randomElement([
+            'patient_id' => Patient::factory(),
+            'dentist_id' => Doctor::factory(),
+            'chief_complaint' => fake()->randomElement([
                 'Tooth pain in upper left molar',
                 'Sensitivity to cold on lower right',
                 'Bleeding gums during brushing',
@@ -28,7 +28,7 @@ class DentalRecordFactory extends Factory
                 'Routine check-up and cleaning',
                 'Loose filling on back tooth',
             ]),
-            'diagnosis'        => fake()->optional()->randomElement([
+            'diagnosis' => fake()->optional()->randomElement([
                 'Dental caries (cavity)',
                 'Gingivitis',
                 'Periodontitis',
@@ -37,7 +37,7 @@ class DentalRecordFactory extends Factory
                 'Temporomandibular disorder (TMD)',
                 'Tooth erosion',
             ]),
-            'treatment'        => fake()->optional()->randomElement([
+            'treatment' => fake()->optional()->randomElement([
                 'Composite resin filling placed',
                 'Scaling and root planing performed',
                 'Extraction completed without complications',
@@ -46,14 +46,14 @@ class DentalRecordFactory extends Factory
                 'Fluoride varnish applied',
                 'Occlusal adjustment performed',
             ]),
-            'prescription'     => fake()->optional()->randomElement([
+            'prescription' => fake()->optional()->randomElement([
                 null,
                 'Amoxicillin 500mg TID x 7 days',
                 'Ibuprofen 400mg PRN for pain',
                 'Chlorhexidine mouthwash 0.12% BID x 2 weeks',
                 'Metronidazole 400mg TID x 5 days',
             ]),
-            'notes'            => fake()->optional()->sentence(),
+            'notes' => fake()->optional()->sentence(),
         ];
     }
 
@@ -62,7 +62,7 @@ class DentalRecordFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'patient_visit_id' => PatientVisit::factory()->state([
                 'patient_id' => $attributes['patient_id'],
-                'doctor_id'  => $attributes['dentist_id'],
+                'doctor_id' => $attributes['dentist_id'],
             ]),
         ]);
     }

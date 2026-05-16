@@ -26,11 +26,11 @@ class Appointment extends Model
     {
         return [
             'appointment_date' => 'date',
-            'status'           => AppointmentStatus::class,
-            'is_walk_in'       => 'boolean',
-            'teeth_involved'   => 'array',
-            'series_total'     => 'integer',
-            'series_position'  => 'integer',
+            'status' => AppointmentStatus::class,
+            'is_walk_in' => 'boolean',
+            'teeth_involved' => 'array',
+            'series_total' => 'integer',
+            'series_position' => 'integer',
         ];
     }
 

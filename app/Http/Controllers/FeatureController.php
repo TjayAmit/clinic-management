@@ -19,7 +19,7 @@ class FeatureController extends Controller
         $features = Feature::query()
             ->when($request->input('search'), function ($q, $search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('key', 'like', "%{$search}%");
+                    ->orWhere('key', 'like', "%{$search}%");
             })
             ->when($request->boolean('enabled_only'), fn ($q) => $q->where('is_enabled', true))
             ->latest()
@@ -27,7 +27,7 @@ class FeatureController extends Controller
             ->withQueryString();
 
         return Inertia::render('features/index', [
-            'data'    => $features,
+            'data' => $features,
             'filters' => $request->only(['search', 'per_page', 'enabled_only']),
         ]);
     }

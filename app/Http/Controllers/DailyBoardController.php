@@ -23,21 +23,21 @@ class DailyBoardController extends Controller
             ->get();
 
         $entries = $appointments->map(fn (Appointment $appointment) => [
-            'id'           => $appointment->id,
+            'id' => $appointment->id,
             'patient_name' => $appointment->patient->full_name,
-            'doctor_name'  => $appointment->doctor->user->name,
+            'doctor_name' => $appointment->doctor->user->name,
             'service_name' => $appointment->service->name,
-            'time'         => $appointment->start_time,
-            'status'       => $appointment->status->value,
-            'is_walk_in'   => $appointment->is_walk_in,
-            'type'         => 'appointment',
+            'time' => $appointment->start_time,
+            'status' => $appointment->status->value,
+            'is_walk_in' => $appointment->is_walk_in,
+            'type' => 'appointment',
         ])->values()->all();
 
         $doctors = Doctor::with('user')
             ->where('is_active', true)
             ->get()
             ->map(fn ($d) => [
-                'id'   => $d->id,
+                'id' => $d->id,
                 'name' => $d->user->name,
             ])
             ->values()
@@ -47,7 +47,7 @@ class DailyBoardController extends Controller
             'entries' => $entries,
             'doctors' => $doctors,
             'filters' => [
-                'date'      => $date,
+                'date' => $date,
                 'doctor_id' => $doctorId,
             ],
         ]);

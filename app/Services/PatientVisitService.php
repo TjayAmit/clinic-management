@@ -7,8 +7,8 @@ use App\Models\PatientVisit;
 use App\Repositories\PatientVisitRepository;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 
 class PatientVisitService
 {
@@ -107,16 +107,16 @@ class PatientVisitService
     private function logActivity(string $action, Model $model, array $data = []): void
     {
         $properties = match ($action) {
-            'created'    => ['new_data' => $data],
-            'updated'    => $data,
-            'deleted'    => ['deleted_data' => $data, 'deleted_by' => auth()->id()],
-            default      => $data,
+            'created' => ['new_data' => $data],
+            'updated' => $data,
+            'deleted' => ['deleted_data' => $data, 'deleted_by' => auth()->id()],
+            default => $data,
         };
 
         activity()
             ->causedBy(auth()->user())
             ->performedOn($model)
             ->withProperties($properties)
-            ->log("{$action} " . class_basename($model));
+            ->log("{$action} ".class_basename($model));
     }
 }

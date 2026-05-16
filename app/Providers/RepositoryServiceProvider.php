@@ -2,32 +2,26 @@
 
 namespace App\Providers;
 
-use App\Repositories\Eloquent\{
-    EloquentAppointmentRepository,
-    EloquentDoctorRepository,
-    EloquentDoctorScheduleRepository,
-    EloquentDentalRecordRepository,
-    EloquentFeatureRepository,
-    EloquentPatientRepository,
-    EloquentPatientVisitRepository,
-    EloquentQueueRepository,
-    EloquentServiceRepository,
-    EloquentUserRepository,
-};
-
-use App\Repositories\{
-    AppointmentRepository,
-    DoctorRepository,
-    DoctorScheduleRepository,
-    DentalRecordRepository,
-    FeatureRepository,
-    PatientRepository,
-    PatientVisitRepository,
-    QueueRepository,
-    ServiceRepository,
-    UserRepository,
-};
-
+use App\Repositories\AppointmentRepository;
+use App\Repositories\DentalRecordRepository;
+use App\Repositories\DoctorRepository;
+use App\Repositories\DoctorScheduleRepository;
+use App\Repositories\Eloquent\EloquentAppointmentRepository;
+use App\Repositories\Eloquent\EloquentDentalRecordRepository;
+use App\Repositories\Eloquent\EloquentDoctorRepository;
+use App\Repositories\Eloquent\EloquentDoctorScheduleRepository;
+use App\Repositories\Eloquent\EloquentFeatureRepository;
+use App\Repositories\Eloquent\EloquentPatientRepository;
+use App\Repositories\Eloquent\EloquentPatientVisitRepository;
+use App\Repositories\Eloquent\EloquentQueueRepository;
+use App\Repositories\Eloquent\EloquentServiceRepository;
+use App\Repositories\Eloquent\EloquentUserRepository;
+use App\Repositories\FeatureRepository;
+use App\Repositories\PatientRepository;
+use App\Repositories\PatientVisitRepository;
+use App\Repositories\QueueRepository;
+use App\Repositories\ServiceRepository;
+use App\Repositories\UserRepository;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider

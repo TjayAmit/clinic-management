@@ -27,7 +27,7 @@ test('getLabel returns human-readable label for every case', function () {
 
 test('casting from string works on Appointment model', function () {
     $appointment = Appointment::factory()->make(['status' => 'confirmed']);
-    
+
     expect($appointment->status)->toBeInstanceOf(AppointmentStatus::class);
     expect($appointment->status->value)->toBe('confirmed');
 });

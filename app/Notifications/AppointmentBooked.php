@@ -42,14 +42,14 @@ class AppointmentBooked extends Notification implements ShouldQueue
         $appointment = $this->appointment;
 
         return [
-            'type'             => 'appointment_booked',
-            'appointment_id'   => $appointment->id,
-            'patient_name'     => $appointment->patient->full_name,
-            'doctor_name'      => 'Dr. ' . $appointment->doctor->user->name,
-            'service'          => $appointment->service->name,
+            'type' => 'appointment_booked',
+            'appointment_id' => $appointment->id,
+            'patient_name' => $appointment->patient->full_name,
+            'doctor_name' => 'Dr. '.$appointment->doctor->user->name,
+            'service' => $appointment->service->name,
             'appointment_date' => $appointment->appointment_date->toDateString(),
-            'start_time'       => $appointment->start_time,
-            'message'          => $this->recipientType === 'doctor'
+            'start_time' => $appointment->start_time,
+            'message' => $this->recipientType === 'doctor'
                 ? "New appointment booked: {$appointment->patient->full_name} on {$appointment->appointment_date->format('F j, Y')} at {$appointment->start_time}."
                 : "Your appointment for {$appointment->service->name} on {$appointment->appointment_date->format('F j, Y')} at {$appointment->start_time} has been booked.",
         ];

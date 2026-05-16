@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use App\Models\Appointment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -23,8 +25,8 @@ class ScheduleController extends Controller
 
         return Inertia::render('schedule/index', [
             'appointments' => $query->get(),
-            'date'         => $today->toDateString(),
-            'dateLabel'    => $today->format('l, F j, Y'),
+            'date' => $today->toDateString(),
+            'dateLabel' => $today->format('l, F j, Y'),
         ]);
     }
 }

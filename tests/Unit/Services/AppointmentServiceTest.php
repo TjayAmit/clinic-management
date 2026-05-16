@@ -138,7 +138,7 @@ test('createFollowUp sets parent_appointment_id from parent', function () {
 
     $repository->shouldReceive('create')
         ->once()
-        ->with(\Mockery::on(function ($data) {
+        ->with(Mockery::on(function ($data) {
             return $data['parent_appointment_id'] === 5 &&
                    $data['patient_id'] === 1 &&
                    $data['doctor_id'] === 1 &&

@@ -22,13 +22,12 @@ class QueueRequest extends FormRequest
             'appointment_id' => [
                 'required',
                 'exists:appointments,id',
-                Rule::unique('queues')->where(fn ($query) =>
-                    $query->where('queue_date', $queueDate)
+                Rule::unique('queues')->where(fn ($query) => $query->where('queue_date', $queueDate)
                 ),
             ],
-            'queue_date'     => ['nullable', 'date'],
-            'position'       => ['nullable', 'integer', 'min:1'],
-            'status'         => ['sometimes', Rule::enum(QueueStatus::class)],
+            'queue_date' => ['nullable', 'date'],
+            'position' => ['nullable', 'integer', 'min:1'],
+            'status' => ['sometimes', Rule::enum(QueueStatus::class)],
         ];
     }
 

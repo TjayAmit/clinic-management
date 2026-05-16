@@ -28,7 +28,7 @@ class PatientVisitController extends Controller
             ->withQueryString();
 
         return Inertia::render('patientVisits/index', [
-            'data'    => $visits,
+            'data' => $visits,
             'filters' => $request->only(['patient_id', 'doctor_id', 'date', 'per_page']),
         ]);
     }
@@ -41,9 +41,9 @@ class PatientVisitController extends Controller
             : null;
 
         return Inertia::render('patientVisits/create', [
-            'patients'               => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone']),
-            'doctors'                => Doctor::with('user')->where('is_active', true)->get(['id', 'user_id', 'specialization']),
-            'appointments'           => Appointment::with(['patient', 'doctor.user', 'service'])
+            'patients' => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone']),
+            'doctors' => Doctor::with('user')->where('is_active', true)->get(['id', 'user_id', 'specialization']),
+            'appointments' => Appointment::with(['patient', 'doctor.user', 'service'])
                 ->whereNotIn('status', ['cancelled', 'no_show', 'completed'])
                 ->orderBy('appointment_date')
                 ->orderBy('start_time')
@@ -73,9 +73,9 @@ class PatientVisitController extends Controller
         $patientVisit->load(['patient', 'doctor.user', 'appointment.service']);
 
         return Inertia::render('patientVisits/edit', [
-            'visit'        => $patientVisit,
-            'patients'     => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone']),
-            'doctors'      => Doctor::with('user')->where('is_active', true)->get(['id', 'user_id', 'specialization']),
+            'visit' => $patientVisit,
+            'patients' => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone']),
+            'doctors' => Doctor::with('user')->where('is_active', true)->get(['id', 'user_id', 'specialization']),
             'appointments' => Appointment::with(['patient', 'doctor.user', 'service'])
                 ->whereNotIn('status', ['cancelled', 'no_show'])
                 ->orderBy('appointment_date')

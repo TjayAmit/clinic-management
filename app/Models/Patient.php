@@ -29,8 +29,8 @@ class Patient extends Model
     {
         return [
             'date_of_birth' => 'date',
-            'gender'        => Gender::class,
-            'is_regular'    => 'boolean',
+            'gender' => Gender::class,
+            'is_regular' => 'boolean',
         ];
     }
 

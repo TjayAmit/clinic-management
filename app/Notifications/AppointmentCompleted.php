@@ -33,13 +33,13 @@ class AppointmentCompleted extends Notification implements ShouldQueue
         $appointment = $this->appointment;
 
         return [
-            'type'             => 'appointment_completed',
-            'appointment_id'   => $appointment->id,
-            'patient_name'     => $appointment->patient->full_name,
-            'doctor_name'      => 'Dr. ' . $appointment->doctor->user->name,
-            'service'          => $appointment->service->name,
+            'type' => 'appointment_completed',
+            'appointment_id' => $appointment->id,
+            'patient_name' => $appointment->patient->full_name,
+            'doctor_name' => 'Dr. '.$appointment->doctor->user->name,
+            'service' => $appointment->service->name,
             'appointment_date' => $appointment->appointment_date->toDateString(),
-            'message'          => "Your appointment for {$appointment->service->name} on {$appointment->appointment_date->format('F j, Y')} has been completed. Thank you for visiting!",
+            'message' => "Your appointment for {$appointment->service->name} on {$appointment->appointment_date->format('F j, Y')} has been completed. Thank you for visiting!",
         ];
     }
 }

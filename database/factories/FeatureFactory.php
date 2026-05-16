@@ -17,12 +17,12 @@ class FeatureFactory extends Factory
         $name = fake()->unique()->words(2, true);
 
         return [
-            'name'        => ucwords($name),
-            'key'         => Str::slug($name, '_'),
+            'name' => ucwords($name),
+            'key' => Str::slug($name, '_'),
             'description' => fake()->optional()->sentence(),
-            'is_enabled'  => false,
-            'enabled_by'  => null,
-            'enabled_at'  => null,
+            'is_enabled' => false,
+            'enabled_by' => null,
+            'enabled_at' => null,
         ];
     }
 

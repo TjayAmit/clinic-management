@@ -5,10 +5,11 @@ use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\Service;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Support\Facades\Notification;
 
 beforeEach(function () {
-    $this->seed(\Database\Seeders\RoleAndPermissionSeeder::class);
+    $this->seed(RoleAndPermissionSeeder::class);
     $staffUser = User::factory()->staff()->create();
     $this->actingAs($staffUser);
 });

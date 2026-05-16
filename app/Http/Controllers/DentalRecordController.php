@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\DentalRecordRequest;
-use App\Models\Doctor;
 use App\Models\DentalRecord;
+use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\PatientVisit;
 use App\Services\DentalRecordService;
@@ -23,9 +23,8 @@ class DentalRecordController extends Controller
             ->when($request->input('patient_id'), fn ($q, $id) => $q->where('patient_id', $id))
             ->when($request->input('dentist_id'), fn ($q, $id) => $q->where('dentist_id', $id))
             ->when($request->input('search'), function ($q, $search) {
-                $q->whereHas('patient', fn ($p) =>
-                    $p->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%")
+                $q->whereHas('patient', fn ($p) => $p->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
                 );
             })
             ->orderByDesc('created_at')
@@ -33,7 +32,7 @@ class DentalRecordController extends Controller
             ->withQueryString();
 
         return Inertia::render('dentalRecords/index', [
-            'data'    => $records,
+            'data' => $records,
             'filters' => $request->only(['search', 'patient_id', 'dentist_id', 'per_page']),
         ]);
     }
@@ -41,8 +40,8 @@ class DentalRecordController extends Controller
     public function create(Request $request)
     {
         return Inertia::render('dentalRecords/create', [
-            'patients'      => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name']),
-            'doctors'       => Doctor::with('user')->where('is_active', true)->get(),
+            'patients' => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name']),
+            'doctors' => Doctor::with('user')->where('is_active', true)->get(),
             'patient_visit' => $request->input('visit_id')
                 ? PatientVisit::with('patient', 'dentist')->find($request->input('visit_id'))
                 : null,

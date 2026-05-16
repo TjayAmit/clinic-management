@@ -17,25 +17,25 @@ class AppointmentFactory extends Factory
 {
     public function definition(): array
     {
-        $startHour   = fake()->numberBetween(8, 16);
+        $startHour = fake()->numberBetween(8, 16);
         $startMinute = fake()->randomElement([0, 30]);
-        $duration    = fake()->randomElement([30, 45, 60, 90]);
-        $start       = sprintf('%02d:%02d', $startHour, $startMinute);
-        $endMinutes  = ($startHour * 60 + $startMinute + $duration);
-        $end         = sprintf('%02d:%02d', intdiv($endMinutes, 60), $endMinutes % 60);
+        $duration = fake()->randomElement([30, 45, 60, 90]);
+        $start = sprintf('%02d:%02d', $startHour, $startMinute);
+        $endMinutes = ($startHour * 60 + $startMinute + $duration);
+        $end = sprintf('%02d:%02d', intdiv($endMinutes, 60), $endMinutes % 60);
 
         return [
-            'patient_id'            => Patient::factory(),
-            'doctor_id'             => Doctor::factory(),
-            'service_id'            => Service::factory(),
-            'appointment_date'      => fake()->dateTimeBetween('now', '+3 months')->format('Y-m-d'),
-            'start_time'            => $start,
-            'end_time'              => $end,
-            'status'                => AppointmentStatus::Pending,
-            'notes'                 => fake()->optional()->sentence(),
-            'created_by'            => User::factory(),
-            'is_walk_in'            => false,
-            'teeth_involved'        => null,
+            'patient_id' => Patient::factory(),
+            'doctor_id' => Doctor::factory(),
+            'service_id' => Service::factory(),
+            'appointment_date' => fake()->dateTimeBetween('now', '+3 months')->format('Y-m-d'),
+            'start_time' => $start,
+            'end_time' => $end,
+            'status' => AppointmentStatus::Pending,
+            'notes' => fake()->optional()->sentence(),
+            'created_by' => User::factory(),
+            'is_walk_in' => false,
+            'teeth_involved' => null,
             'parent_appointment_id' => null,
         ];
     }
@@ -43,7 +43,7 @@ class AppointmentFactory extends Factory
     public function walkIn(): static
     {
         return $this->state([
-            'is_walk_in'       => true,
+            'is_walk_in' => true,
             'appointment_date' => now()->toDateString(),
         ]);
     }
@@ -66,7 +66,7 @@ class AppointmentFactory extends Factory
     public function completed(): static
     {
         return $this->state([
-            'status'           => AppointmentStatus::Completed,
+            'status' => AppointmentStatus::Completed,
             'appointment_date' => fake()->dateTimeBetween('-3 months', 'now')->format('Y-m-d'),
         ]);
     }
@@ -93,14 +93,14 @@ class AppointmentFactory extends Factory
         ]);
     }
 
-    public function withPatient(Patient $patient = null): static
+    public function withPatient(?Patient $patient = null): static
     {
         return $this->state(fn () => [
             'patient_id' => $patient ?? Patient::factory(),
         ]);
     }
 
-    public function withDoctor(Doctor $doctor = null): static
+    public function withDoctor(?Doctor $doctor = null): static
     {
         return $this->state(fn () => [
             'doctor_id' => $doctor ?? Doctor::factory(),

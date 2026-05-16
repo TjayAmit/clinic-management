@@ -4,13 +4,15 @@ use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\DailyBoardController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DentalRecordController;
+use App\Http\Controllers\Dev\EmailPreviewController;
+use App\Http\Controllers\Dev\SwitchUserController;
+use App\Http\Controllers\DoctorCalendarController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\DoctorScheduleController;
 use App\Http\Controllers\FeatureController;
-use App\Http\Controllers\DentalRecordController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PatientVisitController;
-use App\Http\Controllers\DoctorCalendarController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ScheduleController;
@@ -159,15 +161,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 if (app()->environment('local')) {
     Route::middleware('auth')->group(function () {
-        Route::post('/dev/switch-user/{user}', [\App\Http\Controllers\Dev\SwitchUserController::class, '__invoke'])
+        Route::post('/dev/switch-user/{user}', [SwitchUserController::class, '__invoke'])
             ->name('dev.switch-user');
 
     });
 
     // Email previews
-    Route::get('/dev/email-preview', [\App\Http\Controllers\Dev\EmailPreviewController::class, 'index'])
+    Route::get('/dev/email-preview', [EmailPreviewController::class, 'index'])
         ->name('dev.email-preview.index');
-    Route::get('/dev/email-preview/{key}', [\App\Http\Controllers\Dev\EmailPreviewController::class, 'show'])
+    Route::get('/dev/email-preview/{key}', [EmailPreviewController::class, 'show'])
         ->name('dev.email-preview.show');
 }
 

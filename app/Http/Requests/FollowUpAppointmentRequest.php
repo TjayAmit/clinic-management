@@ -15,9 +15,9 @@ class FollowUpAppointmentRequest extends FormRequest
     {
         return [
             'appointment_date' => ['required', 'date'],
-            'start_time'       => ['required', 'date_format:H:i'],
-            'end_time'         => ['required', 'date_format:H:i', 'after:start_time'],
-            'notes'            => ['nullable', 'string'],
+            'start_time' => ['required', 'date_format:H:i'],
+            'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+            'notes' => ['nullable', 'string'],
         ];
     }
 }

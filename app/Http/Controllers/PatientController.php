@@ -29,7 +29,7 @@ class PatientController extends Controller
             ->withQueryString();
 
         return Inertia::render('patients/index', [
-            'data'    => $patients,
+            'data' => $patients,
             'filters' => $request->only(['search', 'per_page', 'is_regular']),
         ]);
     }
@@ -78,7 +78,7 @@ class PatientController extends Controller
 
     public function toggleRegular(Patient $patient)
     {
-        $patient->update(['is_regular' => !$patient->is_regular]);
+        $patient->update(['is_regular' => ! $patient->is_regular]);
 
         $message = $patient->is_regular ? 'Patient marked as regular.' : 'Regular status removed.';
 

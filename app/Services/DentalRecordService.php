@@ -93,13 +93,13 @@ class DentalRecordService
             'created' => ['new_data' => $data],
             'updated' => $data,
             'deleted' => ['deleted_data' => $data, 'deleted_by' => auth()->id()],
-            default   => [],
+            default => [],
         };
 
         activity()
             ->causedBy(auth()->user())
             ->performedOn($model)
             ->withProperties($properties)
-            ->log("{$action} " . class_basename($model));
+            ->log("{$action} ".class_basename($model));
     }
 }

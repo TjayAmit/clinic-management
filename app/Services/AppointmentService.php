@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class AppointmentService
 {
@@ -79,7 +80,7 @@ class AppointmentService
             ->exists();
 
         if (! $hasSchedule) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'appointment_date' => 'Doctor is not available on this day.',
             ]);
         }
@@ -218,7 +219,7 @@ class AppointmentService
 
         $this->logActivity('created_follow_up', $followUp, [
             'parent_id' => $parent->id,
-            'new_data'  => $dto->toArray(),
+            'new_data' => $dto->toArray(),
         ]);
 
         return $followUp;
@@ -243,15 +244,15 @@ class AppointmentService
     {
         $properties = match ($action) {
             'created', 'created_follow_up' => ['new_data' => $data],
-            'updated'                      => $data,
-            'deleted'                      => ['deleted_data' => $data, 'deleted_by' => auth()->id()],
-            default                        => $data,
+            'updated' => $data,
+            'deleted' => ['deleted_data' => $data, 'deleted_by' => auth()->id()],
+            default => $data,
         };
 
         activity()
             ->causedBy(auth()->user())
             ->performedOn($model)
             ->withProperties($properties)
-            ->log("{$action} " . class_basename($model));
+            ->log("{$action} ".class_basename($model));
     }
 }

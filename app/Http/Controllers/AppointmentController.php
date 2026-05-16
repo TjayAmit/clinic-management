@@ -27,9 +27,8 @@ class AppointmentController extends Controller
             ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status))
             ->when($request->boolean('walk_in'), fn ($q) => $q->where('is_walk_in', true))
             ->when($request->input('search'), function ($q, $search) {
-                $q->whereHas('patient', fn ($p) =>
-                    $p->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%")
+                $q->whereHas('patient', fn ($p) => $p->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
                 );
             })
             ->orderBy('appointment_date')
@@ -38,7 +37,7 @@ class AppointmentController extends Controller
             ->withQueryString();
 
         return Inertia::render('appointments/index', [
-            'data'    => $appointments,
+            'data' => $appointments,
             'filters' => $request->only(['search', 'date', 'doctor_id', 'status', 'walk_in', 'per_page']),
             'doctors' => Doctor::with('user')->where('is_active', true)->get(['id', 'user_id', 'specialization']),
         ]);
@@ -47,10 +46,10 @@ class AppointmentController extends Controller
     public function create(Request $request)
     {
         return Inertia::render('appointments/create', [
-            'patients'          => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone']),
-            'doctors'           => Doctor::with('user')->where('is_active', true)->get(),
-            'services'          => Service::where('is_active', true)->get(['id', 'name', 'category', 'duration_minutes', 'price']),
-            'defaultPatientId'  => $request->integer('patient_id') ?: null,
+            'patients' => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone']),
+            'doctors' => Doctor::with('user')->where('is_active', true)->get(),
+            'services' => Service::where('is_active', true)->get(['id', 'name', 'category', 'duration_minutes', 'price']),
+            'defaultPatientId' => $request->integer('patient_id') ?: null,
         ]);
     }
 
@@ -85,9 +84,9 @@ class AppointmentController extends Controller
     {
         return Inertia::render('appointments/edit', [
             'appointment' => $appointment->load(['patient', 'doctor', 'service']),
-            'patients'    => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone']),
-            'doctors'     => Doctor::with('user')->where('is_active', true)->get(),
-            'services'    => Service::where('is_active', true)->get(['id', 'name', 'category', 'duration_minutes', 'price']),
+            'patients' => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone']),
+            'doctors' => Doctor::with('user')->where('is_active', true)->get(),
+            'services' => Service::where('is_active', true)->get(['id', 'name', 'category', 'duration_minutes', 'price']),
         ]);
     }
 

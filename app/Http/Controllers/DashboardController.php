@@ -49,11 +49,11 @@ class DashboardController extends Controller
                 ->get();
 
             $statusBreakdown = [
-                'pending'   => Appointment::where('status', AppointmentStatus::Pending)->count(),
+                'pending' => Appointment::where('status', AppointmentStatus::Pending)->count(),
                 'confirmed' => Appointment::where('status', AppointmentStatus::Confirmed)->count(),
                 'completed' => Appointment::where('status', AppointmentStatus::Completed)->count(),
                 'cancelled' => Appointment::where('status', AppointmentStatus::Cancelled)->count(),
-                'no_show'   => Appointment::where('status', AppointmentStatus::NoShow)->count(),
+                'no_show' => Appointment::where('status', AppointmentStatus::NoShow)->count(),
             ];
         }
 
@@ -101,13 +101,13 @@ class DashboardController extends Controller
         }
 
         return Inertia::render('dashboard', [
-            'stats'               => $stats,
-            'todayAppointments'   => $todayAppointments,
-            'recentAppointments'  => $recentAppointments,
-            'recentPatients'      => $recentPatients,
-            'recentRecords'       => $recentRecords,
-            'statusBreakdown'     => $statusBreakdown,
-            'userRoles'           => $roles,
+            'stats' => $stats,
+            'todayAppointments' => $todayAppointments,
+            'recentAppointments' => $recentAppointments,
+            'recentPatients' => $recentPatients,
+            'recentRecords' => $recentRecords,
+            'statusBreakdown' => $statusBreakdown,
+            'userRoles' => $roles,
         ]);
     }
 }

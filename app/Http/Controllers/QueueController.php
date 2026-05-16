@@ -26,8 +26,8 @@ class QueueController extends Controller
             : $this->service->getByDate($date);
 
         return Inertia::render('queue/index', [
-            'queue'   => $queue,
-            'date'    => $date,
+            'queue' => $queue,
+            'date' => $date,
             'doctors' => Doctor::with('user')->where('is_active', true)->get(['id', 'user_id', 'specialization']),
             'filters' => $request->only(['date', 'doctor_id']),
         ]);
@@ -78,7 +78,7 @@ class QueueController extends Controller
     public function reorder(Request $request)
     {
         $request->validate([
-            'date'        => ['required', 'date'],
+            'date' => ['required', 'date'],
             'ordered_ids' => ['required', 'array'],
             'ordered_ids.*' => ['integer', 'exists:queues,id'],
         ]);

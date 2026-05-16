@@ -21,11 +21,11 @@ class PatientVisit extends Model
     protected function casts(): array
     {
         return [
-            'visited_at'   => 'datetime',
-            'check_in_at'  => 'datetime',
+            'visited_at' => 'datetime',
+            'check_in_at' => 'datetime',
             'check_out_at' => 'datetime',
-            'temperature'  => 'decimal:1',
-            'weight'       => 'decimal:2',
+            'temperature' => 'decimal:1',
+            'weight' => 'decimal:2',
         ];
     }
 

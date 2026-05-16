@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Events\AppointmentCreated;
+use App\Listeners\CacheWeeklyAvailability;
 use App\Listeners\SendScheduledAppointmentEmail;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
@@ -29,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
 
         Event::listen(AppointmentCreated::class, SendScheduledAppointmentEmail::class);
+        Event::listen(AppointmentCreated::class, CacheWeeklyAvailability::class);
     }
 
     /**

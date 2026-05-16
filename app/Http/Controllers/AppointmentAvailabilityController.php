@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\AppointmentStatus;
+use App\Models\Appointment;
 use App\Models\Doctor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -10,18 +11,87 @@ use Illuminate\Support\Carbon;
 
 class AppointmentAvailabilityController extends Controller
 {
+    private const WINDOW_START = 480;  // 08:00
+    private const WINDOW_END   = 1080; // 18:00
+    private const SLOT_MINUTES = 60;
+
     public function __invoke(Request $request): JsonResponse
     {
+        if ($request->filled('month')) {
+            return $this->handleMonthly($request);
+        }
+
+        return $this->handleDaily($request);
+    }
+
+    // ── Monthly Summary ───────────────────────────────────────────────────────
+
+    private function handleMonthly(Request $request): JsonResponse
+    {
+        $request->validate(['month' => ['required', 'date_format:Y-m']]);
+
+        $month    = Carbon::createFromFormat('Y-m', $request->input('month'))->startOfMonth();
+        $endDate  = $month->copy()->endOfMonth();
+        $excluded = [AppointmentStatus::Cancelled->value, AppointmentStatus::NoShow->value];
+
+        $activeDoctors = Doctor::where('is_active', true)->count();
+
+        if ($activeDoctors === 0) {
+            return response()->json(['month' => $request->input('month'), 'days' => []]);
+        }
+
+        $windowDuration = self::WINDOW_END - self::WINDOW_START;
+        $totalCapacity  = $activeDoctors * $windowDuration;
+
+        $appointments = Appointment::whereDate('appointment_date', '>=', $month)
+            ->whereDate('appointment_date', '<=', $endDate)
+            ->whereNotIn('status', $excluded)
+            ->get(['appointment_date', 'start_time', 'end_time', 'doctor_id']);
+
+        $byDate = $appointments->groupBy(
+            fn ($a) => Carbon::parse($a->appointment_date)->toDateString()
+        );
+
+        $days   = [];
+        $cursor = $month->copy();
+
+        while ($cursor <= $endDate) {
+            $dateKey  = $cursor->toDateString();
+            $dayAppts = $byDate->get($dateKey, collect());
+            $booked   = 0;
+
+            foreach ($dayAppts->groupBy('doctor_id') as $doctorAppts) {
+                $booked += $this->bookedMinutes(
+                    $doctorAppts->map(fn ($a) => [$a->start_time, $a->end_time])->toArray()
+                );
+            }
+
+            $freeMinutes = max(0, $totalCapacity - $booked);
+
+            $days[$dateKey] = [
+                'is_full'           => $freeMinutes <= 0,
+                'free_minutes'      => $freeMinutes,
+                'appointment_count' => $dayAppts->count(),
+            ];
+
+            $cursor->addDay();
+        }
+
+        return response()->json(['month' => $request->input('month'), 'days' => $days]);
+    }
+
+    // ── Daily Detail ──────────────────────────────────────────────────────────
+
+    private function handleDaily(Request $request): JsonResponse
+    {
         $request->validate([
-            'date' => ['sometimes', 'date_format:Y-m-d'],
+            'date'      => ['sometimes', 'date_format:Y-m-d'],
             'doctor_id' => ['sometimes', 'integer', 'exists:doctors,id'],
         ]);
 
-        $carbon = Carbon::parse($request->input('date', today()->toDateString()));
+        $carbon     = Carbon::parse($request->input('date', today()->toDateString()));
         $dateString = $carbon->toDateString();
-        $dayOfWeek = strtolower($carbon->format('l')); // e.g. "friday"
-
-        $excludedStatuses = [AppointmentStatus::Cancelled->value, AppointmentStatus::NoShow->value];
+        $excluded   = [AppointmentStatus::Cancelled->value, AppointmentStatus::NoShow->value];
 
         $doctors = Doctor::with('user')
             ->where('is_active', true)
@@ -30,114 +100,195 @@ class AppointmentAvailabilityController extends Controller
 
         if ($doctors->isEmpty()) {
             return response()->json([
-                'date' => $dateString,
+                'date'       => $dateString,
                 'date_label' => $carbon->format('l, F j, Y'),
-                'is_full' => true,
-                'summary' => [
-                    'total_minutes' => 0,
-                    'booked_minutes' => 0,
-                    'free_minutes' => 0,
-                ],
-                'doctors' => [],
+                'is_full'    => true,
+                'slots'      => [],
+                'summary'    => ['total_minutes' => 0, 'booked_minutes' => 0, 'free_minutes' => 0],
+                'doctors'    => [],
             ]);
         }
 
-        // Eager-load appointments for the given date in a single query, then key by doctor_id
-        $doctorIds = $doctors->pluck('id');
-        $appointmentsByDoctor = \App\Models\Appointment::whereIn('doctor_id', $doctorIds)
+        $appointmentsByDoctor = Appointment::whereIn('doctor_id', $doctors->pluck('id'))
             ->whereDate('appointment_date', $dateString)
-            ->whereNotIn('status', $excludedStatuses)
+            ->whereNotIn('status', $excluded)
             ->get(['doctor_id', 'start_time', 'end_time'])
             ->groupBy('doctor_id');
 
-        $totalMinutes = 0;
-        $totalBooked = 0;
-        $doctorData = [];
-        $allFull = true;
+        $totalMinutes            = 0;
+        $totalBooked             = 0;
+        $doctorData              = [];
+        $allDoctorMergedIntervals = [];
 
         foreach ($doctors as $doctor) {
-            // All doctors are treated as always available with default schedule window (08:00–17:00).
-            $allFull = false; // At least one doctor is working; will be adjusted below per free_minutes.
+            $windowDuration = self::WINDOW_END - self::WINDOW_START;
+            $totalMinutes  += $windowDuration;
 
-            // Default schedule window in minutes since midnight (08:00–17:00).
-            $windowStart = 8 * 60;   // 480
-            $windowEnd = 17 * 60;    // 1020
+            $appts        = $appointmentsByDoctor->get($doctor->id, collect());
+            $rawIntervals = $appts->map(fn ($a) => [$a->start_time, $a->end_time])->toArray();
+            $merged       = $this->mergeIntervals($rawIntervals);
 
-            $windowDuration = max(0, $windowEnd - $windowStart);
-            $totalMinutes += $windowDuration;
+            $bookedMins  = array_sum(array_map(fn ($i) => $i['end'] - $i['start'], $merged));
+            $freeMins    = max(0, $windowDuration - $bookedMins);
+            $totalBooked += $bookedMins;
 
-            // Build sorted booked intervals clamped to the schedule window.
-            $appointments = $appointmentsByDoctor->get($doctor->id, collect());
-            $intervals = $appointments
-                ->map(fn ($a) => [
-                    'start' => max($windowStart, $this->toMinutes($a->start_time)),
-                    'end' => min($windowEnd, $this->toMinutes($a->end_time)),
-                ])
-                ->filter(fn ($i) => $i['end'] > $i['start'])
-                ->sortBy('start')
-                ->values()
-                ->toArray();
-
-            // Merge overlapping intervals to get true booked minutes.
-            $merged = [];
-            foreach ($intervals as $interval) {
-                if (empty($merged)) {
-                    $merged[] = $interval;
-                } else {
-                    $last = &$merged[count($merged) - 1];
-                    if ($interval['start'] <= $last['end']) {
-                        $last['end'] = max($last['end'], $interval['end']);
-                    } else {
-                        $merged[] = $interval;
-                    }
-                }
-            }
-
-            $bookedMinutes = array_sum(array_map(fn ($i) => $i['end'] - $i['start'], $merged));
-            $freeMinutes = max(0, $windowDuration - $bookedMinutes);
-            $totalBooked += $bookedMinutes;
-
-            $isDoctorFull = $freeMinutes <= 0;
-            if ($isDoctorFull) {
-                // This working doctor is full; don't flip $allFull back to false.
-            } else {
-                $allFull = false;
-            }
-
-            $nextAvailable = $this->computeNextAvailable($windowStart, $windowEnd, $merged);
+            $allDoctorMergedIntervals[] = $merged;
 
             $doctorData[] = [
-                'id' => $doctor->id,
-                'name' => 'Dr. '.$doctor->user->name,
+                'id'             => $doctor->id,
+                'name'           => 'Dr. '.$doctor->user->name,
                 'specialization' => $doctor->specialization,
-                'working_today' => true,
-                'schedule' => [
-                    'start' => $this->fromMinutes($windowStart),
-                    'end' => $this->fromMinutes($windowEnd),
+                'working_today'  => true,
+                'schedule'       => [
+                    'start' => $this->fromMinutes(self::WINDOW_START),
+                    'end'   => $this->fromMinutes(self::WINDOW_END),
                 ],
-                'is_full' => $isDoctorFull,
-                'booked_minutes' => $bookedMinutes,
-                'free_minutes' => $freeMinutes,
-                'next_available' => $nextAvailable,
+                'is_full'        => $freeMins <= 0,
+                'booked_minutes' => $bookedMins,
+                'free_minutes'   => $freeMins,
+                'next_available' => $this->nextAvailable(self::WINDOW_START, self::WINDOW_END, $merged),
             ];
         }
 
-        // If every entry in $doctorData has working_today = false, $allFull should stay true.
-        // Re-derive: overall is_full = no working doctor has free_minutes > 0.
         $workingDoctors = collect($doctorData)->where('working_today', true);
-        $overallFull = $workingDoctors->isEmpty() || $workingDoctors->every(fn ($d) => $d['is_full']);
+        $overallFull    = $workingDoctors->isEmpty() || $workingDoctors->every(fn ($d) => $d['is_full']);
 
         return response()->json([
-            'date' => $dateString,
-            'date_label' => $carbon->format('l, F j, Y'),
-            'is_full' => $overallFull,
-            'summary' => [
-                'total_minutes' => $totalMinutes,
+            'date'        => $dateString,
+            'date_label'  => $carbon->format('l, F j, Y'),
+            'is_full'     => $overallFull,
+            'free_ranges' => $this->freeRanges($allDoctorMergedIntervals),
+            'summary'     => [
+                'total_minutes'  => $totalMinutes,
                 'booked_minutes' => $totalBooked,
-                'free_minutes' => max(0, $totalMinutes - $totalBooked),
+                'free_minutes'   => max(0, $totalMinutes - $totalBooked),
             ],
             'doctors' => $doctorData,
         ]);
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /**
+     * Parse [[start_time, end_time], ...] strings → merged intervals clamped to the window.
+     *
+     * @param  array<int, array{0: string, 1: string}>  $raw
+     * @return array<int, array{start: int, end: int}>
+     */
+    private function mergeIntervals(array $raw): array
+    {
+        $intervals = array_values(array_filter(
+            array_map(fn ($r) => [
+                'start' => max(self::WINDOW_START, $this->toMinutes($r[0])),
+                'end'   => min(self::WINDOW_END,   $this->toMinutes($r[1])),
+            ], $raw),
+            fn ($i) => $i['end'] > $i['start']
+        ));
+
+        usort($intervals, fn ($a, $b) => $a['start'] <=> $b['start']);
+
+        $merged = [];
+        foreach ($intervals as $interval) {
+            if (empty($merged)) {
+                $merged[] = $interval;
+            } else {
+                $last = &$merged[count($merged) - 1];
+                if ($interval['start'] <= $last['end']) {
+                    $last['end'] = max($last['end'], $interval['end']);
+                } else {
+                    $merged[] = $interval;
+                }
+            }
+        }
+
+        return $merged;
+    }
+
+    /** Compute total booked minutes from raw [[start, end]] pairs. */
+    private function bookedMinutes(array $raw): int
+    {
+        $merged = $this->mergeIntervals($raw);
+
+        return array_sum(array_map(fn ($i) => $i['end'] - $i['start'], $merged));
+    }
+
+    /**
+     * Compute contiguous free time ranges per period (morning / afternoon).
+     * A minute is "available" when at least one doctor is not booked at that time.
+     * Adjacent available minutes are merged into a single range.
+     *
+     * @param  array<int, array<int, array{start: int, end: int}>>  $allMerged  per-doctor merged intervals
+     * @return array{morning: array<int, array{from: string, to: string}>, afternoon: array<int, array{from: string, to: string}>}
+     */
+    private function freeRanges(array $allMerged): array
+    {
+        $periods = [
+            'morning'   => [self::WINDOW_START, 12 * 60],
+            'afternoon' => [12 * 60,            self::WINDOW_END],
+        ];
+
+        $result = ['morning' => [], 'afternoon' => []];
+
+        foreach ($periods as $period => [$pStart, $pEnd]) {
+            $freeStart = null;
+
+            for ($t = $pStart; $t < $pEnd; $t++) {
+                // Available at minute t = at least one doctor has no interval covering t.
+                $available = empty($allMerged);
+
+                if (! $available) {
+                    foreach ($allMerged as $merged) {
+                        $doctorBooked = false;
+                        foreach ($merged as $interval) {
+                            if ($interval['start'] > $t) break; // sorted; no later interval can cover t
+                            if ($interval['end'] > $t) {
+                                $doctorBooked = true;
+                                break;
+                            }
+                        }
+                        if (! $doctorBooked) {
+                            $available = true;
+                            break;
+                        }
+                    }
+                }
+
+                if ($available && $freeStart === null) {
+                    $freeStart = $t;
+                } elseif (! $available && $freeStart !== null) {
+                    $result[$period][] = [
+                        'from' => $this->fromMinutes($freeStart),
+                        'to'   => $this->fromMinutes($t),
+                    ];
+                    $freeStart = null;
+                }
+            }
+
+            if ($freeStart !== null) {
+                $result[$period][] = [
+                    'from' => $this->fromMinutes($freeStart),
+                    'to'   => $this->fromMinutes($pEnd),
+                ];
+            }
+        }
+
+        return $result;
+    }
+
+    private function nextAvailable(int $windowStart, int $windowEnd, array $merged): ?string
+    {
+        $cursor = $windowStart;
+
+        foreach ($merged as $interval) {
+            if ($cursor < $interval['start']) {
+                return $this->fromMinutes($cursor);
+            }
+            if ($cursor < $interval['end']) {
+                $cursor = $interval['end'];
+            }
+        }
+
+        return $cursor < $windowEnd ? $this->fromMinutes($cursor) : null;
     }
 
     private function toMinutes(string $time): int
@@ -150,34 +301,5 @@ class AppointmentAvailabilityController extends Controller
     private function fromMinutes(int $minutes): string
     {
         return sprintf('%02d:%02d', intdiv($minutes, 60), $minutes % 60);
-    }
-
-    /**
-     * Find the first minute in [windowStart, windowEnd) not covered by any merged interval.
-     * Intervals must already be sorted and merged.
-     *
-     * @param  array<int, array{start: int, end: int}>  $mergedIntervals
-     */
-    private function computeNextAvailable(int $windowStart, int $windowEnd, array $mergedIntervals): ?string
-    {
-        $cursor = $windowStart;
-
-        foreach ($mergedIntervals as $interval) {
-            if ($cursor < $interval['start']) {
-                // Gap found before this interval.
-                return $this->fromMinutes($cursor);
-            }
-            // Advance cursor past this interval.
-            if ($cursor < $interval['end']) {
-                $cursor = $interval['end'];
-            }
-        }
-
-        // Gap after all intervals (or no intervals at all).
-        if ($cursor < $windowEnd) {
-            return $this->fromMinutes($cursor);
-        }
-
-        return null;
     }
 }

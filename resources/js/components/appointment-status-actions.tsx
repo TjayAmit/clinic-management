@@ -1,6 +1,5 @@
 import { router } from '@inertiajs/react';
 import { ChevronDown } from 'lucide-react';
-import { usePermission } from '@/hooks/use-permission';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -8,6 +7,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { usePermission } from '@/hooks/use-permission';
 import {
     cancel,
     complete,

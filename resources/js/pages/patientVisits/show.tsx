@@ -52,6 +52,7 @@ function formatDate(dt: string): string {
 function formatTime(dt: string): string {
     // Handle bare time strings like "09:30:00" by prefixing a dummy date
     const normalized = /^\d{2}:\d{2}/.test(dt) ? `1970-01-01T${dt}` : dt;
+
     return new Date(normalized).toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
@@ -62,9 +63,14 @@ function formatTime(dt: string): string {
 function durationBetween(a: string, b: string): string {
     const diffMs = Math.abs(new Date(b).getTime() - new Date(a).getTime());
     const totalMinutes = Math.round(diffMs / 60000);
-    if (totalMinutes < 60) return `${totalMinutes} min`;
+
+    if (totalMinutes < 60) {
+return `${totalMinutes} min`;
+}
+
     const hours = Math.floor(totalMinutes / 60);
     const mins = totalMinutes % 60;
+
     return mins > 0 ? `${hours} hr ${mins} min` : `${hours} hr`;
 }
 

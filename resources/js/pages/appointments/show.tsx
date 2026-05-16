@@ -57,11 +57,13 @@ function formatTime(time: string): string {
     const [h, m] = time.split(':').map(Number);
     const period = h >= 12 ? 'PM' : 'AM';
     const hour = h % 12 === 0 ? 12 : h % 12;
+
     return `${hour}:${String(m).padStart(2, '0')} ${period}`;
 }
 
 function formatDate(dateStr: string): string {
     const date = new Date(`${dateStr}T00:00:00`);
+
     return date.toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
@@ -72,6 +74,7 @@ function formatDate(dateStr: string): string {
 
 function formatDateShort(dateStr: string): string {
     const date = new Date(`${dateStr}T00:00:00`);
+
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
@@ -85,18 +88,31 @@ function formatVisitDate(isoStr: string): string {
 
 function computeDuration(start: string, end: string, durationMinutes?: number): string {
     if (durationMinutes) {
-        if (durationMinutes < 60) return `${durationMinutes} min`;
+        if (durationMinutes < 60) {
+return `${durationMinutes} min`;
+}
+
         const h = Math.floor(durationMinutes / 60);
         const m = durationMinutes % 60;
+
         return m > 0 ? `${h}h ${m}min` : `${h}h`;
     }
+
     const [sh, sm] = start.split(':').map(Number);
     const [eh, em] = end.split(':').map(Number);
     const diff = (eh * 60 + em) - (sh * 60 + sm);
-    if (diff <= 0) return '—';
-    if (diff < 60) return `${diff} min`;
+
+    if (diff <= 0) {
+return '—';
+}
+
+    if (diff < 60) {
+return `${diff} min`;
+}
+
     const h = Math.floor(diff / 60);
     const m = diff % 60;
+
     return m > 0 ? `${h}h ${m}min` : `${h}h`;
 }
 
@@ -118,9 +134,18 @@ function getInitials(name: string): string {
 type PatientType = 'walk_in_unregistered' | 'walk_in_existing' | 'regular' | 'patient';
 
 function resolvePatientType(isWalkIn: boolean, hasPatient: boolean, isRegular?: boolean): PatientType {
-    if (isWalkIn && !hasPatient) return 'walk_in_unregistered';
-    if (isWalkIn && hasPatient) return 'walk_in_existing';
-    if (!isWalkIn && isRegular) return 'regular';
+    if (isWalkIn && !hasPatient) {
+return 'walk_in_unregistered';
+}
+
+    if (isWalkIn && hasPatient) {
+return 'walk_in_existing';
+}
+
+    if (!isWalkIn && isRegular) {
+return 'regular';
+}
+
     return 'patient';
 }
 
@@ -521,6 +546,7 @@ export default function Show({ appointment }: AppointmentsShowProps) {
                                                             visit.dentalRecord?.chief_complaint ??
                                                             visit.notes ??
                                                             '—';
+
                                                         return (
                                                             <TableRow key={visit.id} className="border-b border-border/60 last:border-0">
                                                                 <TableCell className="px-3 py-2.5 text-xs">

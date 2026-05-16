@@ -10,6 +10,7 @@ import {
     UserRound,
     XCircle,
 } from 'lucide-react';
+import { QuickActions } from '@/components/quick-actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { index as appointmentsRoute } from '@/routes/appointments';
@@ -22,7 +23,7 @@ import {
     DUMMY_STATS_ADMIN,
     DUMMY_TODAY,
     STATUS_CFG,
-    STAT_ICONS,
+    StatCard,
     avatarCls,
     fmtTime,
     greeting,
@@ -68,16 +69,8 @@ export default function AdminDashboard({
 
             {/* Stats */}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {displayStats.map((s) => (
-                    <Card key={s.label} className="shadow-none">
-                        <CardContent className="p-5">
-                            <div className="mb-3 flex items-center justify-between">
-                                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
-                                <span className="text-muted-foreground/60">{STAT_ICONS[s.icon]}</span>
-                            </div>
-                            <p className="text-3xl font-bold tabular-nums">{s.value.toLocaleString()}</p>
-                        </CardContent>
-                    </Card>
+                {displayStats.map((s, i) => (
+                    <StatCard key={s.label} label={s.label} value={s.value} icon={s.icon} featured={i === 0} />
                 ))}
             </div>
 
@@ -142,6 +135,8 @@ export default function AdminDashboard({
 
                 {/* Sidebar */}
                 <div className="flex flex-col gap-4">
+                    <QuickActions />
+
                     {/* Overview breakdown */}
                     <Card className="shadow-none">
                         <CardHeader className="pb-3">

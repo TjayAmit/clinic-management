@@ -2,7 +2,6 @@ import { Head, router } from '@inertiajs/react';
 import { MoreVertical, Pencil, Trash2, Eye, Users } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog';
-import { usePermission } from '@/hooks/use-permission';
 import { TablePageHeader } from '@/components/table-page-header';
 import { TablePagination } from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
@@ -21,6 +20,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { usePermission } from '@/hooks/use-permission';
 import AppLayout from '@/layouts/app-layout';
 import {
     index as users,

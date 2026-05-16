@@ -54,12 +54,6 @@ class RoleAndPermissionSeeder extends Seeder
             'services.edit',
             'services.delete',
 
-            // Doctor Schedules
-            'doctor_schedules.view',
-            'doctor_schedules.create',
-            'doctor_schedules.edit',
-            'doctor_schedules.delete',
-
             // Notifications
             'notifications.view',
 
@@ -90,7 +84,7 @@ class RoleAndPermissionSeeder extends Seeder
         $admin = Role::firstOrCreate(['name' => 'Admin']);
         $admin->givePermissionTo(Permission::all());
 
-        // Doctor — own appointments, own patients, manage medical records, view notifications
+        // Doctor — own appointments, own patients, manage medical records, view notifications, view calendar
         $doctor = Role::firstOrCreate(['name' => 'Doctor']);
         $doctor->givePermissionTo([
             'patients.view',
@@ -104,7 +98,7 @@ class RoleAndPermissionSeeder extends Seeder
             'medical_records.create',
             'medical_records.edit',
             'services.view',
-            'doctor_schedules.view',
+            'doctors.view',
             'notifications.view',
         ]);
 
@@ -126,7 +120,6 @@ class RoleAndPermissionSeeder extends Seeder
             'patient_visits.check_in',
             'patient_visits.check_out',
             'services.view',
-            'doctor_schedules.view',
             'notifications.view',
         ]);
     }

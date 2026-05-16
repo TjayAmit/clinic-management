@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AppointmentAvailabilityController;
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\WeeklyAvailabilityController;
 use App\Http\Controllers\DailyBoardController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DentalRecordController;
@@ -83,6 +84,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('features.disable');
 
     // Appointments
+    Route::get('appointments/availability/week', WeeklyAvailabilityController::class)
+        ->middleware('can:appointments.view')
+        ->name('appointments.availability.week');
     Route::get('appointments/availability', AppointmentAvailabilityController::class)
         ->middleware('can:appointments.view')
         ->name('appointments.availability');

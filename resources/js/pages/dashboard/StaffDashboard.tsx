@@ -7,18 +7,18 @@ import {
     UserPlus,
     UserRound,
 } from 'lucide-react';
+import { QuickActions } from '@/components/quick-actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { index as appointmentsRoute } from '@/routes/appointments';
-import { create as appointmentsCreate } from '@/routes/appointments';
-import { index as patientsRoute } from '@/routes/patients';
+import { create as appointmentsCreate, index as appointmentsRoute } from '@/routes/appointments';
 import { index as doctorsRoute } from '@/routes/doctors';
+import { index as patientsRoute } from '@/routes/patients';
 import type { Auth, DashboardProps } from '@/types';
 import {
     DUMMY_STATS_STAFF,
     DUMMY_TODAY,
     STATUS_CFG,
-    STAT_ICONS,
+    StatCard,
     avatarCls,
     fmtTime,
     greeting,
@@ -62,16 +62,8 @@ export default function StaffDashboard({
 
             {/* Stats */}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {displayStats.map((s) => (
-                    <Card key={s.label} className="shadow-none">
-                        <CardContent className="p-5">
-                            <div className="mb-3 flex items-center justify-between">
-                                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
-                                <span className="text-muted-foreground/60">{STAT_ICONS[s.icon]}</span>
-                            </div>
-                            <p className="text-3xl font-bold tabular-nums">{s.value.toLocaleString()}</p>
-                        </CardContent>
-                    </Card>
+                {displayStats.map((s, i) => (
+                    <StatCard key={s.label} label={s.label} value={s.value} icon={s.icon} featured={i === 0} />
                 ))}
             </div>
 
@@ -142,26 +134,7 @@ export default function StaffDashboard({
 
                 {/* Sidebar */}
                 <div className="flex flex-col gap-4">
-                    {/* Quick Actions */}
-                    <Card className="shadow-none">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-sm font-semibold">Quick Actions</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2 pt-0">
-                            <Button className="w-full justify-start" asChild>
-                                <Link href={walkInUrl}>
-                                    <UserPlus className="mr-2 h-4 w-4" />
-                                    Walk-in Appointment
-                                </Link>
-                            </Button>
-                            <Button variant="outline" className="w-full justify-start" asChild>
-                                <Link href={appointmentsCreate.url()}>
-                                    <Calendar className="mr-2 h-4 w-4" />
-                                    New Appointment
-                                </Link>
-                            </Button>
-                        </CardContent>
-                    </Card>
+                    <QuickActions />
 
                     {/* Quick Links */}
                     <Card className="shadow-none">

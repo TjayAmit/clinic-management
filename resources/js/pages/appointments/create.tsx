@@ -1,6 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Mail, MapPin, Phone, User, UserPlus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { AppointmentCalendar } from '@/components/appointment-calendar';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -421,213 +422,222 @@ export default function Create({ patients, doctors, services, defaultPatientId, 
                     </Button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Patient & Service</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                                <div className="space-y-2">
-                                    <Label>Patient <span className="text-destructive">*</span></Label>
-                                    <Select value={data.patient_id} onValueChange={(v) => setData('patient_id', v)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select patient" />
-                                        </SelectTrigger>
-                                        <SelectContent position="popper">
-                                            {patients.map((p) => (
-                                                <SelectItem key={p.id} value={String(p.id)}>
-                                                    {p.last_name}, {p.first_name}
-                                                    {p.phone ? ` — ${p.phone}` : ''}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors.patient_id} />
-                                </div>
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,340px)_1fr]">
+                    <div className="lg:sticky lg:top-6 lg:self-start">
+                        <AppointmentCalendar
+                            selectedDate={data.appointment_date || undefined}
+                            onDateSelect={(d) => setData('appointment_date', d)}
+                        />
+                    </div>
 
-                                {selectedPatient && (
-                                    <div className="col-span-full rounded-md border bg-muted/40 p-3 text-sm">
-                                        <div className="mb-2 font-medium text-foreground">
-                                            {selectedPatient.first_name} {selectedPatient.last_name}
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base">Patient & Service</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                    <div className="space-y-2">
+                                        <Label>Patient <span className="text-destructive">*</span></Label>
+                                        <Select value={data.patient_id} onValueChange={(v) => setData('patient_id', v)}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select patient" />
+                                            </SelectTrigger>
+                                            <SelectContent position="popper">
+                                                {patients.map((p) => (
+                                                    <SelectItem key={p.id} value={String(p.id)}>
+                                                        {p.last_name}, {p.first_name}
+                                                        {p.phone ? ` — ${p.phone}` : ''}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <InputError message={errors.patient_id} />
+                                    </div>
+
+                                    {selectedPatient && (
+                                        <div className="col-span-full rounded-md border bg-muted/40 p-3 text-sm">
+                                            <div className="mb-2 font-medium text-foreground">
+                                                {selectedPatient.first_name} {selectedPatient.last_name}
+                                            </div>
+                                            <div className="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
+                                                {selectedPatient.phone && (
+                                                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                                                        <Phone className="h-3.5 w-3.5" />
+                                                        <span>{selectedPatient.phone}</span>
+                                                    </div>
+                                                )}
+                                                {selectedPatient.email && (
+                                                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                                                        <Mail className="h-3.5 w-3.5" />
+                                                        <span>{selectedPatient.email}</span>
+                                                    </div>
+                                                )}
+                                                {selectedPatient.address && (
+                                                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                                                        <MapPin className="h-3.5 w-3.5" />
+                                                        <span>{selectedPatient.address}</span>
+                                                    </div>
+                                                )}
+                                                {selectedPatient.date_of_birth && (
+                                                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                                                        <User className="h-3.5 w-3.5" />
+                                                        <span>DOB: {selectedPatient.date_of_birth}</span>
+                                                    </div>
+                                                )}
+                                                {selectedPatient.blood_type && (
+                                                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                                                        <span className="font-semibold text-foreground">Blood Type:</span>
+                                                        <span>{selectedPatient.blood_type}</span>
+                                                    </div>
+                                                )}
+                                                {selectedPatient.allergies && (
+                                                    <div className="flex items-center gap-1.5 text-amber-600">
+                                                        <span className="font-semibold">Allergies:</span>
+                                                        <span>{selectedPatient.allergies}</span>
+                                                    </div>
+                                                )}
+                                                {selectedPatient.emergency_contact_name && (
+                                                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                                                        <span className="font-semibold text-foreground">Emergency:</span>
+                                                        <span>
+                                                            {selectedPatient.emergency_contact_name}
+                                                            {selectedPatient.emergency_contact_phone
+                                                                ? ` — ${selectedPatient.emergency_contact_phone}`
+                                                                : ''}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
-                                            {selectedPatient.phone && (
-                                                <div className="flex items-center gap-1.5 text-muted-foreground">
-                                                    <Phone className="h-3.5 w-3.5" />
-                                                    <span>{selectedPatient.phone}</span>
-                                                </div>
-                                            )}
-                                            {selectedPatient.email && (
-                                                <div className="flex items-center gap-1.5 text-muted-foreground">
-                                                    <Mail className="h-3.5 w-3.5" />
-                                                    <span>{selectedPatient.email}</span>
-                                                </div>
-                                            )}
-                                            {selectedPatient.address && (
-                                                <div className="flex items-center gap-1.5 text-muted-foreground">
-                                                    <MapPin className="h-3.5 w-3.5" />
-                                                    <span>{selectedPatient.address}</span>
-                                                </div>
-                                            )}
-                                            {selectedPatient.date_of_birth && (
-                                                <div className="flex items-center gap-1.5 text-muted-foreground">
-                                                    <User className="h-3.5 w-3.5" />
-                                                    <span>DOB: {selectedPatient.date_of_birth}</span>
-                                                </div>
-                                            )}
-                                            {selectedPatient.blood_type && (
-                                                <div className="flex items-center gap-1.5 text-muted-foreground">
-                                                    <span className="font-semibold text-foreground">Blood Type:</span>
-                                                    <span>{selectedPatient.blood_type}</span>
-                                                </div>
-                                            )}
-                                            {selectedPatient.allergies && (
-                                                <div className="flex items-center gap-1.5 text-amber-600">
-                                                    <span className="font-semibold">Allergies:</span>
-                                                    <span>{selectedPatient.allergies}</span>
-                                                </div>
-                                            )}
-                                            {selectedPatient.emergency_contact_name && (
-                                                <div className="flex items-center gap-1.5 text-muted-foreground">
-                                                    <span className="font-semibold text-foreground">Emergency:</span>
-                                                    <span>
-                                                        {selectedPatient.emergency_contact_name}
-                                                        {selectedPatient.emergency_contact_phone
-                                                            ? ` — ${selectedPatient.emergency_contact_phone}`
-                                                            : ''}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
+                                    )}
+
+                                    <div className="space-y-2">
+                                        <Label>Doctor <span className="text-destructive">*</span></Label>
+                                        <Select value={data.doctor_id} onValueChange={(v) => setData('doctor_id', v)}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select doctor" />
+                                            </SelectTrigger>
+                                            <SelectContent position="popper">
+                                                {doctors.map((d) => (
+                                                    <SelectItem key={d.id} value={String(d.id)}>
+                                                        {d.user?.name ?? `Doctor #${d.id}`} — {d.specialization}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <InputError message={errors.doctor_id} />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label>Service <span className="text-destructive">*</span></Label>
+                                        <Select value={data.service_id} onValueChange={(v) => setData('service_id', v)}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select service" />
+                                            </SelectTrigger>
+                                            <SelectContent position="popper">
+                                                {services.map((s) => (
+                                                    <SelectItem key={s.id} value={String(s.id)}>
+                                                        {s.name} — {s.duration_minutes} min · ₱{Number(s.price).toLocaleString()}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <InputError message={errors.service_id} />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base">Schedule</CardTitle>
+                            </CardHeader>
+                            <CardContent className="flex flex-col gap-4">
+                                {!data.appointment_date && (
+                                    <p className="text-xs text-muted-foreground">Select a date from the calendar on the left.</p>
+                                )}
+                                {data.appointment_date && (
+                                    <div className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm">
+                                        <span className="text-muted-foreground">Date:</span>
+                                        <span className="font-medium">
+                                            {new Date(data.appointment_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
+                                        </span>
                                     </div>
                                 )}
-
-                                <div className="space-y-2">
-                                    <Label>Doctor <span className="text-destructive">*</span></Label>
-                                    <Select value={data.doctor_id} onValueChange={(v) => setData('doctor_id', v)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select doctor" />
-                                        </SelectTrigger>
-                                        <SelectContent position="popper">
-                                            {doctors.map((d) => (
-                                                <SelectItem key={d.id} value={String(d.id)}>
-                                                    {d.user?.name ?? `Doctor #${d.id}`} — {d.specialization}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors.doctor_id} />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label>Service <span className="text-destructive">*</span></Label>
-                                    <Select value={data.service_id} onValueChange={(v) => setData('service_id', v)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select service" />
-                                        </SelectTrigger>
-                                        <SelectContent position="popper">
-                                            {services.map((s) => (
-                                                <SelectItem key={s.id} value={String(s.id)}>
-                                                    {s.name} — {s.duration_minutes} min · ₱{Number(s.price).toLocaleString()}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors.service_id} />
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base">Schedule</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex flex-col gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="appointment_date">Date <span className="text-destructive">*</span></Label>
-                                <Input
-                                    id="appointment_date"
-                                    type="date"
-                                    value={data.appointment_date}
-                                    min={today}
-                                    onChange={(e) => setData('appointment_date', e.target.value)}
-                                    required
-                                />
                                 <InputError message={errors.appointment_date} />
-                            </div>
 
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div className="space-y-2">
-                                    <Label htmlFor="start_time">Start Time <span className="text-destructive">*</span></Label>
-                                    <Input
-                                        id="start_time"
-                                        type="time"
-                                        value={data.start_time}
-                                        onChange={(e) => setData('start_time', e.target.value)}
-                                        required
-                                    />
-                                    <InputError message={errors.start_time} />
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="start_time">Start Time <span className="text-destructive">*</span></Label>
+                                        <Input
+                                            id="start_time"
+                                            type="time"
+                                            value={data.start_time}
+                                            onChange={(e) => setData('start_time', e.target.value)}
+                                            required
+                                        />
+                                        <InputError message={errors.start_time} />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="end_time">
+                                            End Time <span className="text-destructive">*</span>
+                                            <span className="ml-1 text-xs text-muted-foreground">(auto from service)</span>
+                                        </Label>
+                                        <Input
+                                            id="end_time"
+                                            type="time"
+                                            value={data.end_time}
+                                            onChange={(e) => setData('end_time', e.target.value)}
+                                            required
+                                        />
+                                        {endTimeWarning && (
+                                            <p className="text-xs text-amber-600 dark:text-amber-400">{endTimeWarning}</p>
+                                        )}
+                                        <InputError message={errors.end_time} />
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="end_time">
-                                        End Time <span className="text-destructive">*</span>
-                                        <span className="ml-1 text-xs text-muted-foreground">(auto from service)</span>
-                                    </Label>
-                                    <Input
-                                        id="end_time"
-                                        type="time"
-                                        value={data.end_time}
-                                        onChange={(e) => setData('end_time', e.target.value)}
-                                        required
-                                    />
-                                    {endTimeWarning && (
-                                        <p className="text-xs text-amber-600 dark:text-amber-400">{endTimeWarning}</p>
-                                    )}
-                                    <InputError message={errors.end_time} />
+                                    <Label htmlFor="notes">Notes</Label>
+                                    <div className="relative">
+                                        <Textarea
+                                            id="notes"
+                                            value={data.notes}
+                                            onChange={(e) => setData('notes', e.target.value.slice(0, NOTES_MAX))}
+                                            placeholder="Any relevant notes for this appointment…"
+                                            rows={4}
+                                            maxLength={NOTES_MAX}
+                                        />
+                                        <p className="mt-1 text-right text-xs text-muted-foreground">
+                                            {data.notes.length}/{NOTES_MAX}
+                                        </p>
+                                    </div>
+                                    <InputError message={errors.notes} />
                                 </div>
-                            </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="notes">Notes</Label>
-                                <div className="relative">
-                                    <Textarea
-                                        id="notes"
-                                        value={data.notes}
-                                        onChange={(e) => setData('notes', e.target.value.slice(0, NOTES_MAX))}
-                                        placeholder="Any relevant notes for this appointment…"
-                                        rows={4}
-                                        maxLength={NOTES_MAX}
+                                <div className="flex items-center gap-3">
+                                    <Switch
+                                        id="is_walk_in"
+                                        checked={data.is_walk_in}
+                                        onCheckedChange={handleWalkInToggle}
                                     />
-                                    <p className="mt-1 text-right text-xs text-muted-foreground">
-                                        {data.notes.length}/{NOTES_MAX}
-                                    </p>
+                                    <Label htmlFor="is_walk_in">Walk-in patient</Label>
                                 </div>
-                                <InputError message={errors.notes} />
-                            </div>
 
-                            <div className="flex items-center gap-3">
-                                <Switch
-                                    id="is_walk_in"
-                                    checked={data.is_walk_in}
-                                    onCheckedChange={handleWalkInToggle}
-                                />
-                                <Label htmlFor="is_walk_in">Walk-in patient</Label>
-                            </div>
-
-                            <div className="mt-auto flex items-center gap-3 pt-1">
-                                <Button type="submit" disabled={processing}>
-                                    {processing ? 'Booking…' : 'Book Appointment'}
-                                </Button>
-                                <Button variant="outline" asChild>
-                                    <Link href={appointments()}>Cancel</Link>
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </form>
+                                <div className="mt-auto flex items-center gap-3 pt-1">
+                                    <Button type="submit" disabled={processing}>
+                                        {processing ? 'Booking…' : 'Book Appointment'}
+                                    </Button>
+                                    <Button variant="outline" asChild>
+                                        <Link href={appointments()}>Cancel</Link>
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </form>
+                </div>
             </div>
         </>
     );

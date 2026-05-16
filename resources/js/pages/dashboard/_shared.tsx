@@ -114,3 +114,53 @@ export function avatarCls(name?: string) {
 
     return AVATAR_PALETTE[name.charCodeAt(0) % AVATAR_PALETTE.length];
 }
+
+interface StatCardProps {
+    label: string;
+    value: number;
+    icon?: string;
+    subtitle?: string;
+    featured?: boolean;
+}
+
+export function StatCard({ label, value, icon, subtitle, featured = false }: StatCardProps) {
+    const iconNode = icon ? STAT_ICONS[icon] : null;
+
+    if (featured) {
+        return (
+            <div className="relative overflow-hidden rounded-xl bg-primary p-5 text-primary-foreground shadow-sm">
+                <div className="flex items-start justify-between">
+                    <p className="text-sm font-medium opacity-90">{label}</p>
+                    {iconNode && (
+                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15">
+                            {iconNode}
+                        </span>
+                    )}
+                </div>
+                <p className="mt-4 text-3xl font-bold tabular-nums">{value.toLocaleString()}</p>
+                {subtitle && (
+                    <p className="mt-1.5 text-xs opacity-75">{subtitle}</p>
+                )}
+                <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10" />
+                <div className="pointer-events-none absolute -bottom-8 -right-2 h-20 w-20 rounded-full bg-white/5" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm">
+            <div className="flex items-start justify-between">
+                <p className="text-sm font-medium text-muted-foreground">{label}</p>
+                {iconNode && (
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                        {iconNode}
+                    </span>
+                )}
+            </div>
+            <p className="mt-4 text-3xl font-bold tabular-nums text-foreground">{value.toLocaleString()}</p>
+            {subtitle && (
+                <p className="mt-1.5 text-xs text-muted-foreground">{subtitle}</p>
+            )}
+        </div>
+    );
+}

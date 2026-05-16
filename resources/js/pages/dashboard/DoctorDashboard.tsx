@@ -11,15 +11,14 @@ import {
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { index as dentalRecordsRoute } from '@/routes/dental-records';
 import { show as appointmentsShow } from '@/routes/appointments';
+import { index as dentalRecordsRoute } from '@/routes/dental-records';
 import type { Auth, DashboardAppointmentItem, DashboardProps } from '@/types';
 import {
     DUMMY_STATS_DOCTOR,
     DUMMY_TODAY,
     STATUS_CFG,
-    STATUS_DOT,
-    STAT_ICONS,
+    StatCard,
     avatarCls,
     fmtTime,
     greeting,
@@ -27,6 +26,38 @@ import {
 } from './_shared';
 
 const DAY_ABBR = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+// Max appointments considered "full load" for the bar indicator
+const MAX_LOAD = 8;
+
+// Status left-border colours — matches schedule page convention
+const STATUS_BORDER: Record<string, string> = {
+    pending: 'border-l-slate-400',
+    confirmed: 'border-l-blue-500',
+    in_queue: 'border-l-amber-500',
+    in_progress: 'border-l-purple-500',
+    completed: 'border-l-emerald-500',
+    needs_follow_up: 'border-l-orange-500',
+    cancelled: 'border-l-red-400',
+    no_show: 'border-l-slate-300',
+};
+
+// Load bar colour: green → amber → rose based on appointment count
+function loadBarCls(count: number): string {
+    if (count === 0) {
+        return '';
+    }
+
+    if (count <= 3) {
+        return 'bg-emerald-400';
+    }
+
+    if (count <= 6) {
+        return 'bg-amber-400';
+    }
+
+    return 'bg-rose-400';
+}
 
 function buildWeekDays(): string[] {
     return Array.from({ length: 7 }, (_, i) => {
@@ -91,16 +122,8 @@ export default function DoctorDashboard({
 
             {/* Stats */}
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {displayStats.map((s) => (
-                    <Card key={s.label} className="shadow-none">
-                        <CardContent className="p-5">
-                            <div className="mb-3 flex items-center justify-between">
-                                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
-                                <span className="text-muted-foreground/60">{STAT_ICONS[s.icon]}</span>
-                            </div>
-                            <p className="text-3xl font-bold tabular-nums">{s.value.toLocaleString()}</p>
-                        </CardContent>
-                    </Card>
+                {displayStats.map((s, i) => (
+                    <StatCard key={s.label} label={s.label} value={s.value} icon={s.icon} featured={i === 0} />
                 ))}
             </div>
 
@@ -127,12 +150,14 @@ export default function DoctorDashboard({
 
                     <CardContent className="pt-0">
                         {/* 7-day strip */}
-                        <div className="grid grid-cols-7 gap-1">
+                        <div className="grid grid-cols-7 gap-1.5">
                             {weekDays.map((dateKey) => {
-                                const d         = new Date(dateKey + 'T00:00:00');
-                                const dayAppts  = effectiveWeek[dateKey] ?? [];
-                                const isToday   = dateKey === today;
+                                const d          = new Date(dateKey + 'T00:00:00');
+                                const dayAppts   = effectiveWeek[dateKey] ?? [];
+                                const count      = dayAppts.length;
+                                const isToday    = dateKey === today;
                                 const isSelected = dateKey === selectedDay;
+                                const barWidth   = count > 0 ? Math.min(Math.round((count / MAX_LOAD) * 100), 100) : 0;
 
                                 return (
                                     <button
@@ -140,52 +165,77 @@ export default function DoctorDashboard({
                                         type="button"
                                         onClick={() => setSelectedDay(dateKey)}
                                         className={[
-                                            'flex min-h-[72px] flex-col items-center rounded-xl p-2 text-center transition-colors',
+                                            'group relative flex min-h-[90px] flex-col items-center overflow-hidden rounded-xl pb-0 pt-3 text-center transition-all duration-150',
                                             isSelected
-                                                ? 'bg-primary text-primary-foreground shadow-sm'
+                                                ? 'bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30'
                                                 : isToday
-                                                ? 'bg-primary/10 ring-1 ring-primary/40'
-                                                : 'hover:bg-muted/60',
+                                                ? 'bg-primary/8 ring-1 ring-primary/30 hover:bg-primary/12'
+                                                : 'hover:bg-muted/70',
                                         ].join(' ')}
                                     >
-                                        <span className={`text-[10px] font-semibold uppercase tracking-wider ${isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                                            {DAY_ABBR[d.getDay()]}
-                                        </span>
-                                        <span className={`mt-0.5 text-base font-bold leading-none ${isSelected ? 'text-primary-foreground' : isToday ? 'text-primary' : 'text-foreground'}`}>
+                                        {/* TODAY chip — only on today when not selected */}
+                                        {isToday && !isSelected ? (
+                                            <span className="mb-1 rounded-full bg-primary px-1.5 py-px text-[8px] font-bold uppercase tracking-widest text-primary-foreground">
+                                                Today
+                                            </span>
+                                        ) : (
+                                            <span
+                                                className={`mb-1 text-[10px] font-semibold uppercase tracking-wider ${isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}
+                                            >
+                                                {DAY_ABBR[d.getDay()]}
+                                            </span>
+                                        )}
+
+                                        {/* Hero date number */}
+                                        <span
+                                            className={`text-xl font-bold leading-none tabular-nums ${isSelected ? 'text-primary-foreground' : isToday ? 'text-primary' : 'text-foreground'}`}
+                                        >
                                             {d.getDate()}
                                         </span>
-                                        {dayAppts.length > 0 ? (
-                                            <div className="mt-1.5 flex flex-wrap justify-center gap-0.5">
-                                                {dayAppts.slice(0, 3).map((a) => (
-                                                    <span
-                                                        key={a.id}
-                                                        className={`h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-primary-foreground/60' : (STATUS_DOT[a.status] ?? 'bg-slate-400')}`}
-                                                    />
-                                                ))}
-                                                {dayAppts.length > 3 && (
-                                                    <span className={`text-[9px] font-bold leading-none ${isSelected ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>
-                                                        +{dayAppts.length - 3}
-                                                    </span>
-                                                )}
-                                            </div>
+
+                                        {/* Appointment count badge */}
+                                        {count > 0 ? (
+                                            <span
+                                                className={`mt-2 rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums leading-none ${
+                                                    isSelected
+                                                        ? 'bg-primary-foreground/20 text-primary-foreground'
+                                                        : 'bg-muted text-muted-foreground'
+                                                }`}
+                                            >
+                                                {count}
+                                            </span>
                                         ) : (
-                                            <span className={`mt-1.5 text-[9px] ${isSelected ? 'text-primary-foreground/40' : 'text-muted-foreground/40'}`}>
+                                            <span
+                                                className={`mt-2 text-[10px] leading-none ${isSelected ? 'text-primary-foreground/30' : 'text-muted-foreground/30'}`}
+                                            >
                                                 —
                                             </span>
                                         )}
+
+                                        {/* Load bar — pinned to bottom of cell */}
+                                        <div className="mt-auto w-full px-2 pb-2 pt-2">
+                                            <div className="h-1 w-full overflow-hidden rounded-full bg-black/5 dark:bg-white/10">
+                                                {count > 0 && (
+                                                    <div
+                                                        className={`h-full rounded-full transition-all duration-300 ${isSelected ? 'bg-primary-foreground/50' : loadBarCls(count)}`}
+                                                        style={{ width: `${barWidth}%` }}
+                                                    />
+                                                )}
+                                            </div>
+                                        </div>
                                     </button>
                                 );
                             })}
                         </div>
 
                         {/* Selected day appointments */}
-                        <div className="mt-4 border-t pt-4">
-                            <div className="mb-3 flex items-center justify-between">
+                        <div className="mt-5 border-t pt-5">
+                            <div className="mb-4 flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-semibold text-foreground">{formatDayLabel(selectedDay)}</p>
-                                    <p className="text-xs text-muted-foreground">
+                                    <p className="mt-0.5 text-xs text-muted-foreground">
                                         {selectedAppts.length === 0
-                                            ? 'No appointments'
+                                            ? 'No appointments scheduled'
                                             : `${selectedAppts.length} appointment${selectedAppts.length !== 1 ? 's' : ''}`}
                                     </p>
                                 </div>
@@ -199,25 +249,36 @@ export default function DoctorDashboard({
                             </div>
 
                             {selectedAppts.length === 0 ? (
-                                <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
-                                    <CalendarDays className="h-6 w-6 opacity-25" />
-                                    <p className="text-sm">Free day</p>
+                                <div className="flex flex-col items-center gap-3 rounded-xl bg-muted/40 py-10 text-muted-foreground">
+                                    <CalendarDays className="h-7 w-7 opacity-20" />
+                                    <div className="text-center">
+                                        <p className="text-sm font-medium">Rest day</p>
+                                        <p className="mt-0.5 text-xs text-muted-foreground/60">No appointments on this day</p>
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="space-y-2">
                                     {selectedAppts.map((appt) => {
-                                        const cfg  = STATUS_CFG[appt.status] ?? STATUS_CFG.pending;
-                                        const name = appt.patient?.full_name ?? `${appt.patient?.first_name} ${appt.patient?.last_name}`;
+                                        const cfg        = STATUS_CFG[appt.status] ?? STATUS_CFG.pending;
+                                        const borderCls  = STATUS_BORDER[appt.status] ?? 'border-l-border';
+                                        const name       = appt.patient?.full_name ?? `${appt.patient?.first_name} ${appt.patient?.last_name}`;
 
                                         return (
                                             <button
                                                 key={appt.id}
                                                 type="button"
                                                 onClick={() => router.get(appointmentsShow(appt.id))}
-                                                className="w-full rounded-lg border border-border bg-card px-4 py-3 text-left transition-colors hover:bg-muted/40"
+                                                className={[
+                                                    'w-full rounded-xl border border-border border-l-4 bg-card px-4 py-3 text-left',
+                                                    'shadow-sm transition-colors hover:bg-muted/40',
+                                                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                                                    borderCls,
+                                                ].join(' ')}
                                             >
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${avatarCls(name)}`}>
+                                                    <div
+                                                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${avatarCls(name)}`}
+                                                    >
                                                         {initials(name)}
                                                     </div>
                                                     <div className="min-w-0 flex-1">
@@ -228,7 +289,9 @@ export default function DoctorDashboard({
                                                         <p className="text-xs font-medium tabular-nums text-muted-foreground">
                                                             {fmtTime(appt.start_time)}
                                                         </p>
-                                                        <span className={`mt-0.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${cfg.className}`}>
+                                                        <span
+                                                            className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${cfg.className}`}
+                                                        >
                                                             {cfg.label}
                                                         </span>
                                                     </div>

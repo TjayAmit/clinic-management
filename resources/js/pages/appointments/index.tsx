@@ -1,10 +1,10 @@
 import { Head, router } from '@inertiajs/react';
 import { CalendarDays, Eye, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { AppointmentCalendar } from '@/components/appointment-calendar';
 import { AppointmentStatusActions } from '@/components/appointment-status-actions';
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog';
 import { STATUS_CONFIG, StatusBadge } from '@/components/status-badge';
-import { usePermission } from '@/hooks/use-permission';
 import { TablePageHeader } from '@/components/table-page-header';
 import { TablePagination } from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { usePermission } from '@/hooks/use-permission';
 import AppLayout from '@/layouts/app-layout';
 import {
     index as appointments,
@@ -100,8 +101,9 @@ return;
         <>
             <Head title="Appointments" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 p-4 lg:p-6">
-                <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+            <div className="flex h-full flex-1 gap-4 p-4 lg:p-6">
+                {/* ── Table (existing) ── */}
+                <div className="min-w-0 flex-1 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
 
                     <TablePageHeader
                         title="Appointments"
@@ -295,6 +297,13 @@ return;
 }}
                         onPageChange={(page) => navigate({ page })}
                     />
+                </div>
+
+                {/* ── Availability Calendar sidebar ── */}
+                <div className="hidden shrink-0 lg:block lg:w-64 xl:w-72">
+                    <div className="sticky top-4">
+                        <AppointmentCalendar />
+                    </div>
                 </div>
             </div>
 

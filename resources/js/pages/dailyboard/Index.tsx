@@ -4,7 +4,6 @@ import { AppointmentStatusActions } from '@/components/appointment-status-action
 import { StatusBadge } from '@/components/status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { show as appointmentsShow } from '@/routes/appointments';
 import {
     Select,
     SelectContent,
@@ -20,8 +19,9 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import AppLayout from '@/layouts/app-layout';
 import { usePermission } from '@/hooks/use-permission';
+import AppLayout from '@/layouts/app-layout';
+import { show as appointmentsShow } from '@/routes/appointments';
 import type { DailyBoardProps } from '@/types';
 
 function formatTime(time: string): string {

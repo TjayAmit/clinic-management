@@ -6,9 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import AppLayout from '@/layouts/app-layout';
-import { index as services, store as servicesStore } from '@/routes/services';
 import {
     Select,
     SelectContent,
@@ -16,6 +13,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/app-layout';
+import { index as services, store as servicesStore } from '@/routes/services';
 
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm({

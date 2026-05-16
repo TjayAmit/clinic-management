@@ -13,13 +13,13 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/app-layout';
+import { show as dentalRecordsShow, create as dentalRecordsCreate } from '@/routes/dental-records';
 import {
     index as patientVisits,
     destroy as patientVisitsDestroy,
     checkIn as patientVisitsCheckIn,
     checkOut as patientVisitsCheckOut,
 } from '@/routes/patient-visits';
-import { show as dentalRecordsShow, create as dentalRecordsCreate } from '@/routes/dental-records';
 import type { PatientVisitsShowProps } from '@/types';
 
 function Field({ label, value, multiline = false }: { label: string; value: string | number | null | undefined; multiline?: boolean }) {
@@ -54,8 +54,14 @@ export default function Show({ visit }: PatientVisitsShowProps) {
     };
 
     const visitStatus = () => {
-        if (visit.check_out_at) return { label: 'Checked Out', variant: 'outline' as const };
-        if (visit.check_in_at) return { label: 'Checked In', variant: 'default' as const };
+        if (visit.check_out_at) {
+return { label: 'Checked Out', variant: 'outline' as const };
+}
+
+        if (visit.check_in_at) {
+return { label: 'Checked In', variant: 'default' as const };
+}
+
         return { label: 'Scheduled', variant: 'secondary' as const };
     };
 

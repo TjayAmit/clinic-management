@@ -25,7 +25,10 @@ export default function Edit({ feature }: FeaturesFormProps) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (feature) put(featuresUpdate.url(feature.id));
+
+        if (feature) {
+put(featuresUpdate.url(feature.id));
+}
     };
 
     return (

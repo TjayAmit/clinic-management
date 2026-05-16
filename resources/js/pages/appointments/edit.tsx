@@ -2,9 +2,9 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { useEffect } from 'react';
 import InputError from '@/components/input-error';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -28,6 +28,7 @@ function addMinutes(time: string, minutes: number): string {
     const total = h * 60 + m + minutes;
     const hh = String(Math.floor(total / 60) % 24).padStart(2, '0');
     const mm = String(total % 60).padStart(2, '0');
+
     return `${hh}:${mm}`;
 }
 
@@ -44,8 +45,12 @@ export default function Edit({ appointment, patients, doctors, services }: Appoi
     });
 
     useEffect(() => {
-        if (!data.start_time || !data.service_id) return;
+        if (!data.start_time || !data.service_id) {
+return;
+}
+
         const service = services.find((s) => String(s.id) === data.service_id);
+
         if (service) {
             setData('end_time', addMinutes(data.start_time, service.duration_minutes));
         }
@@ -54,7 +59,10 @@ export default function Edit({ appointment, patients, doctors, services }: Appoi
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (appointment) put(appointmentsUpdate.url(appointment.id));
+
+        if (appointment) {
+put(appointmentsUpdate.url(appointment.id));
+}
     };
 
     return (

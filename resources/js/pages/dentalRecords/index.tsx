@@ -54,7 +54,10 @@ export default function Index({ data, filters }: DentalRecordsIndexProps) {
     };
 
     const handleDelete = () => {
-        if (!deleteId) return;
+        if (!deleteId) {
+return;
+}
+
         setIsDeleting(true);
         router.delete(dentalRecordsDestroy(deleteId), {
             onFinish: () => {
@@ -192,7 +195,9 @@ export default function Index({ data, filters }: DentalRecordsIndexProps) {
                             last_page: data.last_page,
                         }}
                         perPage={perPage}
-                        onPerPageChange={(v) => { setPerPage(v); navigate({ per_page: v, page: 1 }); }}
+                        onPerPageChange={(v) => {
+ setPerPage(v); navigate({ per_page: v, page: 1 }); 
+}}
                         onPageChange={(page) => navigate({ page })}
                     />
                 </div>

@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import AppLayout from '@/layouts/app-layout';
-import { index as doctorSchedulesIndex, store, update, destroy } from '@/routes/doctor-schedules';
+import { store, update, destroy } from '@/routes/doctor-schedules';
 import { show as doctorsShow } from '@/routes/doctors';
 import type { DoctorSchedule, DoctorSchedulesIndexProps } from '@/types';
 
@@ -81,7 +81,11 @@ export default function Index({ doctor, schedules }: DoctorSchedulesIndexProps) 
 
     const handleEdit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editTarget) return;
+
+        if (!editTarget) {
+return;
+}
+
         editForm.put(update.url(editTarget.id), {
             onSuccess: () => setEditTarget(null),
         });

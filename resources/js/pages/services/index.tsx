@@ -60,7 +60,10 @@ export default function Index({ data, filters }: ServicesIndexProps) {
     };
 
     const handleDelete = () => {
-        if (!deleteId) return;
+        if (!deleteId) {
+return;
+}
+
         setIsDeleting(true);
         router.delete(servicesDestroy(deleteId), {
             onFinish: () => {

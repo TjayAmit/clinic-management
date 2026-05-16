@@ -53,7 +53,10 @@ export default function Index({ data, filters }: PatientVisitsIndexProps) {
     };
 
     const handleDelete = () => {
-        if (!deleteId) return;
+        if (!deleteId) {
+return;
+}
+
         setIsDeleting(true);
         router.delete(patientVisitsDestroy(deleteId), {
             onFinish: () => {
@@ -72,8 +75,14 @@ export default function Index({ data, filters }: PatientVisitsIndexProps) {
     };
 
     const visitStatus = (visit: PatientVisitsIndexProps['data']['data'][number]) => {
-        if (visit.check_out_at) return { label: 'Checked Out', variant: 'outline' as const };
-        if (visit.check_in_at) return { label: 'Checked In', variant: 'default' as const };
+        if (visit.check_out_at) {
+return { label: 'Checked Out', variant: 'outline' as const };
+}
+
+        if (visit.check_in_at) {
+return { label: 'Checked In', variant: 'default' as const };
+}
+
         return { label: 'Scheduled', variant: 'secondary' as const };
     };
 
@@ -148,6 +157,7 @@ export default function Index({ data, filters }: PatientVisitsIndexProps) {
                             ) : (
                                 data.data.map((item) => {
                                     const status = visitStatus(item);
+
                                     return (
                                         <TableRow
                                             key={item.id}
@@ -230,7 +240,9 @@ export default function Index({ data, filters }: PatientVisitsIndexProps) {
                             last_page: data.last_page,
                         }}
                         perPage={perPage}
-                        onPerPageChange={(v) => { setPerPage(v); navigate({ per_page: v, page: 1 }); }}
+                        onPerPageChange={(v) => {
+ setPerPage(v); navigate({ per_page: v, page: 1 }); 
+}}
                         onPageChange={(page) => navigate({ page })}
                     />
                 </div>

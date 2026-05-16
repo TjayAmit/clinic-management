@@ -24,6 +24,7 @@ import type { QueueIndexProps, QueueItem } from '@/types';
 function formatTime(time: string) {
     const [h, m] = time.split(':').map(Number);
     const suffix = h >= 12 ? 'PM' : 'AM';
+
     return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${suffix}`;
 }
 
@@ -156,6 +157,7 @@ export default function Index({ queue, date, doctors, filters }: QueueIndexProps
                                     <div className="space-y-1.5">
                                         {done.map((item) => {
                                             const patient = item.appointment?.patient;
+
                                             return (
                                                 <div key={item.id} className="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground">
                                                     <span className="truncate">

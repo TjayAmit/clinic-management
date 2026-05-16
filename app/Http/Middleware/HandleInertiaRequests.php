@@ -3,11 +3,15 @@
 namespace App\Http\Middleware;
 
 use App\Models\User;
+use App\Repositories\FeatureRepository;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
+    public function __construct(
+        protected FeatureRepository $featureRepository
+    ) {}
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -36,6 +40,15 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+
+        $enabledFlags = $this->featureRepository->getAllEnabled();
+
+        $featureFlags = [];
+
+        foreach ($enabledFlags as $flag) {
+            $featureFlags[$flag->key] = true;
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -45,13 +58,14 @@ class HandleInertiaRequests extends Middleware
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name') ?? collect(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'featureFlags' => $featureFlags,
             'devUsers' => app()->environment('local')
                 ? User::with('roles')->get(['id', 'name', 'email'])
                     ->map(fn ($u) => [
                         'id' => $u->id,
                         'name' => $u->name,
                         'email' => $u->email,
-                        'roles' => $u->getRoleNames()->values(),
+                        'roles' => $u->roles->pluck('name')->values(),
                     ])
                 : null,
         ];

@@ -3,6 +3,7 @@ import {
     Activity,
     CalendarDays,
     ClipboardList,
+    LayoutDashboard,
     LayoutGrid,
     Shield,
     Stethoscope,
@@ -42,6 +43,18 @@ const navGroups: NavGroup[] = [
     {
         title: 'Clinic',
         items: [
+            {
+                title: 'Daily Board',
+                href: '/daily-board',
+                icon: LayoutDashboard,
+                permissions: ['appointments.view'],
+            },
+            {
+                title: "Today's Schedule",
+                href: '/schedule',
+                icon: CalendarDays,
+                permissions: ['appointments.view'],
+            },
             {
                 title: 'Appointments',
                 href: '/appointments',

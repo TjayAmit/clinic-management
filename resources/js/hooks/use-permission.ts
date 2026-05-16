@@ -8,11 +8,13 @@ export function usePermission() {
 
     const hasRole = (role: string | string[]): boolean => {
         const check = Array.isArray(role) ? role : [role];
+
         return check.some((r) => userRoles.includes(r));
     };
 
     const hasPermission = (permission: string | string[]): boolean => {
         const check = Array.isArray(permission) ? permission : [permission];
+
         return check.some((p) => userPermissions.includes(p));
     };
 
@@ -24,9 +26,17 @@ export function usePermission() {
         const hasRoleGuard = item.roles && item.roles.length > 0;
         const hasPermissionGuard = item.permissions && item.permissions.length > 0;
 
-        if (!hasRoleGuard && !hasPermissionGuard) return true;
-        if (hasRoleGuard && hasRole(item.roles!)) return true;
-        if (hasPermissionGuard && hasPermission(item.permissions!)) return true;
+        if (!hasRoleGuard && !hasPermissionGuard) {
+return true;
+}
+
+        if (hasRoleGuard && hasRole(item.roles!)) {
+return true;
+}
+
+        if (hasPermissionGuard && hasPermission(item.permissions!)) {
+return true;
+}
 
         return false;
     };

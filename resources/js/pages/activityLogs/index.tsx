@@ -1,24 +1,16 @@
 import { Head, router } from '@inertiajs/react';
 import { MoreVertical, Trash2, Eye, Activity } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog';
+import { TablePagination } from '@/components/table-pagination';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
-import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog';
-import { TablePagination } from '@/components/table-pagination';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -28,12 +20,20 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import AppLayout from '@/layouts/app-layout';
+import {
     index as activityLogs,
     show as activityLogsShow,
     destroy as activityLogsDestroy,
 } from '@/routes/activityLogs';
 import type { ActivityLogsIndexProps } from '@/types';
-import AppLayout from '@/layouts/app-layout';
 
 export default function Index({ data, filters, logNames, events }: ActivityLogsIndexProps) {
     const [search, setSearch] = useState(filters.search || '');
@@ -76,7 +76,10 @@ export default function Index({ data, filters, logNames, events }: ActivityLogsI
     };
 
     const handleDelete = () => {
-        if (!deleteId) return;
+        if (!deleteId) {
+return;
+}
+
         setIsDeleting(true);
         router.delete(activityLogsDestroy(deleteId), {
             onFinish: () => {
@@ -87,11 +90,24 @@ export default function Index({ data, filters, logNames, events }: ActivityLogsI
     };
 
     const getEventBadgeVariant = (eventName: string | null): 'default' | 'secondary' | 'destructive' | 'outline' => {
-        if (!eventName) return 'secondary';
+        if (!eventName) {
+return 'secondary';
+}
+
         const eventLower = eventName.toLowerCase();
-        if (eventLower.includes('create') || eventLower.includes('add')) return 'default';
-        if (eventLower.includes('update') || eventLower.includes('edit')) return 'secondary';
-        if (eventLower.includes('delete') || eventLower.includes('remove')) return 'destructive';
+
+        if (eventLower.includes('create') || eventLower.includes('add')) {
+return 'default';
+}
+
+        if (eventLower.includes('update') || eventLower.includes('edit')) {
+return 'secondary';
+}
+
+        if (eventLower.includes('delete') || eventLower.includes('remove')) {
+return 'destructive';
+}
+
         return 'outline';
     };
 

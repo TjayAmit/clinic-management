@@ -1,9 +1,10 @@
 import { Head, Link } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { ArrowLeft, Pencil, Trash2, Shield, Check, X } from 'lucide-react';
 import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
     Dialog,
     DialogContent,
@@ -12,10 +13,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import AppLayout from '@/layouts/app-layout';
 import { index as roles, edit as rolesEdit, destroy as rolesDestroy } from '@/routes/roles';
 import type { RolesShowProps } from '@/types';
-import AppLayout from '@/layouts/app-layout';
-import { router } from '@inertiajs/react';
 
 export default function Show({ role }: RolesShowProps) {
     const [showDelete, setShowDelete] = useState(false);
@@ -36,8 +36,13 @@ export default function Show({ role }: RolesShowProps) {
     // Group permissions by module
     const groupedPermissions = role.permissions?.reduce((acc, permission) => {
         const module = permission.name.split('.')[0] || 'other';
-        if (!acc[module]) acc[module] = [];
+
+        if (!acc[module]) {
+acc[module] = [];
+}
+
         acc[module].push(permission);
+
         return acc;
     }, {} as Record<string, typeof role.permissions>);
 

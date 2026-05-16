@@ -34,7 +34,10 @@ export default function Edit({ doctor, users }: DoctorsFormProps) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (doctor) put(doctorsUpdate.url(doctor.id));
+
+        if (doctor) {
+put(doctorsUpdate.url(doctor.id));
+}
     };
 
     return (

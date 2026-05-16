@@ -1,3 +1,5 @@
+import { router, usePage } from '@inertiajs/react';
+import { Check, ChevronDown } from 'lucide-react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,8 +12,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
-import { router, usePage } from '@inertiajs/react';
-import { Check, ChevronDown } from 'lucide-react';
 
 export function AppSidebarHeader({
     breadcrumbs = [],

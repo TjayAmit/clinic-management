@@ -1,9 +1,10 @@
 import { Head, Link } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
     Dialog,
     DialogContent,
@@ -12,10 +13,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import AppLayout from '@/layouts/app-layout';
 import { index as activityLogs, destroy as activityLogsDestroy } from '@/routes/activityLogs';
 import type { ActivityLogsShowProps } from '@/types';
-import AppLayout from '@/layouts/app-layout';
-import { router } from '@inertiajs/react';
 
 export default function Show({ activityLog }: ActivityLogsShowProps) {
     const [showDelete, setShowDelete] = useState(false);
@@ -32,16 +32,32 @@ export default function Show({ activityLog }: ActivityLogsShowProps) {
     };
 
     const getEventBadgeVariant = (eventName: string | null): 'default' | 'secondary' | 'destructive' | 'outline' => {
-        if (!eventName) return 'secondary';
+        if (!eventName) {
+return 'secondary';
+}
+
         const eventLower = eventName.toLowerCase();
-        if (eventLower.includes('create') || eventLower.includes('add')) return 'default';
-        if (eventLower.includes('update') || eventLower.includes('edit')) return 'secondary';
-        if (eventLower.includes('delete') || eventLower.includes('remove')) return 'destructive';
+
+        if (eventLower.includes('create') || eventLower.includes('add')) {
+return 'default';
+}
+
+        if (eventLower.includes('update') || eventLower.includes('edit')) {
+return 'secondary';
+}
+
+        if (eventLower.includes('delete') || eventLower.includes('remove')) {
+return 'destructive';
+}
+
         return 'outline';
     };
 
     const formatJson = (data: Record<string, unknown> | null): string => {
-        if (!data) return 'N/A';
+        if (!data) {
+return 'N/A';
+}
+
         return JSON.stringify(data, null, 2);
     };
 

@@ -1,7 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
@@ -41,6 +40,7 @@ const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 function formatTime(time: string) {
     const [h, m] = time.split(':').map(Number);
     const suffix = h >= 12 ? 'PM' : 'AM';
+
     return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${suffix}`;
 }
 
@@ -53,14 +53,17 @@ export default function Calendar({
     appointments,
     month,
     monthLabel,
-    year,
     daysInMonth,
     startDay,
-}: DoctorCalendarProps) {
+}: Omit<DoctorCalendarProps, 'year'> & { year?: number }) {
     const today = new Date().toISOString().slice(0, 10);
     const [selectedDay, setSelectedDay] = useState<string | null>(() => {
-        if (appointments[today]) return today;
+        if (appointments[today]) {
+return today;
+}
+
         const first = Object.keys(appointments).sort()[0];
+
         return first ?? null;
     });
 
@@ -138,6 +141,7 @@ export default function Calendar({
                                         if (day === null) {
                                             return <div key={`empty-${i}`} />;
                                         }
+
                                         const dateKey = `${month}-${pad2(day)}`;
                                         const dayAppts = appointments[dateKey] ?? [];
                                         const isToday = dateKey === today;

@@ -1,12 +1,12 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, KeyRound, ShieldCheck } from 'lucide-react';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import InputError from '@/components/input-error';
-import { index as users, store as usersStore } from '@/routes/users';
 import AppLayout from '@/layouts/app-layout';
+import { index as users, store as usersStore } from '@/routes/users';
 
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm({

@@ -6,13 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import AppLayout from '@/layouts/app-layout';
-import {
-    index as services,
-    show as servicesShow,
-    update as servicesUpdate,
-} from '@/routes/services';
 import {
     Select,
     SelectContent,
@@ -20,6 +13,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/app-layout';
+import {
+    index as services,
+    show as servicesShow,
+    update as servicesUpdate,
+} from '@/routes/services';
 import type { ServicesFormProps } from '@/types';
 
 export default function Edit({ service }: ServicesFormProps) {
@@ -34,7 +34,10 @@ export default function Edit({ service }: ServicesFormProps) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (service) put(servicesUpdate.url(service.id));
+
+        if (service) {
+put(servicesUpdate.url(service.id));
+}
     };
 
     return (

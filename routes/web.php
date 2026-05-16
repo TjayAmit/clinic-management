@@ -48,10 +48,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Today's schedule
-    Route::get('schedule', ScheduleController::class)->name('schedule');
+    Route::get('schedule', ScheduleController::class)
+        ->middleware('can:appointments.view')
+        ->name('schedule');
 
     // Daily Board
-    Route::get('daily-board', DailyBoardController::class)->name('daily-board');
+    Route::get('daily-board', DailyBoardController::class)
+        ->middleware('can:appointments.view')
+        ->name('daily-board');
 
     // Patients
     Route::resource('patients', PatientController::class)
@@ -115,21 +119,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('appointments.follow-up');
 
     // Queue
-    Route::prefix('queue')->name('queue.')->group(function () {
+    Route::prefix('queue')->name('queue.')->middleware('can:appointments.view')->group(function () {
         Route::get('/', [QueueController::class, 'index'])->name('index');
-        Route::post('/', [QueueController::class, 'store'])->name('store');
-        Route::put('{queue}', [QueueController::class, 'update'])->name('update');
-        Route::delete('{queue}', [QueueController::class, 'destroy'])->name('destroy');
-        Route::patch('{queue}/call', [QueueController::class, 'call'])->name('call');
-        Route::patch('{queue}/complete', [QueueController::class, 'complete'])->name('complete');
-        Route::patch('{queue}/no-show', [QueueController::class, 'noShow'])->name('no-show');
-        Route::post('reorder', [QueueController::class, 'reorder'])->name('reorder');
+        Route::post('/', [QueueController::class, 'store'])->middleware('can:appointments.edit')->name('store');
+        Route::put('{queue}', [QueueController::class, 'update'])->middleware('can:appointments.edit')->name('update');
+        Route::delete('{queue}', [QueueController::class, 'destroy'])->middleware('can:appointments.edit')->name('destroy');
+        Route::patch('{queue}/call', [QueueController::class, 'call'])->middleware('can:appointments.edit')->name('call');
+        Route::patch('{queue}/complete', [QueueController::class, 'complete'])->middleware('can:appointments.edit')->name('complete');
+        Route::patch('{queue}/no-show', [QueueController::class, 'noShow'])->middleware('can:appointments.edit')->name('no-show');
+        Route::post('reorder', [QueueController::class, 'reorder'])->middleware('can:appointments.edit')->name('reorder');
     });
 
     // Patient Visits
-    Route::resource('patient-visits', PatientVisitController::class);
-    Route::patch('patient-visits/{patientVisit}/check-in', [PatientVisitController::class, 'checkIn'])->name('patient-visits.check-in');
-    Route::patch('patient-visits/{patientVisit}/check-out', [PatientVisitController::class, 'checkOut'])->name('patient-visits.check-out');
+    Route::resource('patient-visits', PatientVisitController::class)
+        ->middlewareFor(['index', 'show'], 'can:medical_records.view')
+        ->middlewareFor(['create', 'store'], 'can:medical_records.create')
+        ->middlewareFor(['edit', 'update'], 'can:medical_records.edit')
+        ->middlewareFor('destroy', 'can:medical_records.delete');
+    Route::patch('patient-visits/{patientVisit}/check-in', [PatientVisitController::class, 'checkIn'])
+        ->middleware('can:medical_records.edit')
+        ->name('patient-visits.check-in');
+    Route::patch('patient-visits/{patientVisit}/check-out', [PatientVisitController::class, 'checkOut'])
+        ->middleware('can:medical_records.edit')
+        ->name('patient-visits.check-out');
 
     // Dental Records
     Route::resource('dental-records', DentalRecordController::class)
@@ -146,7 +158,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middlewareFor('destroy', 'can:users.delete');
 
     // Roles
-    Route::resource('roles', RoleController::class);
+    Route::resource('roles', RoleController::class)
+        ->middlewareFor(['index', 'show'], 'can:users.view')
+        ->middlewareFor(['create', 'store'], 'can:users.create')
+        ->middlewareFor(['edit', 'update'], 'can:users.edit')
+        ->middlewareFor('destroy', 'can:users.delete');
 
     // Activity Logs
     Route::get('activity-logs', [ActivityLogController::class, 'index'])
@@ -156,6 +172,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('can:activity_logs.view')
         ->name('activityLogs.show');
     Route::delete('activity-logs/{activityLog}', [ActivityLogController::class, 'destroy'])
+        ->middleware('can:activity_logs.view')
         ->name('activityLogs.destroy');
 });
 

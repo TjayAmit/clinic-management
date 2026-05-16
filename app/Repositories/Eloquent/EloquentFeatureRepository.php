@@ -4,27 +4,30 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Feature;
 use App\Repositories\FeatureRepository;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class EloquentFeatureRepository implements FeatureRepository
 {
-    public function all(): iterable
+    public function all(): array
     {
-        return Feature::all();
+        return Feature::with('enabledBy')->get()->toArray();
+    }
+
+    public function paginate(int $perPage = 10): LengthAwarePaginator
+    {
+        return Feature::with('enabledBy')
+            ->latest()
+            ->paginate($perPage);
     }
 
     public function findById(int $id): ?Feature
     {
-        return Feature::find($id);
+        return Feature::with('enabledBy')->find($id);
     }
 
     public function findByKey(string $key): ?Feature
     {
-        return Feature::where('key', $key)->first();
-    }
-
-    public function getEnabled(): iterable
-    {
-        return Feature::where('is_enabled', true)->get();
+        return Feature::with('enabledBy')->byKey($key)->first();
     }
 
     public function create(array $data): Feature
@@ -34,40 +37,51 @@ class EloquentFeatureRepository implements FeatureRepository
 
     public function update(int $id, array $data): Feature
     {
-        $feature = $this->findById($id);
-        $feature->update($data);
-
-        return $feature;
+        $Feature = Feature::findOrFail($id);
+        $Feature->update($data);
+        return $Feature->fresh();
     }
 
     public function delete(int $id): bool
     {
-        $feature = $this->findById($id);
-
-        return $feature->delete();
+        $Feature = Feature::findOrFail($id);
+        return $Feature->delete();
     }
 
-    public function enable(int $id, int $userId): Feature
+    public function enable(int $id, int $enabledBy): Feature
     {
-        $feature = $this->findById($id);
-        $feature->update([
+        $Feature = Feature::findOrFail($id);
+        $Feature->update([
             'is_enabled' => true,
-            'enabled_by' => $userId,
+            'enabled_by' => $enabledBy,
             'enabled_at' => now(),
         ]);
-
-        return $feature;
+        return $Feature->fresh();
     }
 
     public function disable(int $id): Feature
     {
-        $feature = $this->findById($id);
-        $feature->update([
+        $Feature = Feature::findOrFail($id);
+        $Feature->update([
             'is_enabled' => false,
             'enabled_by' => null,
             'enabled_at' => null,
         ]);
+        return $Feature->fresh();
+    }
 
-        return $feature;
+    public function getEnabled(): array
+    {
+        return Feature::enabled()->with('enabledBy')->get()->toArray();
+    }
+
+    public function getDisabled(): array
+    {
+        return Feature::disabled()->with('enabledBy')->get()->toArray();
+    }
+
+    public function getAllEnabled(): \Illuminate\Support\Collection
+    {
+        return Feature::enabled()->get();
     }
 }

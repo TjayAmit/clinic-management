@@ -1,27 +1,17 @@
 import { Head, router } from '@inertiajs/react';
 import { CalendarDays, Clock, UserRound } from 'lucide-react';
+import { STATUS_CONFIG, StatusBadge } from '@/components/status-badge';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { show as appointmentsShow } from '@/routes/appointments';
-import type { AppointmentStatus, ScheduleIndexProps } from '@/types';
-
-const STATUS_STYLES: Record<AppointmentStatus, { label: string; className: string }> = {
-    pending:         { label: 'Pending',     className: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
-    confirmed:       { label: 'Confirmed',   className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-    in_queue:        { label: 'In Queue',    className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
-    in_progress:     { label: 'In Progress', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
-    completed:       { label: 'Completed',   className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
-    needs_follow_up: { label: 'Follow-up',   className: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
-    cancelled:       { label: 'Cancelled',   className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-    no_show:         { label: 'No Show',     className: 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400' },
-};
+import type { ScheduleIndexProps } from '@/types';
 
 function formatTime(time: string) {
     const [h, m] = time.split(':').map(Number);
     const suffix = h >= 12 ? 'PM' : 'AM';
     const hour = h % 12 || 12;
+
     return `${hour}:${String(m).padStart(2, '0')} ${suffix}`;
 }
 
@@ -88,9 +78,13 @@ export default function Index({ appointments, dateLabel }: ScheduleIndexProps) {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-2 pt-0">
-                                    {Object.entries(STATUS_STYLES).map(([status, { label, className }]) => {
+                                    {Object.entries(STATUS_CONFIG).map(([status, { label, className }]) => {
                                         const count = appointments.filter((a) => a.status === status).length;
-                                        if (count === 0) return null;
+
+                                        if (count === 0) {
+return null;
+}
+
                                         return (
                                             <div key={status} className="flex items-center justify-between text-sm">
                                                 <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${className}`}>{label}</span>
@@ -109,8 +103,6 @@ export default function Index({ appointments, dateLabel }: ScheduleIndexProps) {
 }
 
 function AppointmentCard({ appointment: appt, dimmed = false }: { appointment: ScheduleIndexProps['appointments'][number]; dimmed?: boolean }) {
-    const style = STATUS_STYLES[appt.status] ?? STATUS_STYLES.pending;
-
     return (
         <button
             type="button"
@@ -132,9 +124,7 @@ function AppointmentCard({ appointment: appt, dimmed = false }: { appointment: S
                         </p>
                     </div>
                 </div>
-                <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${style.className}`}>
-                    {style.label}
-                </span>
+                <StatusBadge status={appt.status} />
             </div>
             <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Clock className="h-3.5 w-3.5" />

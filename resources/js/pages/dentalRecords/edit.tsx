@@ -28,6 +28,7 @@ export default function Edit({ record }: DentalRecordsFormProps) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
         if (record) {
             put(dentalRecordsUpdate.url(record.id));
         }

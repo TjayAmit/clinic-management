@@ -12,14 +12,14 @@ import {
     Users,
     XCircle,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { index as appointmentsRoute } from '@/routes/appointments';
-import { index as patientsRoute } from '@/routes/patients';
 import { index as dentalRecordsRoute } from '@/routes/dental-records';
-import { index as servicesRoute } from '@/routes/services';
 import { index as doctorsRoute } from '@/routes/doctors';
+import { index as patientsRoute } from '@/routes/patients';
+import { index as servicesRoute } from '@/routes/services';
 import type {
     DashboardAppointmentItem,
     DashboardPatientItem,
@@ -100,6 +100,7 @@ const BREAKDOWN_ROWS = [
 
 function fmtTime(t: string) {
     const [h, m] = t.split(':').map(Number);
+
     return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
 }
 
@@ -109,6 +110,7 @@ function initials(name: string) {
 
 function greeting() {
     const h = new Date().getHours();
+
     return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
 }
 
@@ -211,6 +213,7 @@ export default function Dashboard({
                                 const cfg  = STATUS_CFG[appt.status] ?? STATUS_CFG.pending;
                                 const name = appt.patient?.full_name ?? `${appt.patient?.first_name} ${appt.patient?.last_name}`;
                                 const done = ['completed', 'cancelled', 'no_show'].includes(appt.status);
+
                                 return (
                                     <div
                                         key={appt.id}
@@ -250,9 +253,11 @@ export default function Dashboard({
                             <CardContent className="space-y-3 pt-0">
                                 {(() => {
                                     const total = Object.values(displayBreakdown).reduce((a, b) => a + b, 0) || 1;
+
                                     return BREAKDOWN_ROWS.map(({ key, label, color, icon: Icon, ic }) => {
                                         const count = displayBreakdown[key] ?? 0;
                                         const pct   = Math.round((count / total) * 100);
+
                                         return (
                                             <div key={key}>
                                                 <div className="mb-1 flex items-center justify-between text-xs">
@@ -334,6 +339,7 @@ export default function Dashboard({
                                     {recentAppointments.map((appt) => {
                                         const cfg  = STATUS_CFG[appt.status] ?? STATUS_CFG.pending;
                                         const name = appt.patient?.full_name ?? `${appt.patient?.first_name} ${appt.patient?.last_name}`;
+
                                         return (
                                             <div
                                                 key={appt.id}

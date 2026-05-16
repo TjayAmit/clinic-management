@@ -67,7 +67,10 @@ export default function Index({ data, filters }: PatientsIndexProps) {
     };
 
     const handleDelete = () => {
-        if (!deleteId) return;
+        if (!deleteId) {
+return;
+}
+
         setIsDeleting(true);
         router.delete(patientsDestroy(deleteId), {
             onFinish: () => {

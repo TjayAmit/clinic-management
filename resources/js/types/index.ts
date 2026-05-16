@@ -14,3 +14,4 @@ export type * from './features';
 export type * from './dashboard';
 export type * from './queue';
 export type * from './schedule';
+export type * from './daily-board';

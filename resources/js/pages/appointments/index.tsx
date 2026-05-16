@@ -1,10 +1,11 @@
 import { Head, router } from '@inertiajs/react';
 import { CalendarDays, Eye, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
+import { AppointmentStatusActions } from '@/components/appointment-status-actions';
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog';
+import { STATUS_CONFIG, StatusBadge } from '@/components/status-badge';
 import { TablePageHeader } from '@/components/table-page-header';
 import { TablePagination } from '@/components/table-pagination';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -36,22 +37,8 @@ import {
     show as appointmentsShow,
     edit as appointmentsEdit,
     destroy as appointmentsDestroy,
-    confirm as appointmentsConfirm,
-    cancel as appointmentsCancel,
-    complete as appointmentsComplete,
 } from '@/routes/appointments';
-import type { AppointmentsIndexProps, AppointmentStatus } from '@/types';
-
-const STATUS_STYLES: Record<AppointmentStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-    pending:        { label: 'Pending',        variant: 'secondary' },
-    confirmed:      { label: 'Confirmed',      variant: 'default' },
-    in_queue:       { label: 'In Queue',       variant: 'secondary' },
-    in_progress:    { label: 'In Progress',    variant: 'default' },
-    completed:      { label: 'Completed',      variant: 'outline' },
-    needs_follow_up:{ label: 'Follow-up',      variant: 'secondary' },
-    cancelled:      { label: 'Cancelled',      variant: 'destructive' },
-    no_show:        { label: 'No Show',        variant: 'secondary' },
-};
+import type { AppointmentsIndexProps } from '@/types';
 
 export default function Index({ data, filters, doctors }: AppointmentsIndexProps) {
     const [search, setSearch] = useState(filters.search || '');
@@ -84,7 +71,10 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
     };
 
     const handleDelete = () => {
-        if (!deleteId) return;
+        if (!deleteId) {
+return;
+}
+
         setIsDeleting(true);
         router.delete(appointmentsDestroy(deleteId), {
             onFinish: () => {
@@ -92,15 +82,6 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
                 setDeleteId(null);
             },
         });
-    };
-
-    const handleStatusAction = (id: number, action: 'confirm' | 'cancel' | 'complete') => {
-        const route = action === 'confirm'
-            ? appointmentsConfirm(id)
-            : action === 'cancel'
-                ? appointmentsCancel(id)
-                : appointmentsComplete(id);
-        router.patch(route.url);
     };
 
     return (
@@ -151,7 +132,7 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
                                 <SelectValue placeholder="All statuses" />
                             </SelectTrigger>
                             <SelectContent>
-                                {Object.entries(STATUS_STYLES).map(([value, { label }]) => (
+                                {Object.entries(STATUS_CONFIG).map(([value, { label }]) => (
                                     <SelectItem key={value} value={value}>{label}</SelectItem>
                                 ))}
                             </SelectContent>
@@ -196,36 +177,40 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                data.data.map((item) => {
-                                    const statusStyle = STATUS_STYLES[item.status] ?? STATUS_STYLES.pending;
-                                    return (
-                                        <TableRow
-                                            key={item.id}
-                                            className="cursor-pointer border-b border-border/60 last:border-0 transition-colors hover:bg-muted/30"
-                                            onClick={() => router.get(appointmentsShow(item.id))}
+                                data.data.map((item) => (
+                                    <TableRow
+                                        key={item.id}
+                                        className="cursor-pointer border-b border-border/60 last:border-0 transition-colors hover:bg-muted/30"
+                                        onClick={() => router.get(appointmentsShow(item.id))}
+                                    >
+                                        <TableCell className="py-3.5 pl-6 pr-4 text-sm font-medium">
+                                            {item.patient?.full_name ?? '—'}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
+                                            {item.dentist?.user?.name ?? '—'}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
+                                            {item.service?.name ?? '—'}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
+                                            {item.appointment_date}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
+                                            {item.start_time} – {item.end_time}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3.5">
+                                            <StatusBadge status={item.status} />
+                                        </TableCell>
+                                        <TableCell
+                                            className="py-3.5 pl-4 pr-6"
+                                            onClick={(e) => e.stopPropagation()}
                                         >
-                                            <TableCell className="py-3.5 pl-6 pr-4 text-sm font-medium">
-                                                {item.patient?.full_name ?? '—'}
-                                            </TableCell>
-                                            <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                                {item.dentist?.user?.name ?? '—'}
-                                            </TableCell>
-                                            <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                                {item.service?.name ?? '—'}
-                                            </TableCell>
-                                            <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                                {item.appointment_date}
-                                            </TableCell>
-                                            <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                                {item.start_time} – {item.end_time}
-                                            </TableCell>
-                                            <TableCell className="px-4 py-3.5">
-                                                <Badge variant={statusStyle.variant}>{statusStyle.label}</Badge>
-                                            </TableCell>
-                                            <TableCell
-                                                className="py-3.5 pl-4 pr-6"
-                                                onClick={(e) => e.stopPropagation()}
-                                            >
+                                            <div className="flex items-center justify-end gap-1">
+                                                <AppointmentStatusActions
+                                                    appointmentId={item.id}
+                                                    status={item.status}
+                                                    onSuccess={() => router.reload()}
+                                                />
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
                                                         <Button
@@ -242,24 +227,6 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
                                                             <Eye className="mr-2 h-4 w-4" />
                                                             View
                                                         </DropdownMenuItem>
-                                                        {item.status === 'pending' && (
-                                                            <DropdownMenuItem onClick={() => handleStatusAction(item.id, 'confirm')}>
-                                                                Confirm
-                                                            </DropdownMenuItem>
-                                                        )}
-                                                        {item.status === 'confirmed' && (
-                                                            <DropdownMenuItem onClick={() => handleStatusAction(item.id, 'complete')}>
-                                                                Mark Complete
-                                                            </DropdownMenuItem>
-                                                        )}
-                                                        {(item.status === 'pending' || item.status === 'confirmed') && (
-                                                            <DropdownMenuItem
-                                                                onClick={() => handleStatusAction(item.id, 'cancel')}
-                                                                className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-                                                            >
-                                                                Cancel
-                                                            </DropdownMenuItem>
-                                                        )}
                                                         <DropdownMenuItem onClick={() => router.get(appointmentsEdit(item.id))}>
                                                             <Pencil className="mr-2 h-4 w-4" />
                                                             Edit
@@ -274,10 +241,10 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
                             )}
                         </TableBody>
                     </Table>
@@ -291,7 +258,9 @@ export default function Index({ data, filters, doctors }: AppointmentsIndexProps
                             last_page: data.last_page,
                         }}
                         perPage={perPage}
-                        onPerPageChange={(v) => { setPerPage(v); navigate({ per_page: v, page: 1 }); }}
+                        onPerPageChange={(v) => {
+ setPerPage(v); navigate({ per_page: v, page: 1 }); 
+}}
                         onPageChange={(page) => navigate({ page })}
                     />
                 </div>

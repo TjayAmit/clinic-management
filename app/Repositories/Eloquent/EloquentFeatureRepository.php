@@ -5,6 +5,7 @@ namespace App\Repositories\Eloquent;
 use App\Models\Feature;
 use App\Repositories\FeatureRepository;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class EloquentFeatureRepository implements FeatureRepository
 {
@@ -39,12 +40,14 @@ class EloquentFeatureRepository implements FeatureRepository
     {
         $Feature = Feature::findOrFail($id);
         $Feature->update($data);
+
         return $Feature->fresh();
     }
 
     public function delete(int $id): bool
     {
         $Feature = Feature::findOrFail($id);
+
         return $Feature->delete();
     }
 
@@ -56,6 +59,7 @@ class EloquentFeatureRepository implements FeatureRepository
             'enabled_by' => $enabledBy,
             'enabled_at' => now(),
         ]);
+
         return $Feature->fresh();
     }
 
@@ -67,6 +71,7 @@ class EloquentFeatureRepository implements FeatureRepository
             'enabled_by' => null,
             'enabled_at' => null,
         ]);
+
         return $Feature->fresh();
     }
 
@@ -80,7 +85,7 @@ class EloquentFeatureRepository implements FeatureRepository
         return Feature::disabled()->with('enabledBy')->get()->toArray();
     }
 
-    public function getAllEnabled(): \Illuminate\Support\Collection
+    public function getAllEnabled(): Collection
     {
         return Feature::enabled()->get();
     }

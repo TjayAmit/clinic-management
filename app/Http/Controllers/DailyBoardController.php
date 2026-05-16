@@ -24,16 +24,16 @@ class DailyBoardController extends Controller
             ->get();
 
         $entries = $appointments->map(fn (Appointment $appointment) => [
-            'id'              => $appointment->id,
-            'patient_name'    => $appointment->patient->full_name,
-            'doctor_name'     => $appointment->doctor->user->name,
-            'service_name'    => $appointment->service->name,
-            'time'            => $appointment->start_time,
-            'status'          => $appointment->status->value,
-            'is_walk_in'      => $appointment->is_walk_in,
-            'type'            => 'appointment',
+            'id' => $appointment->id,
+            'patient_name' => $appointment->patient->full_name,
+            'doctor_name' => $appointment->doctor->user->name,
+            'service_name' => $appointment->service->name,
+            'time' => $appointment->start_time,
+            'status' => $appointment->status->value,
+            'is_walk_in' => $appointment->is_walk_in,
+            'type' => 'appointment',
             'series_position' => $appointment->series_position,
-            'series_total'    => $appointment->series_total,
+            'series_total' => $appointment->series_total,
         ])->values()->all();
 
         $doctors = Doctor::with('user')

@@ -19,6 +19,26 @@ import { index as patients, store as patientsStore } from '@/routes/patients';
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
+function sanitizeName(value: string): string {
+    return value.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, '').slice(0, 100);
+}
+
+function sanitizePhone(value: string): string {
+    let digits = value.replace(/\D/g, '').slice(0, 10);
+    if (digits.startsWith('0')) {
+        digits = digits.slice(1);
+    }
+    return digits.slice(0, 10);
+}
+
+function sanitizeAddress(value: string): string {
+    return value.replace(/[^a-zA-ZÀ-ÿ0-9\s\-,.#&()'\/;:]/gu, '').slice(0, 500);
+}
+
+function sanitizeFreeText(value: string, max: number): string {
+    return value.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F<>]/g, '').slice(0, max);
+}
+
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm({
         first_name: '',
@@ -66,7 +86,8 @@ export default function Create() {
                                 <Input
                                     id="first_name"
                                     value={data.first_name}
-                                    onChange={(e) => setData('first_name', e.target.value)}
+                                    maxLength={100}
+                                    onChange={(e) => setData('first_name', sanitizeName(e.target.value))}
                                     placeholder="First name"
                                     required
                                 />
@@ -78,7 +99,8 @@ export default function Create() {
                                 <Input
                                     id="last_name"
                                     value={data.last_name}
-                                    onChange={(e) => setData('last_name', e.target.value)}
+                                    maxLength={100}
+                                    onChange={(e) => setData('last_name', sanitizeName(e.target.value))}
                                     placeholder="Last name"
                                     required
                                 />
@@ -132,7 +154,8 @@ export default function Create() {
                                 <Input
                                     id="phone"
                                     value={data.phone}
-                                    onChange={(e) => setData('phone', e.target.value)}
+                                    maxLength={20}
+                                    onChange={(e) => setData('phone', sanitizePhone(e.target.value))}
                                     placeholder="+63 9XX XXX XXXX"
                                 />
                                 <InputError message={errors.phone} />
@@ -144,7 +167,8 @@ export default function Create() {
                                     id="email"
                                     type="email"
                                     value={data.email}
-                                    onChange={(e) => setData('email', e.target.value)}
+                                    maxLength={255}
+                                    onChange={(e) => setData('email', e.target.value.replace(/[\x00-\x1F\x7F<>]/g, '').slice(0, 255))}
                                     placeholder="patient@example.com"
                                 />
                                 <InputError message={errors.email} />
@@ -155,7 +179,8 @@ export default function Create() {
                                 <Input
                                     id="address"
                                     value={data.address}
-                                    onChange={(e) => setData('address', e.target.value)}
+                                    maxLength={500}
+                                    onChange={(e) => setData('address', sanitizeAddress(e.target.value))}
                                     placeholder="Street, City"
                                 />
                                 <InputError message={errors.address} />
@@ -163,18 +188,19 @@ export default function Create() {
                         </CardContent>
                     </Card>
 
-                    <Card className="lg:col-span-2">
+                    <Card className="lg:col-span-2 flex flex-col">
                         <CardHeader>
                             <CardTitle className="text-base">Medical Details</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="flex flex-1 flex-col gap-4">
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label htmlFor="emergency_contact_name">Emergency Contact Name</Label>
                                     <Input
                                         id="emergency_contact_name"
                                         value={data.emergency_contact_name}
-                                        onChange={(e) => setData('emergency_contact_name', e.target.value)}
+                                        maxLength={100}
+                                        onChange={(e) => setData('emergency_contact_name', sanitizeName(e.target.value))}
                                         placeholder="Contact person"
                                     />
                                     <InputError message={errors.emergency_contact_name} />
@@ -184,7 +210,8 @@ export default function Create() {
                                     <Input
                                         id="emergency_contact_phone"
                                         value={data.emergency_contact_phone}
-                                        onChange={(e) => setData('emergency_contact_phone', e.target.value)}
+                                        maxLength={20}
+                                        onChange={(e) => setData('emergency_contact_phone', sanitizePhone(e.target.value))}
                                         placeholder="+63 9XX XXX XXXX"
                                     />
                                     <InputError message={errors.emergency_contact_phone} />
@@ -196,7 +223,8 @@ export default function Create() {
                                 <Textarea
                                     id="allergies"
                                     value={data.allergies}
-                                    onChange={(e) => setData('allergies', e.target.value)}
+                                    maxLength={1000}
+                                    onChange={(e) => setData('allergies', sanitizeFreeText(e.target.value, 1000))}
                                     placeholder="List any known allergies…"
                                     rows={3}
                                 />
@@ -208,7 +236,8 @@ export default function Create() {
                                 <Textarea
                                     id="medical_history"
                                     value={data.medical_history}
-                                    onChange={(e) => setData('medical_history', e.target.value)}
+                                    maxLength={2000}
+                                    onChange={(e) => setData('medical_history', sanitizeFreeText(e.target.value, 2000))}
                                     placeholder="Relevant past illnesses, surgeries, conditions…"
                                     rows={5}
                                 />
@@ -227,7 +256,7 @@ export default function Create() {
                                 />
                             </div>
 
-                            <div className="flex items-center gap-4 pt-2">
+                            <div className="mt-auto flex items-center gap-4 pt-2">
                                 <Button type="submit" disabled={processing}>
                                     {processing ? 'Registering…' : 'Register Patient'}
                                 </Button>

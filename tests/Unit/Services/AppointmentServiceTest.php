@@ -7,6 +7,7 @@ use App\Notifications\AppointmentCompleted;
 use App\Notifications\AppointmentConfirmed;
 use App\Repositories\AppointmentRepository;
 use App\Services\AppointmentService;
+use App\Services\PatientVisitService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -17,7 +18,8 @@ test('createFromRequest calls repository create once', function () {
     Notification::fake();
 
     $repository = mock(AppointmentRepository::class);
-    $service = new AppointmentService($repository);
+    $visitService = mock(PatientVisitService::class);
+    $service = new AppointmentService($repository, $visitService);
     $request = Request::create('/', 'POST', [
         'patient_id' => 1,
         'doctor_id' => 1,
@@ -37,7 +39,8 @@ test('createFromRequest sends AppointmentBooked to patient and doctor', function
     Notification::fake();
 
     $repository = mock(AppointmentRepository::class);
-    $service = new AppointmentService($repository);
+    $visitService = mock(PatientVisitService::class);
+    $service = new AppointmentService($repository, $visitService);
 
     $request = Request::create('/', 'POST', [
         'patient_id' => 1,
@@ -65,7 +68,8 @@ test('confirm calls updateStatus and sends AppointmentConfirmed', function () {
     Notification::fake();
 
     $repository = mock(AppointmentRepository::class);
-    $service = new AppointmentService($repository);
+    $visitService = mock(PatientVisitService::class);
+    $service = new AppointmentService($repository, $visitService);
 
     $appointment = Appointment::factory()
         ->withPatient()
@@ -84,7 +88,8 @@ test('cancel sends AppointmentCancelled to patient and doctor', function () {
     Notification::fake();
 
     $repository = mock(AppointmentRepository::class);
-    $service = new AppointmentService($repository);
+    $visitService = mock(PatientVisitService::class);
+    $service = new AppointmentService($repository, $visitService);
 
     $appointment = Appointment::factory()
         ->withPatient()
@@ -103,7 +108,8 @@ test('complete sends AppointmentCompleted to patient', function () {
     Notification::fake();
 
     $repository = mock(AppointmentRepository::class);
-    $service = new AppointmentService($repository);
+    $visitService = mock(PatientVisitService::class);
+    $service = new AppointmentService($repository, $visitService);
 
     $appointment = Appointment::factory()
         ->withPatient()
@@ -111,6 +117,7 @@ test('complete sends AppointmentCompleted to patient', function () {
         ->make(['status' => 'in_progress']);
 
     $repository->shouldReceive('updateStatus')->once()->with(1, 'completed')->andReturn($appointment);
+    $visitService->shouldReceive('createFromAppointment')->once()->with($appointment);
 
     $service->complete(1);
 
@@ -119,7 +126,8 @@ test('complete sends AppointmentCompleted to patient', function () {
 
 test('createFollowUp sets parent_appointment_id from parent', function () {
     $repository = mock(AppointmentRepository::class);
-    $service = new AppointmentService($repository);
+    $visitService = mock(PatientVisitService::class);
+    $service = new AppointmentService($repository, $visitService);
 
     $parent = Appointment::factory()->make([
         'id' => 5,
@@ -153,7 +161,8 @@ test('createFollowUp sets parent_appointment_id from parent', function () {
 
 test('checkConflict delegates to repository', function () {
     $repository = mock(AppointmentRepository::class);
-    $service = new AppointmentService($repository);
+    $visitService = mock(PatientVisitService::class);
+    $service = new AppointmentService($repository, $visitService);
 
     $repository->shouldReceive('checkConflict')
         ->once()

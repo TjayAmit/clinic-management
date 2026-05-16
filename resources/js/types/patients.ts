@@ -31,7 +31,14 @@ export interface PatientVisitItem {
     heart_rate: number | null;
     notes: string | null;
     doctor?: { id: number; specialization: string; user?: { id: number; name: string } };
-    medical_record?: { id: number; chief_complaint: string; diagnosis: string | null };
+    dental_record?: {
+        id: number;
+        chief_complaint: string;
+        diagnosis: string | null;
+        treatment: string | null;
+        prescription: string | null;
+        notes: string | null;
+    };
     appointment?: { id: number };
 }
 

@@ -12,6 +12,7 @@ class HandleInertiaRequests extends Middleware
     public function __construct(
         protected FeatureRepository $featureRepository
     ) {}
+
     /**
      * The root template that's loaded on the first page visit.
      *

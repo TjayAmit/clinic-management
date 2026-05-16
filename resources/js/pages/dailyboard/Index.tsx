@@ -20,6 +20,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import { usePermission } from '@/hooks/use-permission';
 import type { DailyBoardProps } from '@/types';
 
 function formatTime(time: string): string {
@@ -28,6 +29,9 @@ function formatTime(time: string): string {
 }
 
 export default function Index({ entries, doctors, filters }: DailyBoardProps) {
+    const { hasRole } = usePermission();
+    const isDoctor = hasRole('Doctor');
+
     const navigate = (params: Record<string, string | number | null | undefined>) => {
         router.get(
             '/daily-board',
@@ -69,24 +73,26 @@ export default function Index({ entries, doctors, filters }: DailyBoardProps) {
                             }
                             aria-label="Filter by date"
                         />
-                        <Select
-                            value={filters.doctor_id !== null ? String(filters.doctor_id) : ''}
-                            onValueChange={(v) =>
-                                navigate({ date: filters.date, doctor_id: v ? Number(v) : null })
-                            }
-                        >
-                            <SelectTrigger className="h-9 w-48" aria-label="Filter by doctor">
-                                <SelectValue placeholder="All Doctors" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="">All Doctors</SelectItem>
-                                {doctors.map((d) => (
-                                    <SelectItem key={d.id} value={String(d.id)}>
-                                        {d.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        {!isDoctor && (
+                            <Select
+                                value={filters.doctor_id !== null ? String(filters.doctor_id) : 'all'}
+                                onValueChange={(v) =>
+                                    navigate({ date: filters.date, doctor_id: v === 'all' ? null : Number(v) })
+                                }
+                            >
+                                <SelectTrigger className="h-9 w-48" aria-label="Filter by doctor">
+                                    <SelectValue placeholder="All Doctors" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Doctors</SelectItem>
+                                    {doctors.map((d) => (
+                                        <SelectItem key={d.id} value={String(d.id)}>
+                                            {d.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        )}
                     </div>
 
                     {/* Table */}

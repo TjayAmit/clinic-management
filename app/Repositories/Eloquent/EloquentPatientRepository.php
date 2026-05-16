@@ -31,9 +31,9 @@ class EloquentPatientRepository implements PatientRepository
     {
         return Patient::with([
             'visits.dentalRecord',
-            'visits.dentist.user',
+            'visits.doctor.user',
             'appointments.service',
-            'appointments.dentist.user',
+            'appointments.doctor.user',
         ])->find($id);
     }
 

@@ -1,6 +1,5 @@
 import { Link } from '@inertiajs/react';
 import { ChevronRight } from 'lucide-react';
-import { useEffect } from 'react';
 import {
     Collapsible,
     CollapsibleContent,

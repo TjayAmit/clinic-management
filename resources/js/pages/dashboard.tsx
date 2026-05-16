@@ -104,7 +104,11 @@ function fmtTime(t: string) {
     return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
 }
 
-function initials(name: string) {
+function initials(name?: string) {
+    if (!name) {
+return '??';
+}
+
     return name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 }
 
@@ -123,7 +127,11 @@ const AVATAR_PALETTE = [
     'bg-sky-100    text-sky-700    dark:bg-sky-900/40    dark:text-sky-300',
 ];
 
-function avatarCls(name: string) {
+function avatarCls(name?: string) {
+    if (!name) {
+return AVATAR_PALETTE[0];
+}
+
     return AVATAR_PALETTE[name.charCodeAt(0) % AVATAR_PALETTE.length];
 }
 
@@ -314,16 +322,16 @@ export default function Dashboard({
                         {isStaff && displayPatients.length > 0 && (
                             <SimpleRecentCard
                                 title="Recent Patients"
-                                href={patientsRoute()}
-                                rows={displayPatients.map((p) => ({ id: p.id, name: p.full_name, sub: p.phone ?? '—', href: `${patientsRoute()}/${p.id}` }))}
+                                href={patientsRoute().url}
+                                rows={displayPatients.map((p) => ({ id: p.id, name: p.full_name, sub: p.phone ?? '—', href: `${patientsRoute().url}/${p.id}` }))}
                             />
                         )}
 
                         {isDoctor && displayRecords.length > 0 && (
                             <SimpleRecentCard
                                 title="Recent Records"
-                                href={dentalRecordsRoute()}
-                                rows={displayRecords.map((r) => ({ id: r.id, name: r.patient?.full_name ?? '—', sub: r.chief_complaint, href: `${dentalRecordsRoute()}/${r.id}` }))}
+                                href={dentalRecordsRoute().url}
+                                rows={displayRecords.map((r) => ({ id: r.id, name: r.patient?.full_name ?? '—', sub: r.chief_complaint, href: `${dentalRecordsRoute().url}/${r.id}` }))}
                             />
                         )}
 

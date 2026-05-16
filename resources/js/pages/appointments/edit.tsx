@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -14,6 +13,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import {
@@ -22,6 +22,8 @@ import {
     update as appointmentsUpdate,
 } from '@/routes/appointments';
 import type { AppointmentsFormProps } from '@/types';
+
+const NOTES_MAX = 500;
 
 function addMinutes(time: string, minutes: number): string {
     const [h, m] = time.split(':').map(Number);
@@ -56,6 +58,11 @@ return;
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data.start_time, data.service_id]);
+
+    const endTimeWarning =
+        data.start_time && data.end_time && data.end_time <= data.start_time
+            ? 'End time must be after start time.'
+            : null;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -181,27 +188,36 @@ put(appointmentsUpdate.url(appointment.id));
                                         onChange={(e) => setData('end_time', e.target.value)}
                                         required
                                     />
+                                    {endTimeWarning && (
+                                        <p className="text-xs text-amber-600 dark:text-amber-400">{endTimeWarning}</p>
+                                    )}
                                     <InputError message={errors.end_time} />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
                                 <Label htmlFor="notes">Notes</Label>
-                                <Textarea
-                                    id="notes"
-                                    value={data.notes}
-                                    onChange={(e) => setData('notes', e.target.value)}
-                                    placeholder="Any relevant notes for this appointment…"
-                                    rows={4}
-                                />
+                                <div className="relative">
+                                    <Textarea
+                                        id="notes"
+                                        value={data.notes}
+                                        onChange={(e) => setData('notes', e.target.value.slice(0, NOTES_MAX))}
+                                        placeholder="Any relevant notes for this appointment…"
+                                        rows={4}
+                                        maxLength={NOTES_MAX}
+                                    />
+                                    <p className="mt-1 text-right text-xs text-muted-foreground">
+                                        {data.notes.length}/{NOTES_MAX}
+                                    </p>
+                                </div>
                                 <InputError message={errors.notes} />
                             </div>
 
-                            <div className="flex items-center gap-2">
-                                <Checkbox
+                            <div className="flex items-center gap-3">
+                                <Switch
                                     id="is_walk_in"
                                     checked={data.is_walk_in}
-                                    onCheckedChange={(v) => setData('is_walk_in', Boolean(v))}
+                                    onCheckedChange={(v) => setData('is_walk_in', v)}
                                 />
                                 <Label htmlFor="is_walk_in">Walk-in patient</Label>
                             </div>

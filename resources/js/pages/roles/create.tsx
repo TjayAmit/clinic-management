@@ -1,6 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Check, ChevronDown, Shield } from 'lucide-react';
-import type { FormEvent} from 'react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,6 +16,8 @@ import AppLayout from '@/layouts/app-layout';
 import { index as roles, store as rolesStore } from '@/routes/roles';
 import type { RolesFormProps } from '@/types';
 
+const NAME_MAX = 50;
+
 export default function Create({ permissions }: RolesFormProps) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
@@ -24,10 +25,16 @@ export default function Create({ permissions }: RolesFormProps) {
     });
 
     const [isOpen, setIsOpen] = useState(true);
+    const [permissionSearch, setPermissionSearch] = useState('');
 
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        post(rolesStore());
+        post(rolesStore.url());
+    };
+
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const sanitized = e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, NAME_MAX);
+        setData('name', sanitized);
     };
 
     const togglePermission = (permissionId: number) => {
@@ -46,6 +53,18 @@ export default function Create({ permissions }: RolesFormProps) {
         }
     };
 
+    const toggleModulePermissions = (modulePerms: typeof permissions) => {
+        const moduleIds = modulePerms.map((p) => p.id);
+        const allSelected = moduleIds.every((id) => data.permissions.includes(id));
+
+        if (allSelected) {
+            setData('permissions', data.permissions.filter((id) => !moduleIds.includes(id)));
+        } else {
+            const merged = Array.from(new Set([...data.permissions, ...moduleIds]));
+            setData('permissions', merged);
+        }
+    };
+
     const groupedPermissions = permissions.reduce((acc, permission) => {
         const module = permission.name.split('.')[0] || 'other';
 
@@ -54,6 +73,19 @@ acc[module] = [];
 }
 
         acc[module].push(permission);
+
+        return acc;
+    }, {} as Record<string, typeof permissions>);
+
+    const searchLower = permissionSearch.toLowerCase().trim();
+    const filteredGrouped = Object.entries(groupedPermissions).reduce((acc, [module, perms]) => {
+        const filtered = searchLower
+            ? perms.filter((p) => p.name.toLowerCase().includes(searchLower))
+            : perms;
+
+        if (filtered.length > 0) {
+            acc[module] = filtered;
+        }
 
         return acc;
     }, {} as Record<string, typeof permissions>);
@@ -92,10 +124,19 @@ acc[module] = [];
                                     id="name"
                                     type="text"
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={handleNameChange}
                                     placeholder="e.g., editor, manager"
+                                    maxLength={NAME_MAX}
                                     className={errors.name ? 'border-destructive' : ''}
                                 />
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs text-muted-foreground">
+                                        Lowercase letters, numbers, hyphens, and underscores only.
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {data.name.length}/{NAME_MAX}
+                                    </p>
+                                </div>
                                 {errors.name && (
                                     <p className="text-sm text-destructive">{errors.name}</p>
                                 )}
@@ -127,31 +168,59 @@ acc[module] = [];
                                                 </Label>
                                             </div>
 
+                                            <div className="mb-4">
+                                                <Input
+                                                    type="text"
+                                                    value={permissionSearch}
+                                                    onChange={(e) => setPermissionSearch(e.target.value)}
+                                                    placeholder="Filter permissions…"
+                                                    className="h-8 text-sm"
+                                                />
+                                            </div>
+
                                             <div className="space-y-4">
-                                                {Object.entries(groupedPermissions).map(([module, perms]) => (
-                                                    <div key={module}>
-                                                        <h4 className="mb-2 text-sm font-semibold capitalize text-muted-foreground">
-                                                            {module}
-                                                        </h4>
-                                                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-                                                            {perms.map((permission) => (
-                                                                <div key={permission.id} className="flex items-center gap-2">
-                                                                    <Checkbox
-                                                                        id={`permission-${permission.id}`}
-                                                                        checked={data.permissions.includes(permission.id)}
-                                                                        onCheckedChange={() => togglePermission(permission.id)}
-                                                                    />
-                                                                    <Label
-                                                                        htmlFor={`permission-${permission.id}`}
-                                                                        className="cursor-pointer text-xs font-normal"
-                                                                    >
-                                                                        {permission.name.split('.')[1] || permission.name}
-                                                                    </Label>
-                                                                </div>
-                                                            ))}
+                                                {Object.entries(filteredGrouped).map(([module, perms]) => {
+                                                    const moduleIds = perms.map((p) => p.id);
+                                                    const allModuleSelected = moduleIds.every((id) => data.permissions.includes(id));
+
+                                                    return (
+                                                        <div key={module}>
+                                                            <div className="mb-2 flex items-center gap-2">
+                                                                <Checkbox
+                                                                    id={`module-${module}`}
+                                                                    checked={allModuleSelected && perms.length > 0}
+                                                                    onCheckedChange={() => toggleModulePermissions(perms)}
+                                                                />
+                                                                <Label
+                                                                    htmlFor={`module-${module}`}
+                                                                    className="cursor-pointer text-sm font-semibold capitalize text-muted-foreground"
+                                                                >
+                                                                    {module}
+                                                                </Label>
+                                                            </div>
+                                                            <div className="grid grid-cols-2 gap-2 pl-6 sm:grid-cols-3 lg:grid-cols-4">
+                                                                {perms.map((permission) => (
+                                                                    <div key={permission.id} className="flex items-center gap-2">
+                                                                        <Checkbox
+                                                                            id={`permission-${permission.id}`}
+                                                                            checked={data.permissions.includes(permission.id)}
+                                                                            onCheckedChange={() => togglePermission(permission.id)}
+                                                                        />
+                                                                        <Label
+                                                                            htmlFor={`permission-${permission.id}`}
+                                                                            className="cursor-pointer text-xs font-normal"
+                                                                        >
+                                                                            {permission.name.split('.')[1] || permission.name}
+                                                                        </Label>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
+                                                {Object.keys(filteredGrouped).length === 0 && (
+                                                    <p className="text-sm text-muted-foreground">No permissions match your search.</p>
+                                                )}
                                             </div>
                                         </CardContent>
                                     </Card>
@@ -180,12 +249,11 @@ acc[module] = [];
                                 <p className="font-medium text-foreground">Permission format</p>
                                 <p>Permissions follow the pattern <code className="rounded bg-muted px-1 py-0.5 text-xs">module.action</code>, e.g. <code className="rounded bg-muted px-1 py-0.5 text-xs">patients.view</code>.</p>
                             </div>
-                            {data.permissions.length > 0 && (
-                                <div className="space-y-1.5 pt-2">
-                                    <p className="font-medium text-foreground">{data.permissions.length} permission{data.permissions.length !== 1 ? 's' : ''} selected</p>
-                                    <p>out of {permissions.length} total</p>
-                                </div>
-                            )}
+                            <div className="space-y-1.5 pt-2">
+                                <p className="font-medium text-foreground">
+                                    {data.permissions.length} of {permissions.length} permission{permissions.length !== 1 ? 's' : ''} selected
+                                </p>
+                            </div>
                         </CardContent>
                     </Card>
                 </form>

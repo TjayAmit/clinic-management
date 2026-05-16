@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\DTOs\PatientVisitData;
+use App\Models\Appointment;
 use App\Models\PatientVisit;
 use App\Repositories\PatientVisitRepository;
 use Illuminate\Database\Eloquent\Model;
@@ -39,6 +40,27 @@ class PatientVisitService
     public function getRecentByPatient(int $patientId, int $limit = 10): iterable
     {
         return $this->repository->getRecentByPatient($patientId, $limit);
+    }
+
+    public function createFromAppointment(Appointment $appointment): PatientVisit
+    {
+        $existing = $this->repository->getByAppointment($appointment->id);
+
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $model = null;
+        $dto = null;
+
+        DB::transaction(function () use ($appointment, &$model, &$dto) {
+            $dto = PatientVisitData::fromAppointment($appointment);
+            $model = $this->repository->create($dto->toArray());
+        });
+
+        $this->logActivity('created', $model, $dto->toArray());
+
+        return $model;
     }
 
     public function createFromRequest(Request $request): PatientVisit

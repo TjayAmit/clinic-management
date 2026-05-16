@@ -1,11 +1,26 @@
-import { Head, router } from '@inertiajs/react';
-import { CalendarDays, Clock, UserRound } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { CalendarDays, Clock, Hash, PlusCircle, UserPlus, UserRound } from 'lucide-react';
 import { STATUS_CONFIG, StatusBadge } from '@/components/status-badge';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
-import { show as appointmentsShow } from '@/routes/appointments';
-import type { ScheduleIndexProps } from '@/types';
+import { create, show as appointmentsShow } from '@/routes/appointments';
+import type { AppointmentStatus, ScheduleIndexProps } from '@/types';
+
+// Status border colours for active appointment cards
+const STATUS_BORDER: Record<AppointmentStatus, string> = {
+    pending: 'border-l-slate-400',
+    confirmed: 'border-l-blue-500',
+    in_queue: 'border-l-amber-500',
+    in_progress: 'border-l-purple-500',
+    completed: 'border-l-emerald-500',
+    needs_follow_up: 'border-l-orange-500',
+    cancelled: 'border-l-red-400',
+    no_show: 'border-l-slate-300',
+};
+
 
 function formatTime(time: string) {
     const [h, m] = time.split(':').map(Number);
@@ -19,79 +34,112 @@ export default function Index({ appointments, dateLabel }: ScheduleIndexProps) {
     const active = appointments.filter((a) => !['cancelled', 'no_show', 'completed'].includes(a.status));
     const done = appointments.filter((a) => ['completed', 'cancelled', 'no_show'].includes(a.status));
 
+    const walkInUrl = create.url({ query: { walk_in: '1' } });
+    const newApptUrl = create.url();
+
     return (
         <>
             <Head title="Today's Schedule" />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4 lg:p-6">
-                <div className="flex items-center justify-between">
+                {/* Header row */}
+                <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h1 className="text-xl font-semibold text-foreground">Today's Schedule</h1>
                         <p className="text-sm text-muted-foreground">{dateLabel}</p>
+                        {appointments.length > 0 && (
+                            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                                {Object.entries(STATUS_CONFIG).map(([status, { label, className }]) => {
+                                    const count = appointments.filter((a) => a.status === status).length;
+
+                                    if (count === 0) {
+return null;
+}
+
+                                    return (
+                                        <span
+                                            key={status}
+                                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${className}`}
+                                        >
+                                            {label}
+                                            <span className="tabular-nums font-semibold">{count}</span>
+                                        </span>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
-                    <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 text-sm">
-                        <CalendarDays className="h-4 w-4" />
-                        {appointments.length} appointment{appointments.length !== 1 ? 's' : ''}
-                    </Badge>
                 </div>
 
+                {/* Empty state */}
                 {appointments.length === 0 ? (
                     <Card>
-                        <CardContent className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
+                        <CardContent className="flex flex-col items-center gap-4 py-16 text-muted-foreground">
                             <div className="rounded-full bg-muted p-4">
                                 <CalendarDays className="h-6 w-6 opacity-50" />
                             </div>
                             <p className="text-sm font-medium">No appointments scheduled for today</p>
+                            <Button asChild variant="outline" size="sm">
+                                <Link href={walkInUrl}>
+                                    <UserPlus className="mr-2 h-3.5 w-3.5" />
+                                    Add Walk-in
+                                </Link>
+                            </Button>
                         </CardContent>
                     </Card>
                 ) : (
                     <div className="grid gap-4 lg:grid-cols-3">
-                        <div className="lg:col-span-2 space-y-3">
+                        {/* Appointment list — 2/3 width at lg */}
+                        <div className="space-y-4 lg:col-span-2">
                             {active.length > 0 && (
-                                <div className="space-y-2">
-                                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1">
+                                <section className="space-y-2">
+                                    <p className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                         Active · {active.length}
                                     </p>
                                     {active.map((appt) => (
                                         <AppointmentCard key={appt.id} appointment={appt} />
                                     ))}
-                                </div>
+                                </section>
                             )}
 
+                            {active.length > 0 && done.length > 0 && <Separator />}
+
                             {done.length > 0 && (
-                                <div className="space-y-2">
-                                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1 pt-2">
+                                <section className="space-y-2">
+                                    <p className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                         Done · {done.length}
                                     </p>
                                     {done.map((appt) => (
                                         <AppointmentCard key={appt.id} appointment={appt} dimmed />
                                     ))}
-                                </div>
+                                </section>
                             )}
                         </div>
 
-                        <div className="space-y-3">
+                        {/* Sidebar — 1/3 width at lg */}
+                        <div className="mt-6">
                             <Card>
                                 <CardHeader className="pb-3">
-                                    <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                                        Summary
+                                    <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        Quick Actions
                                     </CardTitle>
+                                    <p className="text-xs text-muted-foreground">
+                                        Schedule a new appointment or add a walk-in patient for today.
+                                    </p>
                                 </CardHeader>
                                 <CardContent className="space-y-2 pt-0">
-                                    {Object.entries(STATUS_CONFIG).map(([status, { label, className }]) => {
-                                        const count = appointments.filter((a) => a.status === status).length;
-
-                                        if (count === 0) {
-return null;
-}
-
-                                        return (
-                                            <div key={status} className="flex items-center justify-between text-sm">
-                                                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${className}`}>{label}</span>
-                                                <span className="font-semibold tabular-nums">{count}</span>
-                                            </div>
-                                        );
-                                    })}
+                                    <Button variant="outline" className="w-full justify-start" asChild>
+                                        <Link href={newApptUrl}>
+                                            <PlusCircle className="mr-2 h-4 w-4" />
+                                            New Appointment
+                                        </Link>
+                                    </Button>
+                                    <Button className="w-full justify-start" asChild>
+                                        <Link href={walkInUrl}>
+                                            <UserPlus className="mr-2 h-4 w-4" />
+                                            Walk-in
+                                        </Link>
+                                    </Button>
                                 </CardContent>
                             </Card>
                         </div>
@@ -102,33 +150,65 @@ return null;
     );
 }
 
-function AppointmentCard({ appointment: appt, dimmed = false }: { appointment: ScheduleIndexProps['appointments'][number]; dimmed?: boolean }) {
+type AppointmentCardProps = {
+    appointment: ScheduleIndexProps['appointments'][number];
+    dimmed?: boolean;
+};
+
+function AppointmentCard({ appointment: appt, dimmed = false }: AppointmentCardProps) {
+    const borderClass = dimmed ? 'border-l-border' : (STATUS_BORDER[appt.status] ?? 'border-l-border');
+    const patientName = appt.patient?.full_name
+        ?? (appt.patient ? `${appt.patient.first_name} ${appt.patient.last_name}` : 'Unknown patient');
+
     return (
         <button
             type="button"
             onClick={() => router.get(appointmentsShow(appt.id))}
-            className={`w-full text-left rounded-xl border border-border bg-card p-4 shadow-sm transition-colors hover:bg-muted/40 ${dimmed ? 'opacity-60' : ''}`}
+            className={[
+                'w-full text-left rounded-xl border border-border border-l-4 bg-card px-4 py-3 shadow-sm',
+                'transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                borderClass,
+                dimmed ? 'opacity-60' : '',
+            ].join(' ')}
         >
-            <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted">
-                        <UserRound className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                    <div>
-                        <p className="text-sm font-semibold leading-tight text-foreground">
-                            {appt.patient?.full_name ?? `${appt.patient?.first_name} ${appt.patient?.last_name}`}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                            {appt.service?.name ?? '—'}
-                            {appt.dentist?.user?.name && ` · Dr. ${appt.dentist.user.name}`}
-                        </p>
-                    </div>
+            {/* Time + status row */}
+            <div className="mb-2 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 text-sm font-semibold tabular-nums text-foreground">
+                    <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                    {formatTime(appt.start_time)}
+                    <span className="font-normal text-muted-foreground">–</span>
+                    {formatTime(appt.end_time)}
                 </div>
-                <StatusBadge status={appt.status} />
+                <div className="flex items-center gap-1.5 shrink-0">
+                    {!dimmed && appt.queue?.position != null && (
+                        <span className="flex items-center gap-0.5 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                            <Hash className="h-3 w-3" />
+                            {appt.queue.position}
+                        </span>
+                    )}
+                    <StatusBadge status={appt.status} />
+                </div>
             </div>
-            <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Clock className="h-3.5 w-3.5" />
-                {formatTime(appt.start_time)} – {formatTime(appt.end_time)}
+
+            {/* Patient + service row */}
+            <div className="flex items-start gap-2.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                    <UserRound className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold leading-tight text-foreground">
+                        {patientName}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                        {appt.service?.name ?? '—'}
+                        {appt.dentist?.user?.name && ` · Dr. ${appt.dentist.user.name}`}
+                    </p>
+                </div>
+                {appt.is_walk_in && (
+                    <Badge variant="outline" className="ml-auto shrink-0 text-xs">
+                        Walk-in
+                    </Badge>
+                )}
             </div>
         </button>
     );

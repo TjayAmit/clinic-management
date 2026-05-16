@@ -40,6 +40,16 @@ import {
 } from '@/routes/appointments';
 import type { AppointmentsIndexProps } from '@/types';
 
+function formatDate(dateStr: string): string {
+    const date = new Date(dateStr + 'T00:00:00');
+
+    return date.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+    });
+}
+
 export default function Index({ data, filters, doctors }: AppointmentsIndexProps) {
     const [search, setSearch] = useState(filters.search || '');
     const [perPage, setPerPage] = useState(Number((filters as Record<string, unknown>).per_page) || 10);
@@ -193,7 +203,7 @@ return;
                                             {item.service?.name ?? '—'}
                                         </TableCell>
                                         <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                            {item.appointment_date}
+                                            {formatDate(item.appointment_date)}
                                         </TableCell>
                                         <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
                                             {item.start_time} – {item.end_time}

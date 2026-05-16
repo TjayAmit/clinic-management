@@ -20,6 +20,7 @@ class AppointmentService
 {
     public function __construct(
         protected AppointmentRepository $repository,
+        protected PatientVisitService $patientVisitService,
     ) {}
 
     public function all(): iterable
@@ -104,7 +105,9 @@ class AppointmentService
         $this->logActivity('created', $model, $dto->toArray());
 
         $model->load('doctor.user', 'patient', 'service');
-        $model->patient->notify(new AppointmentBooked($model, 'patient'));
+        if ($model->patient) {
+            $model->patient->notify(new AppointmentBooked($model, 'patient'));
+        }
         $model->doctor->user->notify(new AppointmentBooked($model, 'doctor'));
 
         return $model;
@@ -138,7 +141,9 @@ class AppointmentService
 
         $appointment->load('doctor.user', 'patient', 'service');
         $appointment->doctor->user->notify(new AppointmentConfirmed($appointment, 'doctor'));
-        $appointment->patient->notify(new AppointmentConfirmed($appointment, 'patient'));
+        if ($appointment->patient) {
+            $appointment->patient->notify(new AppointmentConfirmed($appointment, 'patient'));
+        }
 
         $this->logActivity('confirmed', $appointment, ['status' => 'confirmed']);
 
@@ -174,7 +179,9 @@ class AppointmentService
         $appointment = $this->repository->updateStatus($id, 'cancelled');
 
         $appointment->load('doctor.user', 'patient', 'service');
-        $appointment->patient->notify(new AppointmentCancelled($appointment, 'patient'));
+        if ($appointment->patient) {
+            $appointment->patient->notify(new AppointmentCancelled($appointment, 'patient'));
+        }
         $appointment->doctor->user->notify(new AppointmentCancelled($appointment, 'doctor'));
 
         $this->logActivity('cancelled', $appointment, ['status' => 'cancelled']);
@@ -184,10 +191,19 @@ class AppointmentService
 
     public function complete(int $id): Appointment
     {
-        $appointment = $this->repository->updateStatus($id, 'completed');
+        $appointment = null;
+
+        DB::transaction(function () use ($id, &$appointment) {
+            $appointment = $this->repository->updateStatus($id, 'completed');
+            if ($appointment->patient_id !== null) {
+                $this->patientVisitService->createFromAppointment($appointment);
+            }
+        });
 
         $appointment->load('doctor.user', 'patient', 'service');
-        $appointment->patient->notify(new AppointmentCompleted($appointment));
+        if ($appointment->patient) {
+            $appointment->patient->notify(new AppointmentCompleted($appointment));
+        }
 
         $this->logActivity('completed', $appointment, ['status' => 'completed']);
 

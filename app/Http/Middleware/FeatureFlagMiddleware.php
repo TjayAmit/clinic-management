@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Repositories\FeatureRepository;
 use Closure;
 use Illuminate\Http\Request;
-use App\Repositories\FeatureRepository;
 
 class FeatureFlagMiddleware
 {
@@ -15,23 +15,23 @@ class FeatureFlagMiddleware
     public function handle(Request $request, Closure $next)
     {
         $routeName = $request->route()?->getName();
-        
-        if (!$routeName) {
+
+        if (! $routeName) {
             return $next($request);
         }
 
         // Define feature flags required for each route/module
         $routeFeatureFlags = $this->getRouteFeatureFlags($routeName);
-        
+
         foreach ($routeFeatureFlags as $featureFlag) {
-            if (!$this->isFeatureEnabled($featureFlag)) {
+            if (! $this->isFeatureEnabled($featureFlag)) {
                 if ($request->expectsJson()) {
                     return response()->json([
                         'message' => 'Feature disabled',
                         'feature' => $featureFlag,
                     ], 403);
                 }
-                
+
                 return redirect()->back()->with('error', "The '{$featureFlag}' feature is currently disabled.");
             }
         }
@@ -177,6 +177,7 @@ class FeatureFlagMiddleware
     protected function isFeatureEnabled(string $featureFlag): bool
     {
         $feature = $this->repository->findByKey($featureFlag);
+
         return $feature && $feature->isEnabled();
     }
 }

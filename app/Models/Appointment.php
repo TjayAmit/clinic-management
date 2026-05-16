@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable([
     'patient_id', 'doctor_id', 'service_id', 'appointment_date',
     'start_time', 'end_time', 'status', 'notes', 'created_by',
-    'is_walk_in', 'teeth_involved', 'parent_appointment_id',
+    'is_walk_in', 'walk_in_name', 'teeth_involved', 'parent_appointment_id',
     'series_total', 'series_position',
 ])]
 class Appointment extends Model

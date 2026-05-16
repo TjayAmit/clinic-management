@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Feature;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 interface FeatureRepository
 {
@@ -31,7 +32,8 @@ interface FeatureRepository
 
     /**
      * Get all enabled feature flags as a collection.
-     * @return \Illuminate\Support\Collection<int, Feature>
+     *
+     * @return Collection<int, Feature>
      */
-    public function getAllEnabled(): \Illuminate\Support\Collection;
+    public function getAllEnabled(): Collection;
 }

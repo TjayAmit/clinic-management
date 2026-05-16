@@ -34,6 +34,14 @@ class RoleAndPermissionSeeder extends Seeder
             'appointments.confirm',
             'appointments.cancel',
 
+            // Patient Visits
+            'patient_visits.view',
+            'patient_visits.create',
+            'patient_visits.edit',
+            'patient_visits.delete',
+            'patient_visits.check_in',
+            'patient_visits.check_out',
+
             // Medical Records
             'medical_records.view',
             'medical_records.create',
@@ -87,6 +95,11 @@ class RoleAndPermissionSeeder extends Seeder
         $doctor->givePermissionTo([
             'patients.view',
             'appointments.view',
+            'patient_visits.view',
+            'patient_visits.create',
+            'patient_visits.edit',
+            'patient_visits.check_in',
+            'patient_visits.check_out',
             'medical_records.view',
             'medical_records.create',
             'medical_records.edit',
@@ -107,6 +120,11 @@ class RoleAndPermissionSeeder extends Seeder
             'appointments.edit',
             'appointments.confirm',
             'appointments.cancel',
+            'patient_visits.view',
+            'patient_visits.create',
+            'patient_visits.edit',
+            'patient_visits.check_in',
+            'patient_visits.check_out',
             'services.view',
             'doctor_schedules.view',
             'notifications.view',

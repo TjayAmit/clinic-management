@@ -143,29 +143,68 @@ export default function Show({ patient }: PatientsShowProps) {
                         <CardContent className="p-0">
                             <div className="divide-y divide-border">
                                 {patient.visits.map((visit) => (
-                                    <div key={visit.id} className="flex items-start justify-between px-6 py-4">
-                                        <div className="space-y-1">
-                                            <p className="text-sm font-medium">
-                                                {new Date(visit.visited_at).toLocaleDateString('en-US', {
-                                                    year: 'numeric', month: 'long', day: 'numeric',
-                                                })}
+                                    <div key={visit.id} className="px-6 py-4">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div className="space-y-1">
+                                                <p className="text-sm font-medium">
+                                                    {new Date(visit.visited_at).toLocaleDateString('en-US', {
+                                                        year: 'numeric', month: 'long', day: 'numeric',
+                                                    })}
+                                                </p>
+                                                {visit.doctor && (
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {visit.doctor.user?.name} · {visit.doctor.specialization}
+                                                    </p>
+                                                )}
+                                                {visit.dental_record && (
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {visit.dental_record.chief_complaint}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <div className="flex shrink-0 flex-col items-end gap-1.5 text-xs text-muted-foreground">
+                                                {visit.blood_pressure && <span>BP: {visit.blood_pressure}</span>}
+                                                {visit.temperature && <span>Temp: {visit.temperature}°C</span>}
+                                                {visit.weight && <span>Weight: {visit.weight} kg</span>}
+                                                {visit.heart_rate && <span>HR: {visit.heart_rate} bpm</span>}
+                                            </div>
+                                        </div>
+
+                                        {visit.dental_record && (
+                                            <div className="mt-3 grid grid-cols-1 gap-2 rounded-md bg-muted/40 p-3 text-sm sm:grid-cols-2">
+                                                {visit.dental_record.diagnosis && (
+                                                    <div>
+                                                        <span className="text-xs font-medium text-muted-foreground">Diagnosis</span>
+                                                        <p className="whitespace-pre-wrap">{visit.dental_record.diagnosis}</p>
+                                                    </div>
+                                                )}
+                                                {visit.dental_record.treatment && (
+                                                    <div>
+                                                        <span className="text-xs font-medium text-muted-foreground">Treatment</span>
+                                                        <p className="whitespace-pre-wrap">{visit.dental_record.treatment}</p>
+                                                    </div>
+                                                )}
+                                                {visit.dental_record.prescription && (
+                                                    <div>
+                                                        <span className="text-xs font-medium text-muted-foreground">Prescription</span>
+                                                        <p className="whitespace-pre-wrap">{visit.dental_record.prescription}</p>
+                                                    </div>
+                                                )}
+                                                {visit.dental_record.notes && (
+                                                    <div>
+                                                        <span className="text-xs font-medium text-muted-foreground">Record Notes</span>
+                                                        <p className="whitespace-pre-wrap">{visit.dental_record.notes}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {visit.notes && (
+                                            <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
+                                                <span className="text-xs font-medium">Visit Notes:</span>{' '}
+                                                {visit.notes}
                                             </p>
-                                            {visit.doctor && (
-                                                <p className="text-sm text-muted-foreground">
-                                                    {visit.doctor.user?.name} · {visit.doctor.specialization}
-                                                </p>
-                                            )}
-                                            {visit.medical_record && (
-                                                <p className="text-sm text-muted-foreground">
-                                                    {visit.medical_record.chief_complaint}
-                                                </p>
-                                            )}
-                                        </div>
-                                        <div className="flex shrink-0 flex-col items-end gap-1.5 text-xs text-muted-foreground">
-                                            {visit.blood_pressure && <span>BP: {visit.blood_pressure}</span>}
-                                            {visit.temperature && <span>Temp: {visit.temperature}°C</span>}
-                                            {visit.weight && <span>Weight: {visit.weight} kg</span>}
-                                        </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>

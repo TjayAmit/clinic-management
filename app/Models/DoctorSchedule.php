@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\DayOfWeek;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,16 +17,8 @@ class DoctorSchedule extends Model
     {
         return [
             'is_available' => 'boolean',
+            'day_of_week' => DayOfWeek::class,
         ];
-    }
-
-    protected function dayName(): Attribute
-    {
-        $days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-        return Attribute::make(
-            get: fn () => $days[$this->day_of_week] ?? 'Unknown',
-        );
     }
 
     public function doctor(): BelongsTo

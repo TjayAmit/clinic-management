@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable(['name', 'key', 'description', 'is_enabled', 'enabled_by', 'enabled_at'])]
@@ -58,7 +57,7 @@ class Feature extends Model
      */
     public function isDisabled(): bool
     {
-        return !$this->is_enabled;
+        return ! $this->is_enabled;
     }
 
     /**

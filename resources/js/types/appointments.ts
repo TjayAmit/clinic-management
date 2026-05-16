@@ -45,6 +45,13 @@ export interface PatientOption {
     first_name: string;
     last_name: string;
     phone: string | null;
+    email: string | null;
+    address: string | null;
+    emergency_contact_name: string | null;
+    emergency_contact_phone: string | null;
+    blood_type: string | null;
+    allergies: string | null;
+    date_of_birth: string | null;
 }
 
 export interface ServiceOption {

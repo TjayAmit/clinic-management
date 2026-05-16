@@ -3,9 +3,9 @@ import { ArrowLeft } from 'lucide-react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import {
@@ -15,6 +15,9 @@ import {
 } from '@/routes/features';
 import type { FeaturesFormProps } from '@/types';
 
+const NAME_MAX = 100;
+const DESCRIPTION_MAX = 500;
+
 export default function Edit({ feature }: FeaturesFormProps) {
     const { data, setData, put, processing, errors } = useForm({
         name: feature?.name ?? '',
@@ -22,6 +25,14 @@ export default function Edit({ feature }: FeaturesFormProps) {
         description: feature?.description ?? '',
         is_enabled: feature?.is_enabled ?? false,
     });
+
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setData('name', e.target.value.replace(/[<>{}]/g, '').slice(0, NAME_MAX));
+    };
+
+    const handleNameBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        setData('name', e.target.value.replace(/[<>{}]/g, '').trim());
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -56,10 +67,17 @@ put(featuresUpdate.url(feature.id));
                                 <Input
                                     id="name"
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={handleNameChange}
+                                    onBlur={handleNameBlur}
                                     placeholder="e.g. Two-Factor Authentication"
+                                    maxLength={NAME_MAX}
                                     required
                                 />
+                                {data.name.length > 0 && (
+                                    <p className="text-right text-xs text-muted-foreground">
+                                        {data.name.length}/{NAME_MAX}
+                                    </p>
+                                )}
                                 <InputError message={errors.name} />
                             </div>
 
@@ -68,23 +86,31 @@ put(featuresUpdate.url(feature.id));
                                 <Input
                                     id="key"
                                     value={data.key}
-                                    onChange={(e) => setData('key', e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
+                                    disabled
                                     placeholder="e.g. two_factor_auth"
-                                    required
+                                    aria-describedby="key-note"
                                 />
-                                <p className="text-xs text-muted-foreground">Lowercase letters, numbers, hyphens, and underscores only.</p>
+                                <p id="key-note" className="text-xs text-muted-foreground">
+                                    Keys cannot be changed after creation — changing them would break existing references.
+                                </p>
                                 <InputError message={errors.key} />
                             </div>
 
                             <div className="space-y-2">
                                 <Label htmlFor="description">Description</Label>
-                                <Textarea
-                                    id="description"
-                                    value={data.description}
-                                    onChange={(e) => setData('description', e.target.value)}
-                                    placeholder="What this feature controls…"
-                                    className="min-h-[120px] resize-none"
-                                />
+                                <div className="relative">
+                                    <Textarea
+                                        id="description"
+                                        value={data.description}
+                                        onChange={(e) => setData('description', e.target.value.slice(0, DESCRIPTION_MAX))}
+                                        placeholder="What this feature controls…"
+                                        className="min-h-[120px] resize-none"
+                                        maxLength={DESCRIPTION_MAX}
+                                    />
+                                    <p className="mt-1 text-right text-xs text-muted-foreground">
+                                        {data.description.length}/{DESCRIPTION_MAX}
+                                    </p>
+                                </div>
                                 <InputError message={errors.description} />
                             </div>
                         </CardContent>
@@ -95,11 +121,11 @@ put(featuresUpdate.url(feature.id));
                             <CardTitle className="text-base">Settings</CardTitle>
                         </CardHeader>
                         <CardContent className="flex h-full flex-col gap-4">
-                            <div className="flex items-center gap-2">
-                                <Checkbox
+                            <div className="flex items-center gap-3">
+                                <Switch
                                     id="is_enabled"
                                     checked={data.is_enabled}
-                                    onCheckedChange={(v) => setData('is_enabled', Boolean(v))}
+                                    onCheckedChange={(v) => setData('is_enabled', v)}
                                 />
                                 <Label htmlFor="is_enabled">Enabled</Label>
                             </div>

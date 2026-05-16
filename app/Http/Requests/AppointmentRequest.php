@@ -14,7 +14,8 @@ class AppointmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'patient_id' => ['required', 'exists:patients,id'],
+            'patient_id'   => ['nullable', 'exists:patients,id', 'required_without:walk_in_name'],
+            'walk_in_name' => ['nullable', 'string', 'max:100', 'required_without:patient_id'],
             'doctor_id' => ['required', 'exists:doctors,id'],
             'service_id' => ['required', 'exists:services,id'],
             'appointment_date' => ['required', 'date', 'after_or_equal:today'],
@@ -28,5 +29,14 @@ class AppointmentRequest extends FormRequest
             'series_total' => ['nullable', 'integer', 'min:1'],
             'series_position' => ['nullable', 'integer', 'min:1'],
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            if (! $this->boolean('is_walk_in') && empty($this->input('patient_id'))) {
+                $validator->errors()->add('patient_id', 'A patient is required for non-walk-in appointments.');
+            }
+        });
     }
 }

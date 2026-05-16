@@ -1,5 +1,5 @@
-import { useMemo, useCallback } from 'react';
 import { usePage } from '@inertiajs/react';
+import { useMemo, useCallback } from 'react';
 
 interface FeatureFlags {
     [key: string]: boolean;

@@ -2,6 +2,7 @@
 
 namespace App\DTOs;
 
+use App\Models\Appointment;
 use App\Models\PatientVisit;
 use Illuminate\Http\Request;
 
@@ -35,6 +36,16 @@ readonly class PatientVisitData
             weight: $request->input('weight'),
             heart_rate: $request->input('heart_rate'),
             notes: $request->input('notes'),
+        );
+    }
+
+    public static function fromAppointment(Appointment $appointment): self
+    {
+        return new self(
+            patient_id: $appointment->patient_id,
+            doctor_id: $appointment->doctor_id,
+            appointment_id: $appointment->id,
+            visited_at: now()->toDateTimeString(),
         );
     }
 

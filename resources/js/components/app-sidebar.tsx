@@ -2,17 +2,14 @@ import { Link } from '@inertiajs/react';
 import {
     Activity,
     CalendarDays,
-    ClipboardList,
     LayoutDashboard,
     LayoutGrid,
     Shield,
     Stethoscope,
     Users,
     Briefcase,
-    FileText,
     UserRound,
     Flag,
-    ListOrdered,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -41,7 +38,7 @@ const navGroups: NavGroup[] = [
         ],
     },
     {
-        title: 'Clinic',
+        title: 'Scheduling',
         items: [
             {
                 title: 'Daily Board',
@@ -61,34 +58,21 @@ const navGroups: NavGroup[] = [
                 icon: CalendarDays,
                 permissions: ['appointments.view'],
             },
-            {
-                title: 'Queue',
-                href: '/queue',
-                icon: ListOrdered,
-                permissions: ['appointments.view'],
-            },
+        ],
+    },
+    {
+        title: 'Patient Management',
+        items: [
             {
                 title: 'Patients',
                 href: '/patients',
                 icon: UserRound,
                 permissions: ['patients.view'],
             },
-            {
-                title: 'Patient Visits',
-                href: '/patient-visits',
-                icon: ClipboardList,
-                permissions: ['appointments.view'],
-            },
-            {
-                title: 'Visit Records',
-                href: '/dental-records',
-                icon: FileText,
-                permissions: ['medical_records.view'],
-            },
         ],
     },
     {
-        title: 'Doctors',
+        title: 'Staff & Services',
         roles: ['Admin', 'Staff'],
         items: [
             {
@@ -106,7 +90,7 @@ const navGroups: NavGroup[] = [
         ],
     },
     {
-        title: 'System',
+        title: 'System Administration',
         roles: ['Admin'],
         items: [
             {
@@ -130,7 +114,7 @@ const navGroups: NavGroup[] = [
         ],
     },
     {
-        title: 'Audit',
+        title: 'Audit & Logs',
         roles: ['Admin'],
         items: [
             {

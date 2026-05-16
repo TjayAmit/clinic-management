@@ -1,13 +1,3 @@
-export interface DoctorSchedule {
-    id: number;
-    doctor_id: number;
-    day_of_week: number;
-    day_name: string;
-    start_time: string;
-    end_time: string;
-    is_available: boolean;
-}
-
 export interface Doctor {
     id: number;
     user_id: number;
@@ -19,7 +9,6 @@ export interface Doctor {
     created_at: string;
     updated_at: string;
     user?: { id: number; name: string; email: string };
-    schedules?: DoctorSchedule[];
 }
 
 export interface UserOption {
@@ -48,9 +37,4 @@ export interface DoctorsShowProps {
 export interface DoctorsFormProps {
     doctor?: Doctor;
     users: UserOption[];
-}
-
-export interface DoctorSchedulesIndexProps {
-    doctor: Doctor;
-    schedules: DoctorSchedule[];
 }

@@ -10,7 +10,6 @@ use App\Http\Controllers\Dev\EmailPreviewController;
 use App\Http\Controllers\Dev\SwitchUserController;
 use App\Http\Controllers\DoctorCalendarController;
 use App\Http\Controllers\DoctorController;
-use App\Http\Controllers\DoctorScheduleController;
 use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PatientVisitController;
@@ -42,14 +41,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('doctors/{doctor}/calendar', DoctorCalendarController::class)
         ->middleware('can:doctors.view')
         ->name('doctors.calendar');
-
-    // Doctor Schedules (managed from doctor profile)
-    Route::prefix('doctor-schedules')->name('doctor-schedules.')->middleware('can:doctor_schedules.view')->group(function () {
-        Route::get('doctor/{doctor}', [DoctorScheduleController::class, 'index'])->name('index');
-        Route::post('/', [DoctorScheduleController::class, 'store'])->middleware('can:doctor_schedules.create')->name('store');
-        Route::put('{doctorSchedule}', [DoctorScheduleController::class, 'update'])->middleware('can:doctor_schedules.edit')->name('update');
-        Route::delete('{doctorSchedule}', [DoctorScheduleController::class, 'destroy'])->middleware('can:doctor_schedules.delete')->name('destroy');
-    });
 
     // Today's schedule
     Route::get('schedule', ScheduleController::class)

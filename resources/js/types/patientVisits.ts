@@ -16,7 +16,14 @@ export interface PatientVisit {
     patient?: { id: number; first_name: string; last_name: string; full_name: string; phone: string | null };
     dentist?: { id: number; specialization: string; user?: { id: number; name: string } };
     appointment?: { id: number; service?: { id: number; name: string } } | null;
-    dentalRecord?: { id: number } | null;
+    dentalRecord?: {
+        id: number;
+        chief_complaint: string;
+        diagnosis: string | null;
+        treatment: string | null;
+        prescription: string | null;
+        notes: string | null;
+    } | null;
 }
 
 export interface PatientVisitsIndexProps {

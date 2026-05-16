@@ -49,4 +49,6 @@ export interface DashboardProps {
     recentRecords: DashboardRecordItem[];
     statusBreakdown: DashboardStatusBreakdown;
     userRoles: string[];
+    weekAppointments?: Record<string, DashboardAppointmentItem[]>;
+    doctorId?: number | null;
 }

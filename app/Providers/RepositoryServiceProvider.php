@@ -5,11 +5,9 @@ namespace App\Providers;
 use App\Repositories\AppointmentRepository;
 use App\Repositories\DentalRecordRepository;
 use App\Repositories\DoctorRepository;
-use App\Repositories\DoctorScheduleRepository;
 use App\Repositories\Eloquent\EloquentAppointmentRepository;
 use App\Repositories\Eloquent\EloquentDentalRecordRepository;
 use App\Repositories\Eloquent\EloquentDoctorRepository;
-use App\Repositories\Eloquent\EloquentDoctorScheduleRepository;
 use App\Repositories\Eloquent\EloquentFeatureRepository;
 use App\Repositories\Eloquent\EloquentPatientRepository;
 use App\Repositories\Eloquent\EloquentPatientVisitRepository;
@@ -51,11 +49,6 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(
             ServiceRepository::class,
             EloquentServiceRepository::class
-        );
-
-        $this->app->bind(
-            DoctorScheduleRepository::class,
-            EloquentDoctorScheduleRepository::class
         );
 
         $this->app->bind(

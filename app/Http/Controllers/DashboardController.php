@@ -27,6 +27,8 @@ class DashboardController extends Controller
         $recentPatients = [];
         $recentRecords = [];
         $statusBreakdown = [];
+        $weekAppointments = [];
+        $doctorId = null;
 
         // ─── Admin ───
         if (in_array('Admin', $roles)) {
@@ -98,6 +100,18 @@ class DashboardController extends Controller
                 ->latest('created_at')
                 ->limit(5)
                 ->get();
+
+            $weekAppts = Appointment::with(['patient', 'service'])
+                ->where('doctor_id', $doctorId)
+                ->whereBetween('appointment_date', [$today, $weekEnd])
+                ->orderBy('appointment_date')
+                ->orderBy('start_time')
+                ->get();
+
+            foreach ($weekAppts as $appt) {
+                $dateKey = $appt->appointment_date->format('Y-m-d');
+                $weekAppointments[$dateKey][] = $appt;
+            }
         }
 
         return Inertia::render('dashboard', [
@@ -108,6 +122,8 @@ class DashboardController extends Controller
             'recentRecords' => $recentRecords,
             'statusBreakdown' => $statusBreakdown,
             'userRoles' => $roles,
+            'weekAppointments' => $weekAppointments,
+            'doctorId' => $doctorId,
         ]);
     }
 }

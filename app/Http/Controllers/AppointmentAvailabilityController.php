@@ -23,7 +23,7 @@ class AppointmentAvailabilityController extends Controller
 
         $excludedStatuses = [AppointmentStatus::Cancelled->value, AppointmentStatus::NoShow->value];
 
-        $doctors = Doctor::with(['user', 'schedules'])
+        $doctors = Doctor::with('user')
             ->where('is_active', true)
             ->when($request->filled('doctor_id'), fn ($q) => $q->where('id', $request->integer('doctor_id')))
             ->get();
@@ -56,61 +56,12 @@ class AppointmentAvailabilityController extends Controller
         $allFull = true;
 
         foreach ($doctors as $doctor) {
-            /** @var \App\Models\DoctorSchedule|null $schedule */
-            $schedule = $doctor->schedules->first(
-                fn ($s) => $s->day_of_week instanceof \App\Enums\DayOfWeek
-                    ? $s->day_of_week->value === $dayOfWeek
-                    : $s->day_of_week === $dayOfWeek
-            );
-
-            // Doctors with no schedules at all are treated as always available (no window = unbounded).
-            // Doctors who have schedules but none matching today are not working.
-            $hasAnySchedules = $doctor->schedules->isNotEmpty();
-
-            if ($hasAnySchedules && $schedule === null) {
-                // Doctor has schedules configured but not for this day — not working today.
-                $doctorData[] = [
-                    'id' => $doctor->id,
-                    'name' => 'Dr. '.$doctor->user->name,
-                    'specialization' => $doctor->specialization,
-                    'working_today' => false,
-                    'schedule' => null,
-                    'is_full' => true,
-                    'booked_minutes' => 0,
-                    'free_minutes' => 0,
-                    'next_available' => null,
-                ];
-                continue;
-            }
-
-            if ($hasAnySchedules && $schedule !== null && ! $schedule->is_available) {
-                // Schedule exists for today but marked unavailable.
-                $doctorData[] = [
-                    'id' => $doctor->id,
-                    'name' => 'Dr. '.$doctor->user->name,
-                    'specialization' => $doctor->specialization,
-                    'working_today' => false,
-                    'schedule' => null,
-                    'is_full' => true,
-                    'booked_minutes' => 0,
-                    'free_minutes' => 0,
-                    'next_available' => null,
-                ];
-                continue;
-            }
-
-            // Working today — either no schedules at all, or has a matching available schedule.
+            // All doctors are treated as always available with default schedule window (08:00–17:00).
             $allFull = false; // At least one doctor is working; will be adjusted below per free_minutes.
 
-            // Determine schedule window in minutes since midnight.
-            if ($schedule !== null) {
-                $windowStart = $this->toMinutes($schedule->start_time);
-                $windowEnd = $this->toMinutes($schedule->end_time);
-            } else {
-                // No schedule configured: treat as full working day (08:00–17:00 default).
-                $windowStart = 8 * 60;   // 480
-                $windowEnd = 17 * 60;    // 1020
-            }
+            // Default schedule window in minutes since midnight (08:00–17:00).
+            $windowStart = 8 * 60;   // 480
+            $windowEnd = 17 * 60;    // 1020
 
             $windowDuration = max(0, $windowEnd - $windowStart);
             $totalMinutes += $windowDuration;

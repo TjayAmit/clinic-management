@@ -21,19 +21,13 @@ flowchart TD
     SelectTime --> AutoCalc[Auto-calculate End Time<br/>based on Service Duration]
     AutoCalc --> Validate{Validate Booking}
     
-    Validate -->|Check Schedule| CheckSchedule[Check DoctorSchedule<br/>for availability on selected day]
     Validate -->|Check Conflicts| CheckConflicts[Check existing appointments<br/>for time conflicts]
-    
-    CheckSchedule --> ScheduleOK{Dentist Available?}
-    ScheduleOK -->|No| ScheduleError[Return Error:<br/>Dentist not available on this day]
-    ScheduleOK -->|Yes| CheckConflicts
     
     CheckConflicts --> ConflictOK{Time Slot Available?}
     ConflictOK -->|No| ConflictError[Return Error:<br/>Slot already booked]
     ConflictOK -->|Yes| CreateAppointment[Create Appointment<br/>status: pending]
     
-    ScheduleError --> End([End])
-    ConflictError --> End
+    ConflictError --> End([End])
     CreateAppointment --> Confirm{Confirm Appointment?}
     Confirm -->|Yes| UpdateStatus[Update status to confirmed]
     Confirm -->|No| End
@@ -43,7 +37,6 @@ flowchart TD
     style Start fill:#e0f2fe
     style End fill:#fee2e2
     style Success fill:#dcfce7
-    style ScheduleError fill:#fef3c7
     style ConflictError fill:#fef3c7
 ```
 
@@ -61,8 +54,7 @@ flowchart TD
 
 6. **Auto-calculate End Time**: The system automatically calculates the end time by adding the service's duration to the start time. Staff can override this if needed.
 
-7. **Validate Booking**: The system performs two critical validations:
-   - **Schedule Check**: Verifies the dentist has a `DoctorSchedule` entry for the selected day of the week and that the time falls within their working hours.
+7. **Validate Booking**: The system performs conflict detection:
    - **Conflict Check**: Queries existing appointments for the same dentist on the same date to ensure no overlap with confirmed or pending appointments.
 
 8. **Create Appointment**: If validations pass, the appointment is created with status `pending`. The system records:
@@ -351,35 +343,19 @@ flowchart TD
     Start([Appointment Submit]) --> GetInputs[Get Appointment Data:<br/>dentist_id, date, start_time, end_time]
     GetInputs --> GetDayOfWeek[Get Day of Week<br/>from appointment date]
     
-    GetDayOfWeek --> FindSchedule[Find DoctorSchedule<br/>for dentist_id and day_of_week]
-    FindSchedule --> ScheduleExists{Schedule Exists?}
-    
-    ScheduleExists -->|No| ScheduleError[Return Error:<br/>Dentist not scheduled on this day]
-    ScheduleExists -->|Yes| CheckHours{Time Within<br/>Schedule Hours?}
-    
-    CheckHours -->|No| HoursError[Return Error:<br/>Time outside dentist's working hours]
-    CheckHours -->|Yes| CheckAvailability{Dentist Available?}
-    
-    CheckAvailability -->|No| UnavailableError[Return Error:<br/>Dentist marked unavailable]
-    CheckAvailability -->|Yes| FindExisting[Find Existing Appointments<br/>for same dentist and date]
+    GetDayOfWeek --> FindExisting[Find Existing Appointments<br/>for same dentist and date]
     
     FindExisting --> CheckOverlap{Check for Overlap<br/>with existing appointments}
     
     CheckOverlap -->|Overlap Found| ConflictError[Return Error:<br/>Time slot already booked:<br/>Dr. Name already booked<br/>XX:XX-YY:YY on Date]
     CheckOverlap -->|No Overlap| CreateAppt[Create Appointment<br/>successfully]
     
-    ScheduleError --> End([End])
-    HoursError --> End
-    UnavailableError --> End
-    ConflictError --> End
+    ConflictError --> End([End])
     CreateAppt --> Success[Appointment Created]
     Success --> End
     
     style Start fill:#e0f2fe
     style End fill:#fee2e2
-    style ScheduleError fill:#fef3c7
-    style HoursError fill:#fef3c7
-    style UnavailableError fill:#fef3c7
     style ConflictError fill:#fef3c7
     style Success fill:#dcfce7
     style FindExisting fill:#dbeafe
@@ -394,21 +370,7 @@ flowchart TD
    - `start_time`: The selected start time
    - `end_time`: The calculated end time
 
-2. **Get Day of Week**: System determines the day of the week (0=Sunday, 1=Monday, etc.) from the appointment date.
-
-3. **Find DoctorSchedule**: System queries the `doctor_schedules` table for:
-   - Matching `dentist_id`
-   - Matching `day_of_week`
-
-4. **Schedule Exists Check**: If no schedule entry exists for that dentist on that day, the booking is rejected.
-
-5. **Time Within Schedule Hours**: System checks if the appointment's time range falls within the dentist's scheduled working hours:
-   - `start_time` >= `schedule.start_time`
-   - `end_time` <= `schedule.end_time`
-
-6. **Dentist Availability Check**: System checks the `is_available` flag on the DoctorSchedule entry. If false, the dentist is marked unavailable (e.g., on vacation).
-
-7. **Find Existing Appointments**: System queries the `appointments` table for:
+2. **Find Existing Appointments**: System queries the `appointments` table for:
    - Same `dentist_id`
    - Same `appointment_date`
    - Status in: `pending`, `confirmed`, `in_progress`
@@ -486,9 +448,7 @@ flowchart TD
      - Emergency contact
 
 4. **Select Dentist**: Staff selects which dentist will see the patient. The system may show which dentists are currently available based on:
-   - Current time vs. dentist schedules
    - Current queue/load for each dentist
-   - Dentist availability flag
 
 5. **Dentist Available Check**: System verifies the selected dentist is available at the current time.
 
@@ -554,7 +514,6 @@ flowchart TB
         Appointments[Appointments Table]
         PatientVisits[PatientVisits Table]
         DentalRecords[DentalRecords Table]
-        DoctorSchedules[DoctorSchedules Table]
     end
     
     subgraph External["External Packages"]
@@ -606,7 +565,6 @@ flowchart TB
 - **Appointments**: Scheduled appointments with status workflow
 - **PatientVisits**: Physical visit records with vitals and timestamps
 - **DentalRecords**: Clinical records linked to visits
-- **DoctorSchedules**: Dentist availability by day of week
 
 **External Packages:**
 - **Spatie Permission**: Role-based access control (RBAC) system

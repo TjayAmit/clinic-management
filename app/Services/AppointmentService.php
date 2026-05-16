@@ -5,7 +5,6 @@ namespace App\Services;
 use App\DTOs\AppointmentData;
 use App\Events\AppointmentCreated;
 use App\Models\Appointment;
-use App\Models\DoctorSchedule;
 use App\Notifications\AppointmentBooked;
 use App\Notifications\AppointmentCancelled;
 use App\Notifications\AppointmentCompleted;
@@ -64,36 +63,8 @@ class AppointmentService
         return $this->repository->checkConflict($doctorId, $date, $start, $end, $excludeId);
     }
 
-    private function assertDoctorAvailable(int $doctorId, string $appointmentDate): void
-    {
-        $dayOfWeek = Carbon::parse($appointmentDate)->dayOfWeek;
-
-        // Check if doctor has an available schedule for this day.
-        // If no schedules exist at all for this doctor, the query returns false,
-        // which means we treat them as available everywhere (no restrictions).
-        $hasSchedule = DoctorSchedule::where('doctor_id', $doctorId)
-            ->where('day_of_week', $dayOfWeek)
-            ->where('is_available', true)
-            ->exists();
-
-        // Only enforce the restriction if the doctor has schedules configured
-        // and none of them are available for this specific day.
-        $doctorHasAnySchedules = DoctorSchedule::where('doctor_id', $doctorId)->exists();
-
-        if ($doctorHasAnySchedules && ! $hasSchedule) {
-            throw ValidationException::withMessages([
-                'appointment_date' => 'Doctor is not available on this day.',
-            ]);
-        }
-    }
-
     public function createFromRequest(Request $request): Appointment
     {
-        $this->assertDoctorAvailable(
-            (int) $request->input('doctor_id'),
-            $request->input('appointment_date'),
-        );
-
         $model = null;
         $dto = null;
 
@@ -113,11 +84,6 @@ class AppointmentService
 
     public function updateFromRequest(int $id, Request $request): Appointment
     {
-        $this->assertDoctorAvailable(
-            (int) $request->input('doctor_id'),
-            $request->input('appointment_date'),
-        );
-
         $model = $this->repository->findById($id);
         $oldData = $model->getOriginal();
         $dto = null;

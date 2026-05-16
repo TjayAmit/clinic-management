@@ -80,7 +80,7 @@ Using `@laravel-inertia-react-builder` for React/Tailwind frontend:
 
 High-priority features from the project plan:
 
-- [ ] Appointment Conflict Detection - validate against DoctorSchedule and overlapping appointments
+- [ ] Appointment Conflict Detection - validate against overlapping appointments
 - [ ] Walk-in Visit Flow - create PatientVisit without linked Appointment
 - [ ] Appointment → Visit Transition - auto-create visit on appointment completion
 - [ ] Patient History View - chronological appointments, visits, dental records

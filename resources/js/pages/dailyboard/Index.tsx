@@ -4,6 +4,7 @@ import { AppointmentStatusActions } from '@/components/appointment-status-action
 import { StatusBadge } from '@/components/status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { show as appointmentsShow } from '@/routes/appointments';
 import {
     Select,
     SelectContent,
@@ -139,7 +140,8 @@ export default function Index({ entries, doctors, filters }: DailyBoardProps) {
                                     entries.map((entry) => (
                                         <TableRow
                                             key={entry.id}
-                                            className="border-b border-border/60 last:border-0 transition-colors hover:bg-muted/30"
+                                            className="cursor-pointer border-b border-border/60 last:border-0 transition-colors hover:bg-muted/30"
+                                            onClick={() => router.get(appointmentsShow(entry.id))}
                                         >
                                             {/* Patient */}
                                             <TableCell className="py-3.5 pl-6 pr-4 text-sm font-medium">
@@ -183,7 +185,7 @@ export default function Index({ entries, doctors, filters }: DailyBoardProps) {
                                             </TableCell>
 
                                             {/* Actions */}
-                                            <TableCell className="py-3.5 pl-4 pr-6">
+                                            <TableCell className="py-3.5 pl-4 pr-6" onClick={(e) => e.stopPropagation()}>
                                                 <AppointmentStatusActions
                                                     appointmentId={entry.id}
                                                     status={entry.status}

@@ -26,11 +26,6 @@ class Doctor extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function schedules(): HasMany
-    {
-        return $this->hasMany(DoctorSchedule::class);
-    }
-
     public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class);

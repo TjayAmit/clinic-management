@@ -90,3 +90,35 @@ test('parent_appointment_id can be set', function () {
 
     expect($array['parent_appointment_id'])->toBe(5);
 });
+
+test('series_position = 1 is not dropped by toArray', function () {
+    $request = Request::create('/', 'POST', [
+        'patient_id' => 1,
+        'doctor_id' => 1,
+        'service_id' => 1,
+        'series_total' => 3,
+        'series_position' => 1,
+    ]);
+
+    $data = AppointmentData::fromRequest($request);
+    $array = $data->toArray();
+
+    expect($array['series_total'])->toBe(3);
+    expect($array['series_position'])->toBe(1);
+});
+
+test('series_position = 0 is preserved when explicitly set', function () {
+    $request = Request::create('/', 'POST', [
+        'patient_id' => 1,
+        'doctor_id' => 1,
+        'service_id' => 1,
+        'series_total' => 0,
+        'series_position' => 0,
+    ]);
+
+    $data = AppointmentData::fromRequest($request);
+    $array = $data->toArray();
+
+    expect($array['series_total'])->toBe(0);
+    expect($array['series_position'])->toBe(0);
+});

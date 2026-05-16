@@ -1,6 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Mail, MapPin, Phone, User, UserPlus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +21,6 @@ import { index as appointments, store as appointmentsStore } from '@/routes/appo
 import type { AppointmentsFormProps } from '@/types';
 
 const NOTES_MAX = 500;
-const today = new Date().toISOString().split('T')[0];
 
 function formatTodayLabel(): string {
     return new Date().toLocaleDateString('en-PH', {
@@ -41,15 +40,14 @@ function addMinutes(time: string, minutes: number): string {
     return `${hh}:${mm}`;
 }
 
-export default function Create({ patients, doctors, services, defaultPatientId }: AppointmentsFormProps) {
-    const isWalkInParam = typeof window !== 'undefined'
-        ? new URLSearchParams(window.location.search).get('walk_in') === '1'
-        : false;
+export default function Create({ patients, doctors, services, defaultPatientId, isWalkIn }: AppointmentsFormProps) {
+    const today = useMemo(() => new Date().toISOString().split('T')[0], []);
+    const todayFormatted = formatTodayLabel();
 
     // 'new' = unregistered name input, 'existing' = patient dropdown
     const [walkInTab, setWalkInTab] = useState<'new' | 'existing'>('new');
 
-    const { data, setData, post, processing, errors } = useForm<{
+    const { data, setData, post, processing, errors, transform } = useForm<{
         patient_id: string;
         walk_in_name: string;
         doctor_id: string;
@@ -64,12 +62,18 @@ export default function Create({ patients, doctors, services, defaultPatientId }
         walk_in_name: '',
         doctor_id: '',
         service_id: '',
-        appointment_date: isWalkInParam ? today : '',
+        appointment_date: isWalkIn ? today : '',
         start_time: '',
         end_time: '',
         notes: '',
-        is_walk_in: isWalkInParam,
+        is_walk_in: isWalkIn ?? false,
     });
+
+    transform((formData) => ({
+        ...formData,
+        patient_id: formData.patient_id || null,
+        walk_in_name: formData.walk_in_name || null,
+    }));
 
     // When walk-in is toggled on, pre-fill today and reset to 'new' tab
     function handleWalkInToggle(checked: boolean) {
@@ -107,6 +111,7 @@ export default function Create({ patients, doctors, services, defaultPatientId }
         if (service) {
             setData('end_time', addMinutes(data.start_time, service.duration_minutes));
         }
+    // setData is stable across renders (useForm guarantee)
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data.start_time, data.service_id]);
 
@@ -146,7 +151,7 @@ export default function Create({ patients, doctors, services, defaultPatientId }
                                 Walk-in Registration
                             </p>
                             <p className="text-xs text-amber-700 dark:text-amber-400">
-                                Today — {formatTodayLabel()}
+                                Today — {todayFormatted}
                             </p>
                         </div>
                         <div className="ml-auto flex items-center gap-2">
@@ -328,7 +333,7 @@ export default function Create({ patients, doctors, services, defaultPatientId }
                                 <div className="space-y-1.5">
                                     <Label>Date</Label>
                                     <div className="flex h-9 items-center rounded-md border border-input bg-muted/50 px-3 text-sm text-muted-foreground">
-                                        {formatTodayLabel()}
+                                        {todayFormatted}
                                     </div>
                                     <p className="text-xs text-muted-foreground">Walk-ins are always registered for today.</p>
                                 </div>

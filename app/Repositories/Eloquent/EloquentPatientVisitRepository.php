@@ -56,6 +56,11 @@ class EloquentPatientVisitRepository implements PatientVisitRepository
         return PatientVisit::create($data);
     }
 
+    public function firstOrCreate(array $attributes, array $values = []): PatientVisit
+    {
+        return PatientVisit::firstOrCreate($attributes, $values);
+    }
+
     public function update(int $id, array $data): PatientVisit
     {
         $visit = $this->findById($id);

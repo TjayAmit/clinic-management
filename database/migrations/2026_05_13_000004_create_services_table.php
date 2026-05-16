@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ServiceCategory;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -12,6 +13,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
+            $table->enum('category', array_column(ServiceCategory::cases(), 'value'))
+                ->default(ServiceCategory::SingleVisit->value);
             $table->decimal('price', 10, 2);
             $table->integer('duration_minutes')->default(30);
             $table->boolean('is_active')->default(true);

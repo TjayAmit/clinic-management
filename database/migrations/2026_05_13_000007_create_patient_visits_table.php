@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('patient_id')->constrained()->cascadeOnDelete();
             $table->foreignId('doctor_id')->constrained('doctors')->cascadeOnDelete();
             $table->foreignId('appointment_id')->nullable()->constrained()->nullOnDelete();
+            $table->unique('appointment_id');
             $table->timestamp('visited_at');
             $table->timestamp('check_in_at')->nullable();
             $table->timestamp('check_out_at')->nullable();

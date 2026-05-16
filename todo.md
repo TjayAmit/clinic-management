@@ -155,3 +155,19 @@ Every commit must follow the 50/72 rule:
 - Footer: Reference Issue IDs
 
 Allowed types: feat, fix, refactor, chore, docs, test
+
+---
+
+## Code Review Fixes (2026-05-16)
+
+### Completed Backend Fixes
+- **BE-C1**: Added unique index on `patient_visits.appointment_id` via migration and refactored `PatientVisitService::createFromAppointment` to use `firstOrCreate` for atomic idempotency
+- **BE-H1**: Added tests for AppointmentData and PatientVisitData `toArray()` to verify integer-zero values (0, 0.0) are preserved
+- **BE-M3**: Removed `status` from `AppointmentData::fromRequest()` and added `'status' => ['prohibited']` to `AppointmentRequest` to prevent client-side status injection
+- **BE-H3**: Added code comment in `AppointmentService::complete()` documenting that walk-in unregistered appointments intentionally produce no PatientVisit record
+- **BE-H2**: Removed redundant inner `DB::transaction` from `PatientVisitService::createFromAppointment` (already handled by caller's transaction)
+- **BE-M1**: Verified all notifications (AppointmentBooked, AppointmentCancelled, AppointmentCompleted, AppointmentConfirmed) implement `ShouldQueue`
+- **BE-M2**: Updated `AppointmentService::createFollowUp` to copy `is_walk_in` and `walk_in_name` from parent appointment when not explicitly overridden in request
+
+### Deployment Note (BE-H4)
+**Action Required**: Verify that the production deployment pipeline runs `php artisan migrate --force` before restarting the web process. The CI workflow runs migrations, but the Dockerfile does not include migration steps. For zero-downtime rolling deployments, migrations must run before the new code is deployed to prevent SQL errors from referencing new columns that don't exist yet.

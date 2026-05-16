@@ -91,4 +91,5 @@ export interface AppointmentsFormProps {
     doctors: DoctorOption[];
     services: ServiceOption[];
     defaultPatientId?: number | null;
+    isWalkIn?: boolean;
 }

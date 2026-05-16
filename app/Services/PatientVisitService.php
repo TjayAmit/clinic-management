@@ -44,21 +44,15 @@ class PatientVisitService
 
     public function createFromAppointment(Appointment $appointment): PatientVisit
     {
-        $existing = $this->repository->getByAppointment($appointment->id);
+        $dto = PatientVisitData::fromAppointment($appointment);
+        $model = $this->repository->firstOrCreate(
+            ['appointment_id' => $appointment->id],
+            $dto->toArray()
+        );
 
-        if ($existing !== null) {
-            return $existing;
+        if ($model->wasRecentlyCreated) {
+            $this->logActivity('created', $model, $dto->toArray());
         }
-
-        $model = null;
-        $dto = null;
-
-        DB::transaction(function () use ($appointment, &$model, &$dto) {
-            $dto = PatientVisitData::fromAppointment($appointment);
-            $model = $this->repository->create($dto->toArray());
-        });
-
-        $this->logActivity('created', $model, $dto->toArray());
 
         return $model;
     }

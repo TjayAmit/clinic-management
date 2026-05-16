@@ -2,12 +2,15 @@
 
 namespace App\Services;
 
+use App\DTOs\DoctorAvailabilityData;
 use App\DTOs\DoctorData;
+use App\Enums\AppointmentStatus;
 use App\Models\Doctor;
 use App\Models\User;
 use App\Repositories\DoctorRepository;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -40,6 +43,92 @@ class DoctorService
     public function findWithSchedules(int $id): ?Doctor
     {
         return $this->repository->findWithSchedules($id);
+    }
+
+    /**
+     * Get doctor availability for today
+     * Returns list of doctors with their next available time slot after all appointments
+     */
+    public function getTodayAvailability(): array
+    {
+        $today = Carbon::today();
+        $dayOfWeek = $today->dayOfWeek; // 0 (Sunday) to 6 (Saturday)
+
+        $doctors = Doctor::with(['user', 'schedules'])
+            ->where('is_active', true)
+            ->get();
+
+        $availability = [];
+
+        foreach ($doctors as $doctor) {
+            // Get today's schedule for this doctor
+            $schedule = $doctor->schedules
+                ->where('day_of_week', $dayOfWeek)
+                ->where('is_available', true)
+                ->first();
+
+            if (! $schedule) {
+                // Doctor not available today
+                $availability[] = new DoctorAvailabilityData(
+                    doctor_id: $doctor->id,
+                    doctor_name: $doctor->user->name,
+                    specialization: $doctor->specialization,
+                    available_from: null,
+                    available_until: null,
+                    is_available_today: false,
+                );
+                continue;
+            }
+
+            // Get today's appointments for this doctor (excluding cancelled/no_show)
+            $appointments = $doctor->appointments()
+                ->whereDate('appointment_date', $today)
+                ->whereNotIn('status', [AppointmentStatus::Cancelled, AppointmentStatus::NoShow])
+                ->orderBy('start_time')
+                ->get();
+
+            if ($appointments->isEmpty()) {
+                // No appointments today, available from schedule start
+                $availability[] = new DoctorAvailabilityData(
+                    doctor_id: $doctor->id,
+                    doctor_name: $doctor->user->name,
+                    specialization: $doctor->specialization,
+                    available_from: $schedule->start_time,
+                    available_until: $schedule->end_time,
+                    is_available_today: true,
+                );
+                continue;
+            }
+
+            // Find the latest appointment end time
+            $lastAppointment = $appointments->last();
+            $lastEndTime = $lastAppointment->end_time;
+
+            // If the last appointment ends after schedule end, not available
+            if ($lastEndTime >= $schedule->end_time) {
+                $availability[] = new DoctorAvailabilityData(
+                    doctor_id: $doctor->id,
+                    doctor_name: $doctor->user->name,
+                    specialization: $doctor->specialization,
+                    available_from: null,
+                    available_until: null,
+                    is_available_today: false,
+                );
+                continue;
+            }
+
+            // Available from last appointment end time to schedule end time
+            $availability[] = new DoctorAvailabilityData(
+                doctor_id: $doctor->id,
+                doctor_name: $doctor->user->name,
+                specialization: $doctor->specialization,
+                available_from: $lastEndTime,
+                available_until: $schedule->end_time,
+                is_available_today: true,
+            );
+        }
+
+        return $availability;
     }
 
     public function createFromRequest(Request $request): Doctor

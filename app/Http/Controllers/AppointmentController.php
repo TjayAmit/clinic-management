@@ -48,10 +48,11 @@ class AppointmentController extends Controller
     public function create(Request $request)
     {
         return Inertia::render('appointments/create', [
-            'patients' => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone', 'email', 'address', 'emergency_contact_name', 'emergency_contact_phone', 'blood_type', 'allergies', 'date_of_birth']),
+            'patients' => Patient::orderBy('last_name')->limit(500)->get(['id', 'first_name', 'last_name', 'phone', 'email', 'address', 'emergency_contact_name', 'emergency_contact_phone', 'blood_type', 'allergies', 'date_of_birth']),
             'doctors' => Doctor::with('user')->where('is_active', true)->get(),
             'services' => Service::where('is_active', true)->get(['id', 'name', 'category', 'duration_minutes', 'price']),
             'defaultPatientId' => $request->integer('patient_id') ?: null,
+            'isWalkIn' => $request->boolean('walk_in'),
         ]);
     }
 
@@ -86,7 +87,7 @@ class AppointmentController extends Controller
     {
         return Inertia::render('appointments/edit', [
             'appointment' => $appointment->load(['patient', 'doctor', 'service']),
-            'patients' => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone', 'email', 'address', 'emergency_contact_name', 'emergency_contact_phone', 'blood_type', 'allergies', 'date_of_birth']),
+            'patients' => Patient::orderBy('last_name')->limit(500)->get(['id', 'first_name', 'last_name', 'phone', 'email', 'address', 'emergency_contact_name', 'emergency_contact_phone', 'blood_type', 'allergies', 'date_of_birth']),
             'doctors' => Doctor::with('user')->where('is_active', true)->get(),
             'services' => Service::where('is_active', true)->get(['id', 'name', 'category', 'duration_minutes', 'price']),
         ]);

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('emergency_contact_phone')->nullable();
             $table->text('allergies')->nullable();
             $table->text('dental_history')->nullable();
+            $table->boolean('is_regular')->default(false);
             $table->timestamps();
             $table->softDeletes();
         });

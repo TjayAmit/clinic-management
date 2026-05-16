@@ -20,6 +20,8 @@ interface PatientVisitRepository
 
     public function create(array $data): PatientVisit;
 
+    public function firstOrCreate(array $attributes, array $values = []): PatientVisit;
+
     public function update(int $id, array $data): PatientVisit;
 
     public function delete(int $id): bool;

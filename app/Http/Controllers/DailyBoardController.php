@@ -25,7 +25,7 @@ class DailyBoardController extends Controller
 
         $entries = $appointments->map(fn (Appointment $appointment) => [
             'id' => $appointment->id,
-            'patient_name' => $appointment->patient->full_name,
+            'patient_name' => $appointment->patient?->full_name ?? $appointment->walk_in_name ?? 'Walk-in',
             'doctor_name' => $appointment->doctor->user->name,
             'service_name' => $appointment->service->name,
             'time' => $appointment->start_time,

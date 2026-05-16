@@ -11,7 +11,7 @@ return new class extends Migration
     {
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('patient_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('patient_id')->nullable()->constrained()->cascadeOnDelete();
             $table->foreignId('doctor_id')->constrained('doctors')->cascadeOnDelete();
             $table->foreignId('service_id')->constrained()->cascadeOnDelete();
             $table->date('appointment_date');
@@ -19,6 +19,15 @@ return new class extends Migration
             $table->time('end_time');
             $table->enum('status', array_column(AppointmentStatus::cases(), 'value'))->default(AppointmentStatus::Pending->value);
             $table->text('notes')->nullable();
+            $table->boolean('is_walk_in')->default(false);
+            $table->string('walk_in_name')->nullable();
+            $table->json('teeth_involved')->nullable();
+            $table->foreignId('parent_appointment_id')
+                ->nullable()
+                ->constrained('appointments')
+                ->nullOnDelete();
+            $table->unsignedInteger('series_total')->nullable();
+            $table->unsignedInteger('series_position')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();

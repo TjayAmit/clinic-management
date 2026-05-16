@@ -35,7 +35,6 @@ readonly class AppointmentData
             appointment_date: $request->input('appointment_date'),
             start_time: $request->input('start_time'),
             end_time: $request->input('end_time'),
-            status: $request->input('status', 'pending'),
             notes: $request->input('notes'),
             created_by: auth()->id(),
             is_walk_in: $request->boolean('is_walk_in', false),

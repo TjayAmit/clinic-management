@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\AppointmentAvailabilityController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\DailyBoardController;
 use App\Http\Controllers\DashboardController;
@@ -30,6 +31,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     // Doctors
+    Route::get('doctors/availability', [DoctorController::class, 'availability'])
+        ->middleware('can:appointments.view')
+        ->name('doctors.availability');
     Route::resource('doctors', DoctorController::class)
         ->middlewareFor(['index', 'show'], 'can:doctors.view')
         ->middlewareFor(['create', 'store'], 'can:doctors.create')
@@ -88,6 +92,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('features.disable');
 
     // Appointments
+    Route::get('appointments/availability', AppointmentAvailabilityController::class)
+        ->middleware('can:appointments.view')
+        ->name('appointments.availability');
     Route::resource('appointments', AppointmentController::class)
         ->middlewareFor(['index', 'show'], 'can:appointments.view')
         ->middlewareFor(['create', 'store'], 'can:appointments.create')

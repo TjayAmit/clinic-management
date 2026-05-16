@@ -65,22 +65,21 @@ class AppointmentService
 
     private function assertDoctorAvailable(int $doctorId, string $appointmentDate): void
     {
-        // Only enforce schedule restrictions when the doctor has schedules configured.
-        // If no schedules are defined yet, we treat the doctor as available everywhere.
-        $doctorHasSchedules = DoctorSchedule::where('doctor_id', $doctorId)->exists();
-
-        if (! $doctorHasSchedules) {
-            return;
-        }
-
         $dayOfWeek = Carbon::parse($appointmentDate)->dayOfWeek;
 
+        // Check if doctor has an available schedule for this day.
+        // If no schedules exist at all for this doctor, the query returns false,
+        // which means we treat them as available everywhere (no restrictions).
         $hasSchedule = DoctorSchedule::where('doctor_id', $doctorId)
             ->where('day_of_week', $dayOfWeek)
             ->where('is_available', true)
             ->exists();
 
-        if (! $hasSchedule) {
+        // Only enforce the restriction if the doctor has schedules configured
+        // and none of them are available for this specific day.
+        $doctorHasAnySchedules = DoctorSchedule::where('doctor_id', $doctorId)->exists();
+
+        if ($doctorHasAnySchedules && ! $hasSchedule) {
             throw ValidationException::withMessages([
                 'appointment_date' => 'Doctor is not available on this day.',
             ]);
@@ -195,6 +194,8 @@ class AppointmentService
 
         DB::transaction(function () use ($id, &$appointment) {
             $appointment = $this->repository->updateStatus($id, 'completed');
+            // Walk-in appointments for unregistered patients (patient_id is null) produce no PatientVisit record.
+            // Only registered patients get a visit record upon appointment completion.
             if ($appointment->patient_id !== null) {
                 $this->patientVisitService->createFromAppointment($appointment);
             }
@@ -230,6 +231,13 @@ class AppointmentService
             $data['patient_id'] = $parent->patient_id;
             $data['doctor_id'] = $parent->doctor_id;
             $data['service_id'] = $parent->service_id;
+            // Copy walk-in fields from parent unless explicitly overridden in the request
+            if (! isset($data['is_walk_in'])) {
+                $data['is_walk_in'] = $parent->is_walk_in;
+            }
+            if (! isset($data['walk_in_name'])) {
+                $data['walk_in_name'] = $parent->walk_in_name;
+            }
             $followUp = $this->repository->create($data);
         });
 

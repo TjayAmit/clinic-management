@@ -21,6 +21,7 @@ class AppointmentRequest extends FormRequest
             'appointment_date' => ['required', 'date', 'after_or_equal:today'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+            'status' => ['prohibited'],
             'notes' => ['nullable', 'string'],
             'is_walk_in' => ['boolean'],
             'teeth_involved' => ['nullable', 'array'],

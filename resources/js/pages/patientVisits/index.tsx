@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import { ClipboardList, Eye, MoreVertical, Search, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog';
+import { usePermission } from '@/hooks/use-permission';
 import { TablePagination } from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ import {
 import type { PatientVisitsIndexProps } from '@/types';
 
 export default function Index({ data, filters }: PatientVisitsIndexProps) {
+    const { hasPermission } = usePermission();
     const [perPage, setPerPage] = useState(Number((filters as Record<string, unknown>).per_page) || 10);
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -203,24 +205,28 @@ return { label: 'Checked In', variant: 'default' as const };
                                                             <Eye className="mr-2 h-4 w-4" />
                                                             View
                                                         </DropdownMenuItem>
-                                                        {!item.check_in_at && (
+                                                        {hasPermission('medical_records.edit') && !item.check_in_at && (
                                                             <DropdownMenuItem onClick={() => handleCheckIn(item.id)}>
                                                                 Check In
                                                             </DropdownMenuItem>
                                                         )}
-                                                        {item.check_in_at && !item.check_out_at && (
+                                                        {hasPermission('medical_records.edit') && item.check_in_at && !item.check_out_at && (
                                                             <DropdownMenuItem onClick={() => handleCheckOut(item.id)}>
                                                                 Check Out
                                                             </DropdownMenuItem>
                                                         )}
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem
-                                                            onClick={() => setDeleteId(item.id)}
-                                                            className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-                                                        >
-                                                            <Trash2 className="mr-2 h-4 w-4" />
-                                                            Delete
-                                                        </DropdownMenuItem>
+                                                        {hasPermission('medical_records.delete') && (
+                                                            <>
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem
+                                                                    onClick={() => setDeleteId(item.id)}
+                                                                    className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                                                                >
+                                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                                    Delete
+                                                                </DropdownMenuItem>
+                                                            </>
+                                                        )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>

@@ -38,6 +38,14 @@ class AppointmentController extends Controller
             ->paginate($request->integer('per_page', 10))
             ->withQueryString();
 
+        $appointments->through(function (Appointment $appointment) {
+            $data = $appointment->toArray();
+            $data['dentist'] = $data['doctor'] ?? null;
+            unset($data['doctor']);
+
+            return $data;
+        });
+
         return Inertia::render('appointments/index', [
             'data' => $appointments,
             'filters' => $request->only(['search', 'date', 'doctor_id', 'status', 'walk_in', 'per_page']),
@@ -76,10 +84,23 @@ class AppointmentController extends Controller
 
     public function show(Appointment $appointment)
     {
-        $appointment->load(['patient', 'doctor.user', 'service', 'visit.dentalRecord', 'parent', 'followUps.patient', 'queue']);
+        $appointment->load([
+            'patient.visits.doctor.user',
+            'patient.visits.dentalRecord',
+            'doctor.user',
+            'service',
+            'visit.dentalRecord',
+            'parent',
+            'followUps.patient',
+            'queue',
+        ]);
+
+        $data = $appointment->toArray();
+        $data['dentist'] = $data['doctor'] ?? null;
+        unset($data['doctor']);
 
         return Inertia::render('appointments/show', [
-            'appointment' => $appointment,
+            'appointment' => $data,
         ]);
     }
 

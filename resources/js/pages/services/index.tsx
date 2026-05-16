@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import { Briefcase, Eye, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog';
+import { usePermission } from '@/hooks/use-permission';
 import { TablePageHeader } from '@/components/table-page-header';
 import { TablePagination } from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +33,7 @@ import {
 import type { ServicesIndexProps } from '@/types';
 
 export default function Index({ data, filters }: ServicesIndexProps) {
+    const { hasPermission } = usePermission();
     const [search, setSearch] = useState(filters.search || '');
     const [perPage, setPerPage] = useState(Number((filters as Record<string, unknown>).per_page) || 10);
     const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -86,7 +88,7 @@ return;
                         search={search}
                         searchPlaceholder="Search services…"
                         onSearchChange={handleSearchChange}
-                        createHref={servicesCreate().url}
+                        createHref={hasPermission('services.create') ? servicesCreate().url : undefined}
                         createLabel="New Service"
                     />
 
@@ -181,18 +183,24 @@ return;
                                                         <Eye className="mr-2 h-4 w-4" />
                                                         View
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => router.get(servicesEdit(item.id))}>
-                                                        <Pencil className="mr-2 h-4 w-4" />
-                                                        Edit
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem
-                                                        onClick={() => setDeleteId(item.id)}
-                                                        className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-                                                    >
-                                                        <Trash2 className="mr-2 h-4 w-4" />
-                                                        Delete
-                                                    </DropdownMenuItem>
+                                                    {hasPermission('services.edit') && (
+                                                        <DropdownMenuItem onClick={() => router.get(servicesEdit(item.id))}>
+                                                            <Pencil className="mr-2 h-4 w-4" />
+                                                            Edit
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    {hasPermission('services.delete') && (
+                                                        <>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem
+                                                                onClick={() => setDeleteId(item.id)}
+                                                                className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                                                            >
+                                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                                Delete
+                                                            </DropdownMenuItem>
+                                                        </>
+                                                    )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>

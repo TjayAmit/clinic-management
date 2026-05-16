@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import { MoreVertical, Trash2, Eye, Activity } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog';
+import { usePermission } from '@/hooks/use-permission';
 import { TablePagination } from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ import {
 import type { ActivityLogsIndexProps } from '@/types';
 
 export default function Index({ data, filters, logNames, events }: ActivityLogsIndexProps) {
+    const { hasPermission } = usePermission();
     const [search, setSearch] = useState(filters.search || '');
     const [logName, setLogName] = useState(filters.log_name || '_all');
     const [event, setEvent] = useState(filters.event || '_all');
@@ -272,13 +274,15 @@ return 'destructive';
                                                         <Eye className="mr-2 h-4 w-4" />
                                                         View Details
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                        onClick={() => setDeleteId(item.id)}
-                                                        className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-                                                    >
-                                                        <Trash2 className="mr-2 h-4 w-4" />
-                                                        Delete
-                                                    </DropdownMenuItem>
+                                                    {hasPermission('activity_logs.delete') && (
+                                                        <DropdownMenuItem
+                                                            onClick={() => setDeleteId(item.id)}
+                                                            className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                                                        >
+                                                            <Trash2 className="mr-2 h-4 w-4" />
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>

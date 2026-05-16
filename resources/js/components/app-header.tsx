@@ -215,7 +215,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 ))}
                             </div>
                         </div>
-                        <DropdownMenu>
+                        <DropdownMenu key={auth.user?.id}>
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     variant="ghost"

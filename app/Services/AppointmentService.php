@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\DTOs\AppointmentData;
+use App\Events\AppointmentCreated;
 use App\Models\Appointment;
 use App\Models\DoctorSchedule;
 use App\Notifications\AppointmentBooked;
@@ -104,10 +105,8 @@ class AppointmentService
         $this->logActivity('created', $model, $dto->toArray());
 
         $model->load('doctor.user', 'patient', 'service');
-        if ($model->patient) {
-            $model->patient->notify(new AppointmentBooked($model, 'patient'));
-        }
         $model->doctor->user->notify(new AppointmentBooked($model, 'doctor'));
+        AppointmentCreated::dispatch($model);
 
         return $model;
     }

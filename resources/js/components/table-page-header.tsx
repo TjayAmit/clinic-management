@@ -10,7 +10,7 @@ interface TablePageHeaderProps {
     search: string;
     searchPlaceholder?: string;
     onSearchChange: (value: string) => void;
-    createHref: string;
+    createHref?: string;
     createLabel?: string;
     children?: React.ReactNode;
 }
@@ -46,12 +46,14 @@ export function TablePageHeader({
                         onChange={(e) => onSearchChange(e.target.value)}
                     />
                 </div>
-                <Button asChild size="sm" className="h-9 gap-1.5">
-                    <Link href={createHref}>
-                        <Plus className="h-4 w-4" />
-                        {createLabel}
-                    </Link>
-                </Button>
+                {createHref && (
+                    <Button asChild size="sm" className="h-9 gap-1.5">
+                        <Link href={createHref}>
+                            <Plus className="h-4 w-4" />
+                            {createLabel}
+                        </Link>
+                    </Button>
+                )}
             </div>
         </div>
     );

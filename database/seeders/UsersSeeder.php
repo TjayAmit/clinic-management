@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Doctor;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -19,6 +20,17 @@ class UsersSeeder extends Seeder
         );
         $doctor->assignRole('Doctor');
 
+        Doctor::firstOrCreate(
+            ['user_id' => $doctor->id],
+            [
+                'specialization' => 'General Dentistry',
+                'license_number' => 'PTR-12345',
+                'phone' => '09171234567',
+                'bio' => 'Experienced general dentist with 10 years of practice.',
+                'is_active' => true,
+            ]
+        );
+
         $staff = User::firstOrCreate(
             ['email' => 'staff@clinic.test'],
             [
@@ -26,6 +38,7 @@ class UsersSeeder extends Seeder
                 'password' => Hash::make('password'),
             ]
         );
+
         $staff->assignRole('Staff');
 
         $this->command->info('Sample users seeded:');

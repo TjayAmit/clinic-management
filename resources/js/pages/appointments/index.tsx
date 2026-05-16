@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { AppointmentStatusActions } from '@/components/appointment-status-actions';
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog';
 import { STATUS_CONFIG, StatusBadge } from '@/components/status-badge';
+import { usePermission } from '@/hooks/use-permission';
 import { TablePageHeader } from '@/components/table-page-header';
 import { TablePagination } from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
@@ -51,6 +52,7 @@ function formatDate(dateStr: string): string {
 }
 
 export default function Index({ data, filters, doctors }: AppointmentsIndexProps) {
+    const { hasPermission } = usePermission();
     const [search, setSearch] = useState(filters.search || '');
     const [perPage, setPerPage] = useState(Number((filters as Record<string, unknown>).per_page) || 10);
     const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -107,7 +109,7 @@ return;
                         search={search}
                         searchPlaceholder="Search by patient name…"
                         onSearchChange={handleSearchChange}
-                        createHref={appointmentsCreate().url}
+                        createHref={hasPermission('appointments.create') ? appointmentsCreate().url : undefined}
                         createLabel="New Appointment"
                     />
 
@@ -167,6 +169,7 @@ return;
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Service</TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Date</TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Time</TableHead>
+                                <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Type</TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">Status</TableHead>
                                 <TableHead className="h-11 w-12 py-0 pl-4 pr-6">
                                     <span className="sr-only">Actions</span>
@@ -177,7 +180,7 @@ return;
                         <TableBody>
                             {data.data.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="h-40 text-center">
+                                    <TableCell colSpan={8} className="h-40 text-center">
                                         <div className="flex flex-col items-center gap-3 text-muted-foreground">
                                             <div className="rounded-full bg-muted p-3">
                                                 <CalendarDays className="h-5 w-5 opacity-50" />
@@ -194,7 +197,9 @@ return;
                                         onClick={() => router.get(appointmentsShow(item.id))}
                                     >
                                         <TableCell className="py-3.5 pl-6 pr-4 text-sm font-medium">
-                                            {item.patient?.full_name ?? '—'}
+                                            {item.is_walk_in
+                                                ? item.walk_in_name ?? 'Walk-in'
+                                                : item.patient?.full_name ?? '—'}
                                         </TableCell>
                                         <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
                                             {item.dentist?.user?.name ?? '—'}
@@ -206,7 +211,18 @@ return;
                                             {formatDate(item.appointment_date)}
                                         </TableCell>
                                         <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                            {item.start_time} – {item.end_time}
+                                            {item.start_time}
+                                        </TableCell>
+                                        <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
+                                            {item.is_walk_in ? (
+                                                <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">
+                                                    Walk-in
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                                                    Regular
+                                                </span>
+                                            )}
                                         </TableCell>
                                         <TableCell className="px-4 py-3.5">
                                             <StatusBadge status={item.status} />
@@ -237,18 +253,24 @@ return;
                                                             <Eye className="mr-2 h-4 w-4" />
                                                             View
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => router.get(appointmentsEdit(item.id))}>
-                                                            <Pencil className="mr-2 h-4 w-4" />
-                                                            Edit
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem
-                                                            onClick={() => setDeleteId(item.id)}
-                                                            className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-                                                        >
-                                                            <Trash2 className="mr-2 h-4 w-4" />
-                                                            Delete
-                                                        </DropdownMenuItem>
+                                                        {hasPermission('appointments.edit') && (
+                                                            <DropdownMenuItem onClick={() => router.get(appointmentsEdit(item.id))}>
+                                                                <Pencil className="mr-2 h-4 w-4" />
+                                                                Edit
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                        {hasPermission('appointments.delete') && (
+                                                            <>
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem
+                                                                    onClick={() => setDeleteId(item.id)}
+                                                                    className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                                                                >
+                                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                                    Delete
+                                                                </DropdownMenuItem>
+                                                            </>
+                                                        )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </div>

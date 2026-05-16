@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import { ChevronDown } from 'lucide-react';
+import { usePermission } from '@/hooks/use-permission';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -22,29 +23,30 @@ interface Action {
     label: string;
     url: string;
     destructive?: boolean;
+    permission: string;
 }
 
 function getActions(appointmentId: number, status: AppointmentStatus): Action[] {
     switch (status) {
         case 'pending':
             return [
-                { label: 'Confirm', url: confirm.url(appointmentId) },
-                { label: 'Cancel', url: cancel.url(appointmentId), destructive: true },
+                { label: 'Confirm', url: confirm.url(appointmentId), permission: 'appointments.confirm' },
+                { label: 'Cancel', url: cancel.url(appointmentId), destructive: true, permission: 'appointments.cancel' },
             ];
         case 'confirmed':
             return [
-                { label: 'Mark In Queue', url: inQueue.url(appointmentId) },
-                { label: 'Cancel', url: cancel.url(appointmentId), destructive: true },
+                { label: 'Mark In Queue', url: inQueue.url(appointmentId), permission: 'appointments.edit' },
+                { label: 'Cancel', url: cancel.url(appointmentId), destructive: true, permission: 'appointments.cancel' },
             ];
         case 'in_queue':
             return [
-                { label: 'Mark In Progress', url: inProgress.url(appointmentId) },
+                { label: 'Mark In Progress', url: inProgress.url(appointmentId), permission: 'appointments.edit' },
             ];
         case 'in_progress':
             return [
-                { label: 'Complete', url: complete.url(appointmentId) },
-                { label: 'Needs Follow-up', url: needsFollowUp.url(appointmentId) },
-                { label: 'No Show', url: noShow.url(appointmentId), destructive: true },
+                { label: 'Complete', url: complete.url(appointmentId), permission: 'appointments.edit' },
+                { label: 'Needs Follow-up', url: needsFollowUp.url(appointmentId), permission: 'appointments.edit' },
+                { label: 'No Show', url: noShow.url(appointmentId), destructive: true, permission: 'appointments.edit' },
             ];
         default:
             return [];
@@ -58,7 +60,10 @@ interface Props {
 }
 
 export function AppointmentStatusActions({ appointmentId, status, onSuccess }: Props) {
-    const actions = getActions(appointmentId, status);
+    const { hasPermission } = usePermission();
+    const actions = getActions(appointmentId, status).filter((action) =>
+        hasPermission(action.permission),
+    );
 
     if (actions.length === 0) {
         return <span className="text-sm text-muted-foreground">—</span>;

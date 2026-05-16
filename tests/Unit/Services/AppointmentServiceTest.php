@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\AppointmentCreated;
 use App\Models\Appointment;
 use App\Notifications\AppointmentBooked;
 use App\Notifications\AppointmentCancelled;
@@ -10,6 +11,7 @@ use App\Services\AppointmentService;
 use App\Services\PatientVisitService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 
 uses(RefreshDatabase::class);
@@ -35,8 +37,9 @@ test('createFromRequest calls repository create once', function () {
     $service->createFromRequest($request);
 });
 
-test('createFromRequest sends AppointmentBooked to patient and doctor', function () {
+test('createFromRequest sends AppointmentBooked to doctor and dispatches AppointmentCreated event', function () {
     Notification::fake();
+    Event::fake([AppointmentCreated::class]);
 
     $repository = mock(AppointmentRepository::class);
     $visitService = mock(PatientVisitService::class);
@@ -60,8 +63,11 @@ test('createFromRequest sends AppointmentBooked to patient and doctor', function
 
     $service->createFromRequest($request);
 
-    Notification::assertSentTo($appointment->patient, AppointmentBooked::class);
+    // Doctor still gets AppointmentBooked via the database+mail channel
     Notification::assertSentTo($appointment->doctor->user, AppointmentBooked::class);
+    // Patient notification is now event-driven — assert the event was dispatched
+    Notification::assertNotSentTo($appointment->patient, AppointmentBooked::class);
+    Event::assertDispatched(AppointmentCreated::class, fn ($e) => $e->appointment->is($appointment));
 });
 
 test('confirm calls updateStatus and sends AppointmentConfirmed', function () {

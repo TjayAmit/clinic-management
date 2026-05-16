@@ -19,15 +19,36 @@ export interface Appointment {
     status: AppointmentStatus;
     notes: string | null;
     is_walk_in: boolean;
+    walk_in_name: string | null;
     teeth_involved: number[] | null;
     parent_appointment_id: number | null;
     created_by: number | null;
     created_at: string;
     updated_at: string;
-    patient?: { id: number; first_name: string; last_name: string; full_name: string; phone: string | null };
+    patient?: {
+        id: number;
+        first_name: string;
+        last_name: string;
+        full_name: string;
+        phone: string | null;
+        email: string | null;
+        blood_type: string | null;
+        allergies: string | null;
+        date_of_birth: string | null;
+        is_regular?: boolean;
+        visits?: {
+            id: number;
+            visited_at: string;
+            check_in_at: string | null;
+            check_out_at: string | null;
+            notes: string | null;
+            doctor?: { id: number; specialization: string; user?: { id: number; name: string } };
+            dentalRecord?: { id: number; chief_complaint?: string; diagnosis?: string | null } | null;
+        }[];
+    };
     dentist?: { id: number; specialization: string; user?: { id: number; name: string } };
     service?: { id: number; name: string; category: string; duration_minutes: number; price: string };
-    visit?: { id: number; medical_record?: { id: number } | null } | null;
+    visit?: { id: number; dentalRecord?: { id: number } | null; medical_record?: { id: number } | null } | null;
     parent?: Appointment | null;
     followUps?: Appointment[];
     queue?: { id: number; position: number; status: string } | null;

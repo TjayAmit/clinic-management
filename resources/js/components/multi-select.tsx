@@ -1,7 +1,7 @@
+import { ChevronDown, X } from 'lucide-react';
 import * as React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ChevronDown, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MultiSelectProps {
@@ -29,6 +29,7 @@ export function MultiSelect({
             }
         }
         document.addEventListener('mousedown', handleClickOutside);
+
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 

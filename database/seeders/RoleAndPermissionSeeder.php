@@ -75,13 +75,17 @@ class RoleAndPermissionSeeder extends Seeder
             'features.create',
             'features.edit',
             'features.delete',
+
+            // Clinic Settings
+            'clinic_settings.view',
+            'clinic_settings.edit',
         ];
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // Admin — full access
+        // Admin — full access (includes clinic_settings.view and clinic_settings.edit)
         $admin = Role::firstOrCreate(['name' => 'Admin']);
         $admin->givePermissionTo(Permission::all());
 
@@ -102,6 +106,7 @@ class RoleAndPermissionSeeder extends Seeder
             'doctors.view',
             'doctors.schedules.edit',
             'notifications.view',
+            'clinic_settings.view',
         ]);
 
         // Staff — manage appointments and patients, no access to medical records or admin areas
@@ -123,6 +128,7 @@ class RoleAndPermissionSeeder extends Seeder
             'patient_visits.check_out',
             'services.view',
             'notifications.view',
+            'clinic_settings.view',
         ]);
     }
 }

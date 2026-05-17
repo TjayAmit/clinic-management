@@ -21,20 +21,30 @@ function toLocalDateString(d: Date): string {
 
 function normalizeDateString(dateStr: string): string {
     const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
+
+    if (isNaN(d.getTime())) {
+return dateStr;
+}
+
     return toLocalDateString(d);
 }
 
 function getDatesBetween(start: string, end: string): string[] {
     let s = new Date(start + 'T00:00:00');
     let e = new Date(end + 'T00:00:00');
-    if (s > e) [s, e] = [e, s];
+
+    if (s > e) {
+[s, e] = [e, s];
+}
+
     const dates: string[] = [];
     const current = new Date(s);
+
     while (current <= e) {
         dates.push(toLocalDateString(current));
         current.setDate(current.getDate() + 1);
     }
+
     return dates;
 }
 
@@ -64,12 +74,14 @@ export function ScheduleDayCalendar({ value = [], onChange }: ScheduleDayCalenda
         if (value.length === 0) {
             setSelectedDates(new Set());
             setAnchorDate(null);
+
             return;
         }
 
         // Sync selected dates with value prop (normalize to YYYY-MM-DD)
         const normalized = value.map(normalizeDateString);
         setSelectedDates(new Set(normalized));
+
         if (normalized.length === 1) {
             setAnchorDate(normalized[0]);
         }
@@ -77,6 +89,7 @@ export function ScheduleDayCalendar({ value = [], onChange }: ScheduleDayCalenda
         // Auto-navigate to the month of the first selected date
         if (normalized.length > 0) {
             const first = new Date(normalized[0] + 'T00:00:00');
+
             if (!isNaN(first.getTime())) {
                 setYear(first.getFullYear());
                 setMonth(first.getMonth());

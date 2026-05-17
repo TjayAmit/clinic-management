@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\ClinicSettingController;
 use App\Http\Controllers\AppointmentAvailabilityController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\WeeklyAvailabilityController;
@@ -202,6 +203,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middlewareFor(['create', 'store'], 'can:users.create')
         ->middlewareFor(['edit', 'update'], 'can:users.edit')
         ->middlewareFor('destroy', 'can:users.delete');
+
+    // Clinic Settings
+    Route::get('clinic-settings', [ClinicSettingController::class, 'edit'])
+        ->middleware('can:clinic_settings.edit')
+        ->name('clinic-settings.edit');
+    Route::put('clinic-settings', [ClinicSettingController::class, 'update'])
+        ->middleware('can:clinic_settings.edit')
+        ->name('clinic-settings.update');
 
     // Activity Logs
     Route::get('activity-logs', [ActivityLogController::class, 'index'])

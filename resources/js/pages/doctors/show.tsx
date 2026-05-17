@@ -29,18 +29,6 @@ import {
 import { index as doctorsSchedules } from '@/routes/doctors/schedules';
 import type { DoctorsShowProps } from '@/types';
 
-const DAY_LABELS: Record<string, string> = {
-    sunday: 'Sunday',
-    monday: 'Monday',
-    tuesday: 'Tuesday',
-    wednesday: 'Wednesday',
-    thursday: 'Thursday',
-    friday: 'Friday',
-    saturday: 'Saturday',
-};
-
-const DAY_ORDER = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-
 export default function Show({ doctor }: DoctorsShowProps) {
     const [showDelete, setShowDelete] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -56,7 +44,7 @@ export default function Show({ doctor }: DoctorsShowProps) {
     };
 
     const sortedSchedules = (doctor.schedules ?? []).slice().sort((a, b) => 
-        DAY_ORDER.indexOf(a.day_of_week) - DAY_ORDER.indexOf(b.day_of_week)
+        new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime()
     );
 
     return (
@@ -118,10 +106,10 @@ export default function Show({ doctor }: DoctorsShowProps) {
                         </CardContent>
                     </Card>
 
-                    {/* Weekly schedule */}
+                    {/* Schedule */}
                     <Card className="lg:col-span-2">
                         <CardHeader>
-                            <CardTitle className="text-base">Weekly Schedule</CardTitle>
+                            <CardTitle className="text-base">Schedule</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                             {sortedSchedules.length === 0 ? (
@@ -132,7 +120,7 @@ export default function Show({ doctor }: DoctorsShowProps) {
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="border-b border-border bg-muted/40 hover:bg-muted/40">
-                                            <TableHead className="h-10 py-0 pl-6 pr-4 text-xs font-medium text-muted-foreground">Day</TableHead>
+                                            <TableHead className="h-10 py-0 pl-6 pr-4 text-xs font-medium text-muted-foreground">Date</TableHead>
                                             <TableHead className="h-10 px-4 py-0 text-xs font-medium text-muted-foreground">Start</TableHead>
                                             <TableHead className="h-10 px-4 py-0 text-xs font-medium text-muted-foreground">End</TableHead>
                                             <TableHead className="h-10 px-4 py-0 text-xs font-medium text-muted-foreground">Available</TableHead>
@@ -142,7 +130,7 @@ export default function Show({ doctor }: DoctorsShowProps) {
                                         {sortedSchedules.map((s) => (
                                             <TableRow key={s.id} className="border-b border-border/60 last:border-0">
                                                 <TableCell className="py-3 pl-6 pr-4 text-sm font-medium">
-                                                    {DAY_LABELS[s.day_of_week] || s.day_of_week}
+                                                    {s.scheduled_date}
                                                 </TableCell>
                                                 <TableCell className="px-4 py-3 text-sm text-muted-foreground">{s.start_time}</TableCell>
                                                 <TableCell className="px-4 py-3 text-sm text-muted-foreground">{s.end_time}</TableCell>

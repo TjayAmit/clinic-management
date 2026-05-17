@@ -12,7 +12,7 @@ import type { DoctorScheduleEditProps } from '@/types/doctors';
 
 export default function Edit({ schedule }: DoctorScheduleEditProps) {
     const { data, setData, put, processing, errors } = useForm({
-        day_of_week: [String(schedule.day_of_week)],
+        scheduled_date: [schedule.scheduled_date],
         start_time: schedule.start_time.slice(0, 5),
         end_time: schedule.end_time.slice(0, 5),
         is_available: schedule.is_available,
@@ -102,14 +102,14 @@ export default function Edit({ schedule }: DoctorScheduleEditProps) {
                     <div className="space-y-4">
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">Day of Week <span className="text-destructive">*</span></CardTitle>
+                                <CardTitle className="text-base">Scheduled Date <span className="text-destructive">*</span></CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <ScheduleDayCalendar
-                                    value={data.day_of_week}
-                                    onChange={(v) => setData('day_of_week', v)}
+                                    value={data.scheduled_date}
+                                    onChange={(v) => setData('scheduled_date', v)}
                                 />
-                                <InputError message={errors.day_of_week} />
+                                <InputError message={errors.scheduled_date} />
                             </CardContent>
                         </Card>
                     </div>

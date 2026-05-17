@@ -13,12 +13,14 @@ return new class extends Migration
             $table->id();
             $table->foreignId('doctor_id')->constrained()->onDelete('cascade');
             $table->enum('day_of_week', DayOfWeek::cases()); // DayOfWeek enum: sunday, monday, etc.
+            $table->date('scheduled_date');
             $table->time('start_time');
             $table->time('end_time');
             $table->boolean('is_available')->default(true);
             $table->timestamps();
 
-            $table->unique(['doctor_id', 'day_of_week']);
+            $table->unique(['doctor_id', 'scheduled_date']);
+            $table->index(['doctor_id', 'day_of_week']);
         });
     }
 

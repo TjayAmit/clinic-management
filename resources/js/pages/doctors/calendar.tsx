@@ -160,6 +160,7 @@ function ScheduleCard({ appt }: { appt: Appointment }) {
 export default function Calendar({
     doctor,
     appointments,
+    schedules,
     month,
     daysInMonth,
     startDay,
@@ -287,6 +288,7 @@ return <div key={`e-${i}`} />;
 
                                 const dateKey = `${month}-${pad2(day)}`;
                                 const dayAppts = appointments[dateKey] ?? [];
+                                const daySchedules = schedules[dateKey] ?? [];
                                 const isToday = dateKey === today;
                                 const isSelected = dateKey === selectedDay;
 
@@ -296,7 +298,7 @@ return <div key={`e-${i}`} />;
                                         type="button"
                                         onClick={() => setSelectedDay(dateKey)}
                                         className={[
-                                            'relative flex min-h-[80px] flex-col rounded-xl p-2 text-left transition-all',
+                                            'relative flex min-h-[100px] flex-col rounded-xl p-2 text-left transition-all',
                                             isSelected
                                                 ? 'bg-primary/15 ring-1 ring-primary/50'
                                                 : isToday
@@ -319,6 +321,14 @@ return <div key={`e-${i}`} />;
                                                 <span className="pl-1 text-[10px] text-muted-foreground">
                                                     +{dayAppts.length - 2} more
                                                 </span>
+                                            )}
+                                            {daySchedules.length > 0 && (
+                                                <div className={`mt-0.5 flex items-center gap-1 rounded-md   px-1 py-0.5 text-[10px] leading-tight ${isSelected ? 'bg-emerald-500/20 text-emerald-100' : 'bg-emerald-50 text-emerald-700'}`}>
+                                                    <Clock className="h-2.5 w-2.5 shrink-0" />
+                                                    <span className="truncate font-medium">
+                                                        {formatTime(daySchedules[0].start_time)} – {formatTime(daySchedules[0].end_time)}
+                                                    </span>
+                                                </div>
                                             )}
                                         </div>
                                     </button>
@@ -353,7 +363,7 @@ return <div key={`e-${i}`} />;
                         {/* Appointment list */}
                         <div className="flex-1 overflow-y-auto px-4 py-4">
                             {selectedAppts.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-16 text-center">
+                                <div className="flex flex-col items-center justify-center py-12 text-center">
                                     <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
                                         <CalendarDays className="h-5 w-5 text-muted-foreground" />
                                     </div>
@@ -370,7 +380,7 @@ return <div key={`e-${i}`} />;
                                             <div key={appt.id}>
                                                 {showTime && (
                                                     <p className="mb-2 mt-1 text-xs font-medium text-muted-foreground">
-                                                        {appt.start_time.slice(0, 5)}
+                                                        {formatTime(appt.start_time)}
                                                     </p>
                                                 )}
                                                 <ScheduleCard appt={appt} />

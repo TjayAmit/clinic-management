@@ -34,7 +34,7 @@ class DoctorScheduleController extends Controller
         $rows = collect($request->validated('schedules'))
             ->map(fn (array $entry) => [
                 'doctor_id'    => $doctor->id,
-                'day_of_week'  => $entry['day_of_week'],
+                'scheduled_date'  => $entry['scheduled_date'],
                 'start_time'   => $entry['start_time'] ?? null,
                 'end_time'     => $entry['end_time'] ?? null,
                 'is_available' => $entry['is_available'],
@@ -45,7 +45,7 @@ class DoctorScheduleController extends Controller
 
         DoctorSchedule::upsert(
             $rows,
-            uniqueBy: ['doctor_id', 'day_of_week'],
+            uniqueBy: ['doctor_id', 'scheduled_date'],
             update: ['start_time', 'end_time', 'is_available', 'updated_at'],
         );
 
@@ -95,19 +95,19 @@ class DoctorScheduleController extends Controller
     {
         $validated = $request->validated();
         $doctorId = auth()->user()->doctor?->id;
-        $days = (array) ($validated['day_of_week'] ?? []);
+        $dates = (array) ($validated['scheduled_date'] ?? []);
 
-        foreach ($days as $day) {
+        foreach ($dates as $date) {
             DoctorSchedule::create([
                 'doctor_id'    => $doctorId,
-                'day_of_week'  => $day,
+                'scheduled_date'  => $date,
                 'start_time'   => $validated['start_time'] ?? null,
                 'end_time'     => $validated['end_time'] ?? null,
                 'is_available' => $validated['is_available'],
             ]);
         }
 
-        $count = count($days);
+        $count = count($dates);
 
         return redirect()->route('doctor-schedules.index')
             ->with('success', $count > 1 ? "{$count} schedules created successfully." : 'Schedule created successfully.');
@@ -126,23 +126,23 @@ class DoctorScheduleController extends Controller
     {
         $validated = $request->validated();
         $doctorId = $schedule->doctor_id;
-        $days = (array) ($validated['day_of_week'] ?? []);
+        $dates = (array) ($validated['scheduled_date'] ?? []);
 
         // Delete the original schedule
         $schedule->delete();
 
-        // Create new schedules for all selected days
-        foreach ($days as $day) {
+        // Create new schedules for all selected dates
+        foreach ($dates as $date) {
             DoctorSchedule::create([
                 'doctor_id'    => $doctorId,
-                'day_of_week'  => $day,
+                'scheduled_date'  => $date,
                 'start_time'   => $validated['start_time'] ?? null,
                 'end_time'     => $validated['end_time'] ?? null,
                 'is_available' => $validated['is_available'],
             ]);
         }
 
-        $count = count($days);
+        $count = count($dates);
 
         return redirect()->route('doctor-schedules.index')
             ->with('success', $count > 1 ? "{$count} schedules updated successfully." : 'Schedule updated successfully.');

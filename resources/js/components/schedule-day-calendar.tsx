@@ -11,32 +11,18 @@ const MONTHS = [
 
 const DAY_ABBR = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-const DAY_OF_WEEK_MAP: Record<number, string> = {
-    0: 'sunday',
-    1: 'monday',
-    2: 'tuesday',
-    3: 'wednesday',
-    4: 'thursday',
-    5: 'friday',
-    6: 'saturday',
-};
-
-const DAY_LABELS: Record<string, string> = {
-    sunday: 'Sunday',
-    monday: 'Monday',
-    tuesday: 'Tuesday',
-    wednesday: 'Wednesday',
-    thursday: 'Thursday',
-    friday: 'Friday',
-    saturday: 'Saturday',
-};
-
 function pad2(n: number) {
     return String(n).padStart(2, '0');
 }
 
 function toLocalDateString(d: Date): string {
     return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+
+function normalizeDateString(dateStr: string): string {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return toLocalDateString(d);
 }
 
 function getDatesBetween(start: string, end: string): string[] {
@@ -50,15 +36,6 @@ function getDatesBetween(start: string, end: string): string[] {
         current.setDate(current.getDate() + 1);
     }
     return dates;
-}
-
-function getUniqueDayOfWeeks(dateKeys: string[]): string[] {
-    const unique = new Set<string>();
-    for (const key of dateKeys) {
-        const d = new Date(key + 'T00:00:00');
-        unique.add(DAY_OF_WEEK_MAP[d.getDay()]);
-    }
-    return Array.from(unique);
 }
 
 interface ScheduleDayCalendarProps {
@@ -82,11 +59,28 @@ export function ScheduleDayCalendar({ value = [], onChange }: ScheduleDayCalenda
         ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
     ];
 
-    // Sync internal selection when parent value changes (e.g. form reset)
+    // Sync internal selection when parent value changes (e.g. form reset or edit load)
     useEffect(() => {
         if (value.length === 0) {
             setSelectedDates(new Set());
             setAnchorDate(null);
+            return;
+        }
+
+        // Sync selected dates with value prop (normalize to YYYY-MM-DD)
+        const normalized = value.map(normalizeDateString);
+        setSelectedDates(new Set(normalized));
+        if (normalized.length === 1) {
+            setAnchorDate(normalized[0]);
+        }
+
+        // Auto-navigate to the month of the first selected date
+        if (normalized.length > 0) {
+            const first = new Date(normalized[0] + 'T00:00:00');
+            if (!isNaN(first.getTime())) {
+                setYear(first.getFullYear());
+                setMonth(first.getMonth());
+            }
         }
     }, [value]);
 
@@ -102,12 +96,11 @@ export function ScheduleDayCalendar({ value = [], onChange }: ScheduleDayCalenda
             const newSelected = new Set([...selectedDates, ...range]);
             setSelectedDates(newSelected);
             setAnchorDate(null);
-            onChange(getUniqueDayOfWeeks(Array.from(newSelected)));
+            onChange(Array.from(newSelected));
         } else {
             setSelectedDates(new Set([dateKey]));
             setAnchorDate(dateKey);
-            const d = new Date(dateKey + 'T00:00:00');
-            onChange([DAY_OF_WEEK_MAP[d.getDay()]]);
+            onChange([dateKey]);
         }
     };
 
@@ -194,11 +187,11 @@ export function ScheduleDayCalendar({ value = [], onChange }: ScheduleDayCalenda
                         {value.length > 0 ? (
                             Array.from(new Set(value)).map((v) => (
                                 <Badge key={v} variant="secondary" className="text-[10px]">
-                                    {DAY_LABELS[v]}
+                                    {v}
                                 </Badge>
                             ))
                         ) : (
-                            <span className="text-xs text-primary">Select a day</span>
+                            <span className="text-xs text-primary">Select a date</span>
                         )}
                     </div>
                     <p className="mt-1 text-[10px] text-muted-foreground">

@@ -1,5 +1,5 @@
 import type { Appointment } from './appointments';
-import type { Doctor } from './doctors';
+import type { Doctor, DoctorSchedule } from './doctors';
 
 export interface ScheduleIndexProps {
     appointments: Appointment[];
@@ -10,6 +10,7 @@ export interface ScheduleIndexProps {
 export interface DoctorCalendarProps {
     doctor: Doctor;
     appointments: Record<string, Appointment[]>;
+    schedules: Record<string, DoctorSchedule[]>;
     month: string;
     monthLabel: string;
     year: number;

@@ -12,7 +12,7 @@ import type { DoctorScheduleCreateProps } from '@/types/doctors';
 
 export default function Create({ doctor }: DoctorScheduleCreateProps) {
     const { data, setData, post, processing, errors } = useForm({
-        day_of_week: [] as string[],
+        scheduled_date: [] as string[],
         start_time: '',
         end_time: '',
         is_available: true as boolean,
@@ -102,14 +102,14 @@ export default function Create({ doctor }: DoctorScheduleCreateProps) {
                     <div className="space-y-4">
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">Day of Week <span className="text-destructive">*</span></CardTitle>
+                                <CardTitle className="text-base">Scheduled Date <span className="text-destructive">*</span></CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <ScheduleDayCalendar
-                                    value={data.day_of_week}
-                                    onChange={(v) => setData('day_of_week', v)}
+                                    value={data.scheduled_date}
+                                    onChange={(v) => setData('scheduled_date', v)}
                                 />
-                                <InputError message={errors.day_of_week} />
+                                <InputError message={errors.scheduled_date} />
                             </CardContent>
                         </Card>
                     </div>

@@ -25,15 +25,13 @@ import { usePermission } from '@/hooks/use-permission';
 import AppLayout from '@/layouts/app-layout';
 import type { DoctorScheduleRecord, DoctorSchedulesListProps } from '@/types/doctors';
 
-const DAY_LABELS: Record<string, string> = {
-    sunday: 'Sunday',
-    monday: 'Monday',
-    tuesday: 'Tuesday',
-    wednesday: 'Wednesday',
-    thursday: 'Thursday',
-    friday: 'Friday',
-    saturday: 'Saturday',
-};
+function to12Hour(time: string): string {
+    const [h, m] = time.split(':');
+    const hour = parseInt(h, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${m} ${ampm}`;
+}
 
 export default function Index({ data, filters }: DoctorSchedulesListProps) {
     const { hasPermission } = usePermission();
@@ -104,7 +102,7 @@ export default function Index({ data, filters }: DoctorSchedulesListProps) {
                                     Doctor
                                 </TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">
-                                    Day
+                                    Date
                                 </TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">
                                     Hours
@@ -154,12 +152,12 @@ export default function Index({ data, filters }: DoctorSchedulesListProps) {
                                         </TableCell>
 
                                         <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                            {DAY_LABELS[item.day_of_week]}
+                                            {item.scheduled_date}
                                         </TableCell>
 
                                         <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
                                             {item.is_available
-                                                ? `${item.start_time.slice(0, 5)} – ${item.end_time.slice(0, 5)}`
+                                                ? `${to12Hour(item.start_time)} – ${to12Hour(item.end_time)}`
                                                 : '—'}
                                         </TableCell>
 
@@ -229,7 +227,7 @@ export default function Index({ data, filters }: DoctorSchedulesListProps) {
                 open={!!deleteId}
                 onOpenChange={() => setDeleteId(null)}
                 title="Delete Schedule"
-                itemName={deleteTarget ? deleteTarget.doctor.user.name + ' – ' + DAY_LABELS[deleteTarget.day_of_week] : undefined}
+                itemName={deleteTarget ? deleteTarget.doctor.user.name + ' – ' + deleteTarget.scheduled_date : undefined}
                 onConfirm={handleDelete}
                 isLoading={isDeleting}
             />

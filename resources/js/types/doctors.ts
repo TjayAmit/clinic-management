@@ -1,17 +1,7 @@
-export enum DayOfWeek {
-    Sunday = 'sunday',
-    Monday = 'monday',
-    Tuesday = 'tuesday',
-    Wednesday = 'wednesday',
-    Thursday = 'thursday',
-    Friday = 'friday',
-    Saturday = 'saturday',
-}
-
 export interface DoctorSchedule {
     id: number;
     doctor_id: number;
-    day_of_week: DayOfWeek;
+    scheduled_date: string;
     start_time: string;
     end_time: string;
     is_available: boolean;
@@ -92,7 +82,7 @@ export interface DoctorSchedulesIndexProps {
 export interface DoctorScheduleRecord {
     id: number;
     doctor_id: number;
-    day_of_week: DayOfWeek;
+    scheduled_date: string;
     start_time: string;
     end_time: string;
     is_available: boolean;

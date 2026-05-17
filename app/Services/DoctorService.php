@@ -63,10 +63,19 @@ class DoctorService
 
         foreach ($doctors as $doctor) {
             // Get today's schedule for this doctor
+            // First check for specific scheduled_date, then fall back to day_of_week
             $schedule = $doctor->schedules
-                ->where('day_of_week', $dayOfWeek)
+                ->where('scheduled_date', $today->toDateString())
                 ->where('is_available', true)
                 ->first();
+
+            if (! $schedule) {
+                // Fall back to day_of_week if no specific date schedule
+                $schedule = $doctor->schedules
+                    ->where('day_of_week', $dayOfWeek->value)
+                    ->where('is_available', true)
+                    ->first();
+            }
 
             if (! $schedule) {
                 // Doctor not available today
@@ -94,8 +103,8 @@ class DoctorService
                     doctor_id: $doctor->id,
                     doctor_name: $doctor->user->name,
                     specialization: $doctor->specialization,
-                    available_from: $schedule->start_time,
-                    available_until: $schedule->end_time,
+                    available_from: $schedule->start_time ? (is_string($schedule->start_time) ? $schedule->start_time : $schedule->start_time->format('H:i:s')) : null,
+                    available_until: $schedule->end_time ? (is_string($schedule->end_time) ? $schedule->end_time : $schedule->end_time->format('H:i:s')) : null,
                     is_available_today: true,
                 );
                 continue;
@@ -123,8 +132,8 @@ class DoctorService
                 doctor_id: $doctor->id,
                 doctor_name: $doctor->user->name,
                 specialization: $doctor->specialization,
-                available_from: $lastEndTime,
-                available_until: $schedule->end_time,
+                available_from: $lastEndTime ? (is_string($lastEndTime) ? $lastEndTime : $lastEndTime->format('H:i:s')) : null,
+                available_until: $schedule->end_time ? (is_string($schedule->end_time) ? $schedule->end_time : $schedule->end_time->format('H:i:s')) : null,
                 is_available_today: true,
             );
         }

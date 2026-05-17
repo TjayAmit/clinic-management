@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Appointment;
 use App\Models\Doctor;
+use App\Models\DoctorSchedule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -29,9 +30,19 @@ class DoctorCalendarController extends Controller
             ->get()
             ->groupBy(fn ($a) => $a->appointment_date->format('Y-m-d'));
 
+        $schedules = DoctorSchedule::where('doctor_id', $doctor->id)
+            ->whereYear('scheduled_date', $date->year)
+            ->whereMonth('scheduled_date', $date->month)
+            ->where('is_available', true)
+            ->orderBy('scheduled_date')
+            ->orderBy('start_time')
+            ->get()
+            ->groupBy(fn ($s) => $s->scheduled_date->format('Y-m-d'));
+
         return Inertia::render('doctors/calendar', [
             'doctor' => $doctor->load('user'),
             'appointments' => $appointments,
+            'schedules' => $schedules,
             'month' => $date->format('Y-m'),
             'monthLabel' => $date->format('F Y'),
             'year' => $date->year,

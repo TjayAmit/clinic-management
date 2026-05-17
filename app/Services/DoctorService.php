@@ -5,6 +5,7 @@ namespace App\Services;
 use App\DTOs\DoctorAvailabilityData;
 use App\DTOs\DoctorData;
 use App\Enums\AppointmentStatus;
+use App\Enums\DayOfWeek;
 use App\Models\Doctor;
 use App\Models\User;
 use App\Repositories\DoctorRepository;
@@ -52,7 +53,7 @@ class DoctorService
     public function getTodayAvailability(): array
     {
         $today = Carbon::today();
-        $dayOfWeek = $today->dayOfWeek; // 0 (Sunday) to 6 (Saturday)
+        $dayOfWeek = $this->carbonDayToEnum($today->dayOfWeek);
 
         $doctors = Doctor::with(['user', 'schedules'])
             ->where('is_active', true)
@@ -155,6 +156,19 @@ class DoctorService
         $this->logActivity('created', $model, $dto->toArray());
 
         return $model;
+    }
+
+    private function carbonDayToEnum(int $carbonDay): DayOfWeek
+    {
+        return match ($carbonDay) {
+            0 => DayOfWeek::Sunday,
+            1 => DayOfWeek::Monday,
+            2 => DayOfWeek::Tuesday,
+            3 => DayOfWeek::Wednesday,
+            4 => DayOfWeek::Thursday,
+            5 => DayOfWeek::Friday,
+            6 => DayOfWeek::Saturday,
+        };
     }
 
     private function generateRandomPassword(): string

@@ -25,6 +25,7 @@ class RoleAndPermissionSeeder extends Seeder
             'doctors.create',
             'doctors.edit',
             'doctors.delete',
+            'doctors.schedules.edit',
 
             // Appointments
             'appointments.view',
@@ -99,6 +100,7 @@ class RoleAndPermissionSeeder extends Seeder
             'medical_records.edit',
             'services.view',
             'doctors.view',
+            'doctors.schedules.edit',
             'notifications.view',
         ]);
 

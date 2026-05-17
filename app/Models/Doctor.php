@@ -40,4 +40,9 @@ class Doctor extends Model
     {
         return $this->hasMany(DentalRecord::class, 'dentist_id');
     }
+
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(DoctorSchedule::class);
+    }
 }

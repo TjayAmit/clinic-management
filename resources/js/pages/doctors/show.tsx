@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, CalendarDays, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, CalendarClock, CalendarDays, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,9 +26,20 @@ import {
     edit as doctorsEdit,
     destroy as doctorsDestroy,
 } from '@/routes/doctors';
+import { index as doctorsSchedules } from '@/routes/doctors/schedules';
 import type { DoctorsShowProps } from '@/types';
 
-const DAY_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAY_LABELS: Record<string, string> = {
+    sunday: 'Sunday',
+    monday: 'Monday',
+    tuesday: 'Tuesday',
+    wednesday: 'Wednesday',
+    thursday: 'Thursday',
+    friday: 'Friday',
+    saturday: 'Saturday',
+};
+
+const DAY_ORDER = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 export default function Show({ doctor }: DoctorsShowProps) {
     const [showDelete, setShowDelete] = useState(false);
@@ -44,7 +55,9 @@ export default function Show({ doctor }: DoctorsShowProps) {
         });
     };
 
-    const sortedSchedules = (doctor.schedules ?? []).slice().sort((a, b) => a.day_of_week - b.day_of_week);
+    const sortedSchedules = (doctor.schedules ?? []).slice().sort((a, b) => 
+        DAY_ORDER.indexOf(a.day_of_week) - DAY_ORDER.indexOf(b.day_of_week)
+    );
 
     return (
         <>
@@ -63,6 +76,12 @@ export default function Show({ doctor }: DoctorsShowProps) {
                             <Link href={`/doctors/${doctor.id}/calendar`}>
                                 <CalendarDays className="mr-2 h-4 w-4" />
                                 Calendar
+                            </Link>
+                        </Button>
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href={doctorsSchedules.url(doctor.id)}>
+                                <CalendarClock className="mr-2 h-4 w-4" />
+                                Manage Schedule
                             </Link>
                         </Button>
                         <Button variant="outline" size="sm" asChild>
@@ -123,7 +142,7 @@ export default function Show({ doctor }: DoctorsShowProps) {
                                         {sortedSchedules.map((s) => (
                                             <TableRow key={s.id} className="border-b border-border/60 last:border-0">
                                                 <TableCell className="py-3 pl-6 pr-4 text-sm font-medium">
-                                                    {s.day_name ?? DAY_LABELS[s.day_of_week]}
+                                                    {DAY_LABELS[s.day_of_week] || s.day_of_week}
                                                 </TableCell>
                                                 <TableCell className="px-4 py-3 text-sm text-muted-foreground">{s.start_time}</TableCell>
                                                 <TableCell className="px-4 py-3 text-sm text-muted-foreground">{s.end_time}</TableCell>

@@ -3,17 +3,26 @@ import { ArrowLeft, KeyRound, ShieldCheck } from 'lucide-react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MultiSelect } from '@/components/multi-select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import { index as users, store as usersStore } from '@/routes/users';
+import type { UsersFormProps } from '@/types';
 
-export default function Create() {
-    const { data, setData, post, processing, errors } = useForm({
+export default function Create({ roles }: UsersFormProps) {
+    const { data, setData, post, processing, errors } = useForm<{
+        name: string;
+        email: string;
+        password: string;
+        roles: string[];
+    }>({
         name: '',
         email: '',
         password: '',
+        roles: [],
     });
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -81,6 +90,17 @@ export default function Create() {
                                     <InputError message={errors.password} />
                                 </div>
 
+                                <div className="space-y-2">
+                                    <Label>Roles <span className="text-destructive">*</span></Label>
+                                    <MultiSelect
+                                        options={roles}
+                                        value={data.roles}
+                                        onChange={(value) => setData('roles', value)}
+                                        placeholder="Select roles…"
+                                    />
+                                    <InputError message={errors.roles} />
+                                </div>
+
                                 <div className="flex items-center gap-3 pt-2">
                                     <Button type="submit" disabled={processing}>
                                         {processing ? 'Creating…' : 'Create User'}
@@ -100,7 +120,7 @@ export default function Create() {
                         <CardContent className="space-y-4 text-sm text-muted-foreground">
                             <div className="flex gap-3">
                                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                                <p>After creating the account, assign a <span className="font-medium text-foreground">Role</span> from the Roles section to grant the appropriate permissions.</p>
+                                <p>Select one or more <span className="font-medium text-foreground">Roles</span> to grant the appropriate permissions to this user.</p>
                             </div>
                             <div className="flex gap-3">
                                 <KeyRound className="mt-0.5 h-4 w-4 shrink-0 text-primary" />

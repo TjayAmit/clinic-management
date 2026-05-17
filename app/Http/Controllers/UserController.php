@@ -41,7 +41,7 @@ class UserController extends Controller
             'password' => bcrypt($validated['password']),
         ]);
 
-        $user->syncRoles($validated['role']);
+        $user->syncRoles($validated['roles']);
 
         return redirect()->route('users.index')->with('success', 'User created successfully');
     }
@@ -78,7 +78,7 @@ class UserController extends Controller
             $user->update(['password' => bcrypt($validated['password'])]);
         }
 
-        $user->syncRoles($validated['role']);
+        $user->syncRoles($validated['roles']);
 
         return redirect()->route('users.index')->with('success', 'User updated successfully');
     }

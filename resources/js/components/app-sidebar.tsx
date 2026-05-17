@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import {
     Activity,
+    CalendarClock,
     CalendarDays,
     LayoutDashboard,
     LayoutGrid,
@@ -57,6 +58,13 @@ const navGroups: NavGroup[] = [
                 href: '/appointments',
                 icon: CalendarDays,
                 permissions: ['appointments.view'],
+            },
+            {
+                title: 'Doctor Schedules',
+                href: '/doctor-schedules',
+                icon: CalendarClock,
+                roles: ['Admin', 'Staff', 'Doctor'],
+                permissions: ['doctors.schedules.edit'],
             },
         ],
     },

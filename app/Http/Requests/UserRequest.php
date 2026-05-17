@@ -20,7 +20,8 @@ class UserRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
             'password' => $userId ? 'nullable|string|min:8' : 'required|string|min:8',
-            'role' => 'required|string|in:Admin,Doctor,Staff',
+            'roles' => 'required|array|min:1',
+            'roles.*' => 'in:Admin,Doctor,Staff',
         ];
     }
 }

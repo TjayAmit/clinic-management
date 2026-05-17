@@ -3,17 +3,21 @@ import { ArrowLeft, Info } from 'lucide-react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MultiSelect } from '@/components/multi-select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import { index as users, show as usersShow, update as usersUpdate } from '@/routes/users';
 import type { UsersFormProps } from '@/types';
 
-export default function Edit({ user }: UsersFormProps) {
+export default function Edit({ user, roles }: UsersFormProps) {
     const { data, setData, put, processing, errors } = useForm({
         name: user?.name || '',
         email: user?.email || '',
+        password: '',
+        roles: (user?.roles as Array<{ name: string }> ?? []).map((r) => r.name),
     });
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -71,6 +75,17 @@ export default function Edit({ user }: UsersFormProps) {
                                     </div>
                                 </div>
 
+                                <div className="space-y-2">
+                                    <Label>Roles <span className="text-destructive">*</span></Label>
+                                    <MultiSelect
+                                        options={roles}
+                                        value={data.roles}
+                                        onChange={(value) => setData('roles', value)}
+                                        placeholder="Select roles…"
+                                    />
+                                    <InputError message={errors.roles} />
+                                </div>
+
                                 <div className="flex items-center gap-3 pt-2">
                                     <Button type="submit" disabled={processing}>
                                         {processing ? 'Saving…' : 'Save Changes'}
@@ -79,6 +94,7 @@ export default function Edit({ user }: UsersFormProps) {
                                         <Link href={user ? usersShow(user.id) : users()}>Cancel</Link>
                                     </Button>
                                 </div>
+
                             </CardContent>
                         </Card>
                     </form>

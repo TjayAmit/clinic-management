@@ -11,6 +11,8 @@ use App\Http\Controllers\Dev\EmailPreviewController;
 use App\Http\Controllers\Dev\SwitchUserController;
 use App\Http\Controllers\DoctorCalendarController;
 use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\DoctorScheduleController;
+use App\Http\Controllers\DoctorScheduleHubController;
 use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PatientVisitController;
@@ -39,9 +41,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middlewareFor(['create', 'store'], 'can:doctors.create')
         ->middlewareFor(['edit', 'update'], 'can:doctors.edit')
         ->middlewareFor('destroy', 'can:doctors.delete');
+
     Route::get('doctors/{doctor}/calendar', DoctorCalendarController::class)
         ->middleware('can:doctors.view')
         ->name('doctors.calendar');
+
+    Route::get('doctors/{doctor}/schedules', [DoctorScheduleController::class, 'index'])
+        ->middleware('can:doctors.view')
+        ->name('doctors.schedules.index');
+
+    Route::put('doctors/{doctor}/schedules', [DoctorScheduleController::class, 'update'])
+        ->middleware('can:doctors.schedules.edit')
+        ->name('doctors.schedules.update');
+
+    // Doctor Schedules hub
+    Route::get('doctor-schedules', DoctorScheduleHubController::class)
+        ->middleware('can:doctors.schedules.edit')
+        ->name('doctor-schedules.index');
 
     // Today's schedule
     Route::get('schedule', ScheduleController::class)
@@ -59,6 +75,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middlewareFor(['create', 'store'], 'can:patients.create')
         ->middlewareFor(['edit', 'update'], 'can:patients.edit')
         ->middlewareFor('destroy', 'can:patients.delete');
+        
     Route::patch('patients/{patient}/toggle-regular', [PatientController::class, 'toggleRegular'])
         ->middleware('can:patients.edit')
         ->name('patients.toggle-regular');

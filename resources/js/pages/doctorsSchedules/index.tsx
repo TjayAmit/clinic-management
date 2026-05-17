@@ -1,10 +1,10 @@
 import { Head, router } from '@inertiajs/react';
-import { MoreVertical, Pencil, Trash2, Eye, Users } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { CalendarClock, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog';
 import { TablePageHeader } from '@/components/table-page-header';
 import { TablePagination } from '@/components/table-pagination';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -23,26 +23,29 @@ import {
 } from '@/components/ui/table';
 import { usePermission } from '@/hooks/use-permission';
 import AppLayout from '@/layouts/app-layout';
-import {
-    index as users,
-    create as usersCreate,
-    show as usersShow,
-    edit as usersEdit,
-    destroy as usersDestroy,
-} from '@/routes/users';
-import type { UsersIndexProps } from '@/types';
+import type { DoctorScheduleRecord, DoctorSchedulesListProps } from '@/types/doctors';
 
-export default function Index({ data, filters }: UsersIndexProps) {
+const DAY_LABELS: Record<string, string> = {
+    sunday: 'Sunday',
+    monday: 'Monday',
+    tuesday: 'Tuesday',
+    wednesday: 'Wednesday',
+    thursday: 'Thursday',
+    friday: 'Friday',
+    saturday: 'Saturday',
+};
+
+export default function Index({ data, filters }: DoctorSchedulesListProps) {
     const { hasPermission } = usePermission();
     const [search, setSearch] = useState(filters.search || '');
-    const [perPage, setPerPage] = useState(Number((filters as Record<string, unknown>).per_page) || 10);
+    const [perPage, setPerPage] = useState(Number(filters.per_page) || 10);
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const searchTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     const navigate = (params: Record<string, unknown> = {}) => {
         router.get(
-            users(),
+            '/doctor-schedules',
             { search, per_page: perPage, ...params },
             { preserveState: true, preserveScroll: true },
         );
@@ -63,11 +66,11 @@ export default function Index({ data, filters }: UsersIndexProps) {
 
     const handleDelete = () => {
         if (!deleteId) {
-return;
-}
+            return;
+        }
 
         setIsDeleting(true);
-        router.delete(usersDestroy(deleteId), {
+        router.delete('/doctor-schedules/' + deleteId, {
             onFinish: () => {
                 setIsDeleting(false);
                 setDeleteId(null);
@@ -75,37 +78,39 @@ return;
         });
     };
 
+    const deleteTarget = data.data.find((s) => s.id === deleteId);
+
     return (
         <>
-            <Head title="Users" />
+            <Head title="Doctor Schedules" />
 
             <div className="flex h-full flex-1 flex-col gap-4 p-4 lg:p-6">
                 <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
 
                     <TablePageHeader
-                        title="Users"
+                        title="Doctor Schedules"
                         count={data.total}
                         search={search}
-                        searchPlaceholder="Search users…"
+                        searchPlaceholder="Search schedules…"
                         onSearchChange={handleSearchChange}
-                        createHref={hasPermission('users.create') ? usersCreate().url : undefined}
-                        createLabel="New User"
+                        createHref={hasPermission('doctors.schedules.edit') ? '/doctor-schedules/create' : undefined}
+                        createLabel="Add Schedule"
                     />
 
                     <Table>
                         <TableHeader>
                             <TableRow className="border-b border-border bg-muted/40 hover:bg-muted/40">
                                 <TableHead className="h-11 py-0 pl-6 pr-4 text-sm font-medium text-muted-foreground">
-                                    Name
+                                    Doctor
                                 </TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">
-                                    Email
+                                    Day
                                 </TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">
-                                    Roles
+                                    Hours
                                 </TableHead>
                                 <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">
-                                    Date
+                                    Available
                                 </TableHead>
                                 <TableHead className="h-11 w-12 py-0 pl-4 pr-6">
                                     <span className="sr-only">Actions</span>
@@ -119,10 +124,10 @@ return;
                                     <TableCell colSpan={5} className="h-40 text-center">
                                         <div className="flex flex-col items-center gap-3 text-muted-foreground">
                                             <div className="rounded-full bg-muted p-3">
-                                                <Users className="h-5 w-5 opacity-50" />
+                                                <CalendarClock className="h-5 w-5 opacity-50" />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-medium">No users found</p>
+                                                <p className="text-sm font-medium">No schedules found</p>
                                                 {search && (
                                                     <p className="mt-0.5 text-sm">
                                                         Try a different search or{' '}
@@ -139,34 +144,29 @@ return;
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                data.data.map((item) => (
+                                data.data.map((item: DoctorScheduleRecord) => (
                                     <TableRow
                                         key={item.id}
-                                        className="cursor-pointer border-b border-border/60 last:border-0 transition-colors hover:bg-muted/30"
-                                        onClick={() => router.get(usersShow(item.id))}
+                                        className="border-b border-border/60 last:border-0 transition-colors hover:bg-muted/30"
                                     >
                                         <TableCell className="py-3.5 pl-6 pr-4">
-                                            <span className="text-sm font-medium text-foreground">
-                                                {item.name}
-                                            </span>
+                                            <span className="text-sm font-medium text-foreground">{item.doctor.user.name}</span>
                                         </TableCell>
 
                                         <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                            {item.email}
+                                            {DAY_LABELS[item.day_of_week]}
+                                        </TableCell>
+
+                                        <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
+                                            {item.is_available
+                                                ? `${item.start_time.slice(0, 5)} – ${item.end_time.slice(0, 5)}`
+                                                : '—'}
                                         </TableCell>
 
                                         <TableCell className="px-4 py-3.5">
-                                            <div className="flex flex-wrap gap-1">
-                                                {(item.roles as Array<{ name: string }> ?? []).map((role) => (
-                                                    <Badge key={role.name} variant="secondary" className="text-xs">
-                                                        {role.name}
-                                                    </Badge>
-                                                ))}
-                                            </div>
-                                        </TableCell>
-
-                                        <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                            {item.created_at}
+                                            <Badge variant={item.is_available ? 'default' : 'secondary'}>
+                                                {item.is_available ? 'Yes' : 'No'}
+                                            </Badge>
                                         </TableCell>
 
                                         <TableCell
@@ -185,18 +185,12 @@ return;
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-40">
-                                                    <DropdownMenuItem onClick={() => router.get(usersShow(item.id))}>
-                                                        <Eye className="mr-2 h-4 w-4" />
-                                                        View
-                                                    </DropdownMenuItem>
-                                                    {hasPermission('users.edit') && (
-                                                        <DropdownMenuItem onClick={() => router.get(usersEdit(item.id))}>
-                                                            <Pencil className="mr-2 h-4 w-4" />
-                                                            Edit
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                    {hasPermission('users.delete') && (
+                                                    {hasPermission('doctors.schedules.edit') && (
                                                         <>
+                                                            <DropdownMenuItem onClick={() => router.get('/doctor-schedules/' + item.id + '/edit')}>
+                                                                <Pencil className="mr-2 h-4 w-4" />
+                                                                Edit
+                                                            </DropdownMenuItem>
                                                             <DropdownMenuSeparator />
                                                             <DropdownMenuItem
                                                                 onClick={() => setDeleteId(item.id)}
@@ -234,8 +228,8 @@ return;
             <ConfirmDeleteDialog
                 open={!!deleteId}
                 onOpenChange={() => setDeleteId(null)}
-                title="Delete User"
-                itemName={data.data.find((u) => u.id === deleteId)?.name}
+                title="Delete Schedule"
+                itemName={deleteTarget ? deleteTarget.doctor.user.name + ' – ' + DAY_LABELS[deleteTarget.day_of_week] : undefined}
                 onConfirm={handleDelete}
                 isLoading={isDeleting}
             />
@@ -244,7 +238,7 @@ return;
 }
 
 Index.layout = (page: React.ReactNode) => (
-    <AppLayout breadcrumbs={[{ title: 'Users', href: users() }]}>
+    <AppLayout breadcrumbs={[{ title: 'Doctor Schedules', href: '/doctor-schedules' }]}>
         {page}
     </AppLayout>
 );

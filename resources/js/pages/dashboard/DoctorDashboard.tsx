@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { show as appointmentsShow } from '@/routes/appointments';
 import { index as dentalRecordsRoute } from '@/routes/dental-records';
 import type { Auth, DashboardAppointmentItem, DashboardProps } from '@/types';
@@ -125,6 +125,29 @@ export default function DoctorDashboard({
                 {displayStats.map((s, i) => (
                     <StatCard key={s.label} label={s.label} value={s.value} icon={s.icon} featured={i === 0} />
                 ))}
+            </div>
+
+            {/* Quick Links - Horizontal without card background */}
+            <div className="flex justify-between items-center gap-2">
+                <span className="text-sm font-medium">Quick Actions</span>
+                <div className="flex flex-wrap items-center gap-2">
+                    {[
+                        { href: '/schedule',            icon: <Calendar className="h-3.5 w-3.5" />,     label: "Today's Schedule" },
+                        { href: '/appointments',        icon: <CalendarDays className="h-3.5 w-3.5" />, label: 'All Appointments'  },
+                        { href: dentalRecordsRoute(),   icon: <ClipboardList className="h-3.5 w-3.5" />,label: 'Dental Records'    },
+                        { href: '/patients',            icon: <UserRound className="h-3.5 w-3.5" />,    label: 'Patients'          },
+                        ...(doctorId ? [{ href: `/doctors/${doctorId}/calendar`, icon: <CalendarDays className="h-3.5 w-3.5" />, label: 'My Calendar' }] : []),
+                    ].map(({ href, icon, label }) => (
+                        <Link
+                            key={label}
+                            href={href}
+                            className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        >
+                            {icon}
+                            {label}
+                        </Link>
+                    ))}
+                </div>
             </div>
 
             {/* Main grid — weekly calendar + sidebar */}
@@ -307,35 +330,12 @@ export default function DoctorDashboard({
 
                 {/* Sidebar */}
                 <div className="flex flex-col gap-4">
-                    {/* Quick Links */}
-                    <Card className="shadow-none">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-sm font-semibold">Quick Links</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-0.5 pt-0">
-                            {[
-                                { href: '/schedule',            icon: <Calendar className="h-3.5 w-3.5" />,     label: "Today's Schedule" },
-                                { href: '/appointments',        icon: <CalendarDays className="h-3.5 w-3.5" />, label: 'All Appointments'  },
-                                { href: dentalRecordsRoute(),   icon: <ClipboardList className="h-3.5 w-3.5" />,label: 'Dental Records'    },
-                                { href: '/patients',            icon: <UserRound className="h-3.5 w-3.5" />,    label: 'Patients'          },
-                                ...(doctorId ? [{ href: `/doctors/${doctorId}/calendar`, icon: <CalendarDays className="h-3.5 w-3.5" />, label: 'My Calendar' }] : []),
-                            ].map(({ href, icon, label }) => (
-                                <Link
-                                    key={label}
-                                    href={href}
-                                    className="flex items-center gap-2.5 rounded-md px-2 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                                >
-                                    {icon}
-                                    {label}
-                                </Link>
-                            ))}
-                        </CardContent>
-                    </Card>
-
                     {/* Today at a glance */}
                     <Card className="shadow-none">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-sm font-semibold">Today at a Glance</CardTitle>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-semibold">Summary of Day</CardTitle>
+                            {/* description */}
+                            <CardDescription className="text-xs">Overview of your day, total appointments and status</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-0">
                             {(() => {
@@ -346,31 +346,69 @@ export default function DoctorDashboard({
 
                                 return (
                                     <div className="space-y-3">
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="text-muted-foreground">Total today</span>
-                                            <span className="font-semibold tabular-nums">{todayAppts.length}</span>
-                                        </div>
-                                        <div className="flex items-center justify-between text-sm">
-                                            <span className="text-muted-foreground">Completed</span>
-                                            <span className="font-semibold tabular-nums text-teal-600">{done}</span>
-                                        </div>
-                                        {active > 0 && (
-                                            <div className="flex items-center justify-between text-sm">
-                                                <span className="text-muted-foreground">In progress</span>
-                                                <span className="font-semibold tabular-nums text-violet-600">{active}</span>
+                                        <div className="flex space-x-2">
+                                            {/* Total Card */}
+                                            <div className="flex-1 flex items-center justify-between rounded-lg border px-3 py-2">
+                                                <div>
+                                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total</p>
+                                                    <p className="text-lg font-bold tabular-nums">{todayAppts.length}</p>
+                                                </div>
+                                                <CalendarDays className="h-5 w-5 text-muted-foreground" />
                                             </div>
-                                        )}
+
+                                            {/* Completed Card */}
+                                            <div className="flex-1 flex items-center justify-between rounded-lg border px-3 py-2">
+                                                <div>
+                                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Completed</p>
+                                                    <p className="text-lg font-bold tabular-nums text-teal-600">{done}</p>
+                                                </div>
+                                                <div className="rounded-full bg-teal-100 p-1.5">
+                                                    <ClipboardList className="h-4 w-4 text-teal-600" />
+                                                </div>
+                                            </div>
+
+                                            {/* In Progress Card */}
+                                            <div className="flex-1 flex items-center justify-between rounded-lg border px-3 py-2">
+                                                <div>
+                                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">In Progress</p>
+                                                    <p className="text-lg font-bold tabular-nums text-violet-600">{active}</p>
+                                                </div>
+                                                <div className="rounded-full bg-violet-100 p-1.5">
+                                                    <Clock className="h-4 w-4 text-violet-600" />
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         {next && (
-                                            <div className="rounded-lg bg-muted/50 px-3 py-2">
-                                                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Next up</p>
-                                                <p className="mt-0.5 truncate text-sm font-medium text-foreground">
-                                                    {next.patient?.full_name ?? `${next.patient?.first_name} ${next.patient?.last_name}`}
-                                                </p>
-                                                <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                                                    <Clock className="h-3 w-3" />
-                                                    {fmtTime(next.start_time)}
-                                                    <span className="text-muted-foreground/50">·</span>
-                                                    {next.service?.name ?? '—'}
+                                            <div className="flex justify-between rounded-lg bg-muted/50 px-3 py-2">
+                                                <div>
+                                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Next up</p>
+                                                    <p className="mt-0.5 truncate text-sm font-medium text-foreground">
+                                                        {next.patient?.full_name ?? `${next.patient?.first_name} ${next.patient?.last_name}`}
+                                                    </p>
+                                                    <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                                                        <Clock className="h-3 w-3" />
+                                                        {fmtTime(next.start_time)}
+                                                        <span className="text-muted-foreground/50">·</span>
+                                                        {next.service?.name ?? '—'}
+                                                    </div>
+                                                </div>
+                                                <div className="mt-2 flex gap-2 pt-4">
+                                                    <Button
+                                                        size="sm"
+                                                        className="h-7 text-xs"
+                                                        onClick={() => router.patch(`/appointments/${next.id}`, { status: 'in_queue' })}
+                                                    >
+                                                        Confirm
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        className="h-7 text-xs"
+                                                        onClick={() => router.patch(`/appointments/${next.id}`, { status: 'in_progress' })}
+                                                    >
+                                                        Check In
+                                                    </Button>
                                                 </div>
                                             </div>
                                         )}
@@ -379,40 +417,41 @@ export default function DoctorDashboard({
                             })()}
                         </CardContent>
                     </Card>
+
+                    {/* Recent Records */}
+                    {displayRecords.length > 0 && (
+                        <Card className="shadow-none">
+                            <CardHeader className="flex flex-row items-center justify-between pb-3">
+                                <CardTitle className="text-sm font-semibold">Recent Records</CardTitle>
+                                <Button variant="ghost" size="sm" className="h-7 gap-0.5 text-xs" asChild>
+                                    <Link href={dentalRecordsRoute()}>
+                                        View all <ChevronRight className="h-3 w-3" />
+                                    </Link>
+                                </Button>
+                            </CardHeader>
+                            <div className="divide-y">
+                                {displayRecords.map((r) => (
+                                    <div
+                                        key={r.id}
+                                        onClick={() => router.get(`${dentalRecordsRoute()}/${r.id}`)}
+                                        className="flex cursor-pointer items-center gap-3 px-6 py-3 transition-colors hover:bg-muted/40"
+                                    >
+                                        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${avatarCls(r.patient?.full_name)}`}>
+                                            {initials(r.patient?.full_name)}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-sm font-medium">{r.patient?.full_name ?? '—'}</p>
+                                            <p className="truncate text-xs text-muted-foreground">{r.chief_complaint}</p>
+                                        </div>
+                                        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
+                                    </div>
+                                ))}
+                            </div>
+                        </Card>
+                    )}
                 </div>
             </div>
 
-            {/* Recent Records */}
-            {displayRecords.length > 0 && (
-                <Card className="shadow-none">
-                    <CardHeader className="flex flex-row items-center justify-between pb-3">
-                        <CardTitle className="text-sm font-semibold">Recent Records</CardTitle>
-                        <Button variant="ghost" size="sm" className="h-7 gap-0.5 text-xs" asChild>
-                            <Link href={dentalRecordsRoute()}>
-                                View all <ChevronRight className="h-3 w-3" />
-                            </Link>
-                        </Button>
-                    </CardHeader>
-                    <div className="divide-y">
-                        {displayRecords.map((r) => (
-                            <div
-                                key={r.id}
-                                onClick={() => router.get(`${dentalRecordsRoute()}/${r.id}`)}
-                                className="flex cursor-pointer items-center gap-3 px-6 py-3 transition-colors hover:bg-muted/40"
-                            >
-                                <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${avatarCls(r.patient?.full_name)}`}>
-                                    {initials(r.patient?.full_name)}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <p className="truncate text-sm font-medium">{r.patient?.full_name ?? '—'}</p>
-                                    <p className="truncate text-xs text-muted-foreground">{r.chief_complaint}</p>
-                                </div>
-                                <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
-                            </div>
-                        ))}
-                    </div>
-                </Card>
-            )}
         </div>
     );
 }

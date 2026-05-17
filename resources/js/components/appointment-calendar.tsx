@@ -152,7 +152,9 @@ return <div key={`e-${i}`} />;
                             <button
                                 key={day}
                                 type="button"
-                                onClick={() => { setInternalDate(dateKey); onDateSelect?.(dateKey); }}
+                                onClick={() => {
+ setInternalDate(dateKey); onDateSelect?.(dateKey); 
+}}
                                 className={[
                                     'relative flex flex-col items-center justify-center rounded-md py-1 transition-colors',
                                     isSelected

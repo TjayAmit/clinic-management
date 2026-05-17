@@ -17,6 +17,7 @@ export interface UsersIndexProps {
 
 export interface UsersFormProps {
     user?: User;
+    roles: string[];
 }
 
 export interface UsersShowProps {

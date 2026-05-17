@@ -59,6 +59,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('can:doctors.schedules.edit')
         ->name('doctor-schedules.index');
 
+    Route::get('doctor-schedules/create', [DoctorScheduleController::class, 'create'])
+        ->middleware('can:doctors.schedules.edit')
+        ->name('doctor-schedules.create');
+
+    Route::post('doctor-schedules', [DoctorScheduleController::class, 'storeIndividual'])
+        ->middleware('can:doctors.schedules.edit')
+        ->name('doctor-schedules.store');
+
+    Route::get('doctor-schedules/{schedule}/edit', [DoctorScheduleController::class, 'edit'])
+        ->middleware('can:doctors.schedules.edit')
+        ->name('doctor-schedules.edit');
+
+    Route::put('doctor-schedules/{schedule}', [DoctorScheduleController::class, 'updateIndividual'])
+        ->middleware('can:doctors.schedules.edit')
+        ->name('doctor-schedules.update');
+
+    Route::delete('doctor-schedules/{schedule}', [DoctorScheduleController::class, 'destroyIndividual'])
+        ->middleware('can:doctors.schedules.edit')
+        ->name('doctor-schedules.destroy');
+
     // Today's schedule
     Route::get('schedule', ScheduleController::class)
         ->middleware('can:appointments.view')

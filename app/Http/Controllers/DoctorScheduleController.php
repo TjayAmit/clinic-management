@@ -84,19 +84,33 @@ class DoctorScheduleController extends Controller
     // Individual schedule CRUD methods
     public function create(): Response
     {
-        $doctors = \App\Models\Doctor::with('user')->where('is_active', true)->get();
+        $doctor = auth()->user()->doctor?->load('user');
 
         return Inertia::render('doctorsSchedules/create', [
-            'doctors' => $doctors,
+            'doctor' => $doctor,
         ]);
     }
 
     public function storeIndividual(DoctorScheduleRequest $request): RedirectResponse
     {
-        DoctorSchedule::create($request->validated());
+        $validated = $request->validated();
+        $doctorId = auth()->user()->doctor?->id;
+        $days = (array) ($validated['day_of_week'] ?? []);
+
+        foreach ($days as $day) {
+            DoctorSchedule::create([
+                'doctor_id'    => $doctorId,
+                'day_of_week'  => $day,
+                'start_time'   => $validated['start_time'] ?? null,
+                'end_time'     => $validated['end_time'] ?? null,
+                'is_available' => $validated['is_available'],
+            ]);
+        }
+
+        $count = count($days);
 
         return redirect()->route('doctor-schedules.index')
-            ->with('success', 'Schedule created successfully.');
+            ->with('success', $count > 1 ? "{$count} schedules created successfully." : 'Schedule created successfully.');
     }
 
     public function edit(DoctorSchedule $schedule): Response
@@ -110,10 +124,28 @@ class DoctorScheduleController extends Controller
 
     public function updateIndividual(DoctorScheduleRequest $request, DoctorSchedule $schedule): RedirectResponse
     {
-        $schedule->update($request->validated());
+        $validated = $request->validated();
+        $doctorId = $schedule->doctor_id;
+        $days = (array) ($validated['day_of_week'] ?? []);
+
+        // Delete the original schedule
+        $schedule->delete();
+
+        // Create new schedules for all selected days
+        foreach ($days as $day) {
+            DoctorSchedule::create([
+                'doctor_id'    => $doctorId,
+                'day_of_week'  => $day,
+                'start_time'   => $validated['start_time'] ?? null,
+                'end_time'     => $validated['end_time'] ?? null,
+                'is_available' => $validated['is_available'],
+            ]);
+        }
+
+        $count = count($days);
 
         return redirect()->route('doctor-schedules.index')
-            ->with('success', 'Schedule updated successfully.');
+            ->with('success', $count > 1 ? "{$count} schedules updated successfully." : 'Schedule updated successfully.');
     }
 
     public function destroyIndividual(DoctorSchedule $schedule): RedirectResponse

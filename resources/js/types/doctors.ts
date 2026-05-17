@@ -113,7 +113,7 @@ export interface DoctorSchedulesListProps {
 }
 
 export interface DoctorScheduleCreateProps {
-    doctors: Array<{ id: number; user: { name: string } }>;
+    doctor: { id: number; user: { name: string } };
 }
 
 export interface DoctorScheduleEditProps {

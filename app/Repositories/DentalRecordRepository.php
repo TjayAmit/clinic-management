@@ -3,12 +3,18 @@
 namespace App\Repositories;
 
 use App\Models\DentalRecord;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 interface DentalRecordRepository
 {
     public function all(): iterable;
 
     public function findById(int $id): ?DentalRecord;
+
+    public function paginate(array $filters, int $perPage): LengthAwarePaginator;
+
+    public function forCreate(?int $visitId): array;
 
     public function getByPatient(int $patientId): iterable;
 

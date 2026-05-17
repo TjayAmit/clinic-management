@@ -2,20 +2,21 @@
 
 namespace App\Repositories;
 
-use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+use Spatie\Permission\Models\Role;
 
-interface UserRepository
+interface RoleRepository
 {
     public function all(): iterable;
 
-    public function findById(int $id): ?User;
+    public function findById(int $id): Role;
 
     public function paginate(array $filters, int $perPage): LengthAwarePaginator;
 
-    public function create(array $data): User;
+    public function create(array $data): Role;
 
-    public function update(int $id, array $data): User;
+    public function update(int $id, array $data): Role;
 
     public function delete(int $id): bool;
 }

@@ -16,15 +16,7 @@ class FeatureController extends Controller
 
     public function index(Request $request)
     {
-        $features = Feature::query()
-            ->when($request->input('search'), function ($q, $search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('key', 'like', "%{$search}%");
-            })
-            ->when($request->boolean('enabled_only'), fn ($q) => $q->where('is_enabled', true))
-            ->latest()
-            ->paginate($request->integer('per_page', 10))
-            ->withQueryString();
+        $features = $this->service->paginate($request);
 
         return Inertia::render('features/index', [
             'data' => $features,

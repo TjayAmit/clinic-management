@@ -5,9 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AppointmentRequest;
 use App\Http\Requests\FollowUpAppointmentRequest;
 use App\Models\Appointment;
-use App\Models\Doctor;
-use App\Models\Patient;
-use App\Models\Service;
 use App\Services\AppointmentService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -20,45 +17,24 @@ class AppointmentController extends Controller
 
     public function index(Request $request)
     {
-        $appointments = Appointment::with(['patient', 'doctor.user', 'service'])
-            ->forUser(auth()->user())
-            ->when($request->input('date'), fn ($q, $date) => $q->whereDate('appointment_date', $date))
-            ->when($request->input('doctor_id'), fn ($q, $id) => $q->where('doctor_id', $id))
-            ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status))
-            ->when($request->boolean('walk_in'), fn ($q) => $q->where('is_walk_in', true))
-            ->when($request->input('search'), function ($q, $search) {
-                $q->where(function ($inner) use ($search) {
-                    $inner->whereHas('patient', fn ($p) => $p->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%")
-                    )->orWhere('walk_in_name', 'like', "%{$search}%");
-                });
-            })
-            ->orderBy('appointment_date')
-            ->orderBy('start_time')
-            ->paginate($request->integer('per_page', 10))
-            ->withQueryString();
-
-        $appointments->through(function (Appointment $appointment) {
-            $data = $appointment->toArray();
-            $data['dentist'] = $data['doctor'] ?? null;
-            unset($data['doctor']);
-
-            return $data;
-        });
+        $filters = $request->only(['search', 'date', 'doctor_id', 'status', 'walk_in']);
+        $indexData = $this->service->getIndexData(auth()->user(), $filters, $request->integer('per_page', 10));
 
         return Inertia::render('appointments/index', [
-            'data' => $appointments,
+            'data' => $indexData['data'],
             'filters' => $request->only(['search', 'date', 'doctor_id', 'status', 'walk_in', 'per_page']),
-            'doctors' => Doctor::with('user')->where('is_active', true)->get(['id', 'user_id', 'specialization']),
+            'doctors' => $indexData['doctors'],
         ]);
     }
 
     public function create(Request $request)
     {
+        $dependencies = $this->service->repository->getFormDependencies();
+
         return Inertia::render('appointments/create', [
-            'patients' => Patient::orderBy('last_name')->limit(500)->get(['id', 'first_name', 'last_name', 'phone', 'email', 'address', 'emergency_contact_name', 'emergency_contact_phone', 'blood_type', 'allergies', 'date_of_birth']),
-            'doctors' => Doctor::with('user')->where('is_active', true)->get(),
-            'services' => Service::where('is_active', true)->get(['id', 'name', 'category', 'duration_minutes', 'price']),
+            'patients' => $dependencies['patients'],
+            'doctors' => $dependencies['doctors'],
+            'services' => $dependencies['services'],
             'defaultPatientId' => $request->integer('patient_id') ?: null,
             'isWalkIn' => $request->boolean('walk_in'),
         ]);
@@ -84,20 +60,7 @@ class AppointmentController extends Controller
 
     public function show(Appointment $appointment)
     {
-        $appointment->load([
-            'patient.visits.doctor.user',
-            'patient.visits.dentalRecord',
-            'doctor.user',
-            'service',
-            'visit.dentalRecord',
-            'parent',
-            'followUps.patient',
-            'queue',
-        ]);
-
-        $data = $appointment->toArray();
-        $data['dentist'] = $data['doctor'] ?? null;
-        unset($data['doctor']);
+        $data = $this->service->getShowData($appointment->id);
 
         return Inertia::render('appointments/show', [
             'appointment' => $data,
@@ -106,11 +69,13 @@ class AppointmentController extends Controller
 
     public function edit(Appointment $appointment)
     {
+        $dependencies = $this->service->repository->getFormDependencies();
+
         return Inertia::render('appointments/edit', [
             'appointment' => $appointment->load(['patient', 'doctor', 'service']),
-            'patients' => Patient::orderBy('last_name')->limit(500)->get(['id', 'first_name', 'last_name', 'phone', 'email', 'address', 'emergency_contact_name', 'emergency_contact_phone', 'blood_type', 'allergies', 'date_of_birth']),
-            'doctors' => Doctor::with('user')->where('is_active', true)->get(),
-            'services' => Service::where('is_active', true)->get(['id', 'name', 'category', 'duration_minutes', 'price']),
+            'patients' => $dependencies['patients'],
+            'doctors' => $dependencies['doctors'],
+            'services' => $dependencies['services'],
         ]);
     }
 

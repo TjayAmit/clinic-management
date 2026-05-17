@@ -3,12 +3,20 @@
 namespace App\Repositories;
 
 use App\Models\Appointment;
+use App\Models\User;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 interface AppointmentRepository
 {
     public function all(): iterable;
 
     public function findById(int $id): ?Appointment;
+
+    public function paginate(User $user, array $filters, int $perPage): LengthAwarePaginator;
+
+    public function getFormDependencies(): array;
+
+    public function getActiveDoctors(): iterable;
 
     public function getByDoctor(int $doctorId, ?string $date = null): iterable;
 

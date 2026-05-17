@@ -25,6 +25,11 @@ class UserService
         return $this->repository->findById($id);
     }
 
+    public function paginate(array $filters, int $perPage): \Illuminate\Pagination\LengthAwarePaginator
+    {
+        return $this->repository->paginate($filters, $perPage);
+    }
+
     public function createFromRequest(Request $request): User
     {
         $model = null;

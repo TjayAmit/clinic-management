@@ -3,9 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PatientVisitRequest;
-use App\Models\Appointment;
-use App\Models\Doctor;
-use App\Models\Patient;
 use App\Models\PatientVisit;
 use App\Services\PatientVisitService;
 use Illuminate\Http\Request;
@@ -19,13 +16,7 @@ class PatientVisitController extends Controller
 
     public function index(Request $request)
     {
-        $visits = PatientVisit::with(['patient', 'doctor.user', 'appointment'])
-            ->when($request->input('patient_id'), fn ($q, $id) => $q->where('patient_id', $id))
-            ->when($request->input('doctor_id'), fn ($q, $id) => $q->where('doctor_id', $id))
-            ->when($request->input('date'), fn ($q, $date) => $q->whereDate('visited_at', $date))
-            ->orderByDesc('visited_at')
-            ->paginate($request->integer('per_page', 10))
-            ->withQueryString();
+        $visits = $this->service->paginate($request);
 
         return Inertia::render('patientVisits/index', [
             'data' => $visits,
@@ -35,21 +26,9 @@ class PatientVisitController extends Controller
 
     public function create(Request $request)
     {
-        $appointmentId = $request->integer('appointment_id') ?: null;
-        $preselectedAppointment = $appointmentId
-            ? Appointment::with(['patient', 'doctor.user', 'service'])->find($appointmentId)
-            : null;
+        $props = $this->service->getCreateProps($request);
 
-        return Inertia::render('patientVisits/create', [
-            'patients' => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone']),
-            'doctors' => Doctor::with('user')->where('is_active', true)->get(['id', 'user_id', 'specialization']),
-            'appointments' => Appointment::with(['patient', 'doctor.user', 'service'])
-                ->whereNotIn('status', ['cancelled', 'no_show', 'completed'])
-                ->orderBy('appointment_date')
-                ->orderBy('start_time')
-                ->get(),
-            'preselectedAppointment' => $preselectedAppointment,
-        ]);
+        return Inertia::render('patientVisits/create', $props);
     }
 
     public function store(PatientVisitRequest $request)
@@ -71,16 +50,13 @@ class PatientVisitController extends Controller
     public function edit(PatientVisit $patientVisit)
     {
         $patientVisit->load(['patient', 'doctor.user', 'appointment.service']);
+        $props = $this->service->getEditProps($patientVisit);
 
         return Inertia::render('patientVisits/edit', [
             'visit' => $patientVisit,
-            'patients' => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone']),
-            'doctors' => Doctor::with('user')->where('is_active', true)->get(['id', 'user_id', 'specialization']),
-            'appointments' => Appointment::with(['patient', 'doctor.user', 'service'])
-                ->whereNotIn('status', ['cancelled', 'no_show'])
-                ->orderBy('appointment_date')
-                ->orderBy('start_time')
-                ->get(),
+            'patients' => $props['patients'],
+            'doctors' => $props['doctors'],
+            'appointments' => $props['appointments'],
         ]);
     }
 

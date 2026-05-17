@@ -5,12 +5,17 @@ namespace App\Http\Controllers;
 use App\Http\Requests\DoctorScheduleRequest;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
+use App\Services\DoctorScheduleService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DoctorScheduleController extends Controller
 {
+    public function __construct(
+        protected DoctorScheduleService $service,
+    ) {}
+
     public function index(Doctor $doctor): Response
     {
         if (auth()->user()->hasRole('Doctor') && auth()->user()->doctor?->id !== $doctor->id) {
@@ -31,23 +36,7 @@ class DoctorScheduleController extends Controller
             abort(403);
         }
 
-        $rows = collect($request->validated('schedules'))
-            ->map(fn (array $entry) => [
-                'doctor_id'    => $doctor->id,
-                'scheduled_date'  => $entry['scheduled_date'],
-                'start_time'   => $entry['start_time'] ?? null,
-                'end_time'     => $entry['end_time'] ?? null,
-                'is_available' => $entry['is_available'],
-                'created_at'   => now(),
-                'updated_at'   => now(),
-            ])
-            ->all();
-
-        DoctorSchedule::upsert(
-            $rows,
-            uniqueBy: ['doctor_id', 'scheduled_date'],
-            update: ['start_time', 'end_time', 'is_available', 'updated_at'],
-        );
+        $this->service->updateSchedules($doctor, $request->validated('schedules'));
 
         return redirect()->route('doctors.schedules.index', $doctor)
             ->with('success', 'Schedule updated successfully.');
@@ -59,7 +48,7 @@ class DoctorScheduleController extends Controller
             abort(403);
         }
 
-        $doctor->schedules()->create($request->validated());
+        $this->service->createForDoctor($doctor, $request->validated());
 
         return redirect()->route('doctors.schedules.index', $doctor)
             ->with('success', 'Schedule created successfully.');
@@ -75,7 +64,7 @@ class DoctorScheduleController extends Controller
             abort(403);
         }
 
-        $schedule->delete();
+        $this->service->delete($schedule->id);
 
         return redirect()->route('doctors.schedules.index', $doctor)
             ->with('success', 'Schedule deleted successfully.');
@@ -84,7 +73,7 @@ class DoctorScheduleController extends Controller
     // Individual schedule CRUD methods
     public function create(): Response
     {
-        $doctor = auth()->user()->doctor?->load('user');
+        $doctor = $this->service->getAuthDoctor();
 
         return Inertia::render('doctorsSchedules/create', [
             'doctor' => $doctor,
@@ -93,21 +82,8 @@ class DoctorScheduleController extends Controller
 
     public function storeIndividual(DoctorScheduleRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
         $doctorId = auth()->user()->doctor?->id;
-        $dates = (array) ($validated['scheduled_date'] ?? []);
-
-        foreach ($dates as $date) {
-            DoctorSchedule::create([
-                'doctor_id'    => $doctorId,
-                'scheduled_date'  => $date,
-                'start_time'   => $validated['start_time'] ?? null,
-                'end_time'     => $validated['end_time'] ?? null,
-                'is_available' => $validated['is_available'],
-            ]);
-        }
-
-        $count = count($dates);
+        $count = $this->service->createIndividual($doctorId, $request->validated());
 
         return redirect()->route('doctor-schedules.index')
             ->with('success', $count > 1 ? "{$count} schedules created successfully." : 'Schedule created successfully.');
@@ -124,25 +100,7 @@ class DoctorScheduleController extends Controller
 
     public function updateIndividual(DoctorScheduleRequest $request, DoctorSchedule $schedule): RedirectResponse
     {
-        $validated = $request->validated();
-        $doctorId = $schedule->doctor_id;
-        $dates = (array) ($validated['scheduled_date'] ?? []);
-
-        // Delete the original schedule
-        $schedule->delete();
-
-        // Create new schedules for all selected dates
-        foreach ($dates as $date) {
-            DoctorSchedule::create([
-                'doctor_id'    => $doctorId,
-                'scheduled_date'  => $date,
-                'start_time'   => $validated['start_time'] ?? null,
-                'end_time'     => $validated['end_time'] ?? null,
-                'is_available' => $validated['is_available'],
-            ]);
-        }
-
-        $count = count($dates);
+        $count = $this->service->updateIndividual($schedule, $request->validated());
 
         return redirect()->route('doctor-schedules.index')
             ->with('success', $count > 1 ? "{$count} schedules updated successfully." : 'Schedule updated successfully.');
@@ -150,7 +108,7 @@ class DoctorScheduleController extends Controller
 
     public function destroyIndividual(DoctorSchedule $schedule): RedirectResponse
     {
-        $schedule->delete();
+        $this->service->delete($schedule->id);
 
         return redirect()->route('doctor-schedules.index')
             ->with('success', 'Schedule deleted successfully.');

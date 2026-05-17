@@ -3,7 +3,12 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\Appointment;
+use App\Models\Doctor;
+use App\Models\Patient;
+use App\Models\Service;
+use App\Models\User;
 use App\Repositories\AppointmentRepository;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class EloquentAppointmentRepository implements AppointmentRepository
 {
@@ -15,6 +20,60 @@ class EloquentAppointmentRepository implements AppointmentRepository
     public function findById(int $id): ?Appointment
     {
         return Appointment::find($id);
+    }
+
+    public function paginate(User $user, array $filters, int $perPage): LengthAwarePaginator
+    {
+        $query = Appointment::with(['patient', 'doctor.user', 'service'])
+            ->forUser($user);
+
+        if (! empty($filters['date'])) {
+            $query->whereDate('appointment_date', $filters['date']);
+        }
+
+        if (! empty($filters['doctor_id'])) {
+            $query->where('doctor_id', $filters['doctor_id']);
+        }
+
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['walk_in'])) {
+            $query->where('is_walk_in', true);
+        }
+
+        if (! empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($inner) use ($search) {
+                $inner->whereHas('patient', fn ($p) => $p->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                )->orWhere('walk_in_name', 'like', "%{$search}%");
+            });
+        }
+
+        return $query->orderBy('appointment_date')
+            ->orderBy('start_time')
+            ->paginate($perPage)
+            ->withQueryString();
+    }
+
+    public function getFormDependencies(): array
+    {
+        return [
+            'patients' => Patient::orderBy('last_name')->limit(500)->get([
+                'id', 'first_name', 'last_name', 'phone', 'email', 'address',
+                'emergency_contact_name', 'emergency_contact_phone', 'blood_type',
+                'allergies', 'date_of_birth',
+            ]),
+            'doctors' => Doctor::with('user')->where('is_active', true)->get(),
+            'services' => Service::where('is_active', true)->get(['id', 'name', 'category', 'duration_minutes', 'price']),
+        ];
+    }
+
+    public function getActiveDoctors(): iterable
+    {
+        return Doctor::with('user')->where('is_active', true)->get(['id', 'user_id', 'specialization']);
     }
 
     public function getByDoctor(int $doctorId, ?string $date = null): iterable

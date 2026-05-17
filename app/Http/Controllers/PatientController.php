@@ -16,17 +16,7 @@ class PatientController extends Controller
 
     public function index(Request $request)
     {
-        $patients = Patient::query()
-            ->when($request->input('search'), function ($q, $search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            })
-            ->when($request->boolean('is_regular'), fn ($q) => $q->where('is_regular', true))
-            ->latest()
-            ->paginate($request->integer('per_page', 10))
-            ->withQueryString();
+        $patients = $this->service->paginate($request);
 
         return Inertia::render('patients/index', [
             'data' => $patients,
@@ -78,7 +68,7 @@ class PatientController extends Controller
 
     public function toggleRegular(Patient $patient)
     {
-        $patient->update(['is_regular' => ! $patient->is_regular]);
+        $patient = $this->service->toggleRegular($patient->id);
 
         $message = $patient->is_regular ? 'Patient marked as regular.' : 'Regular status removed.';
 

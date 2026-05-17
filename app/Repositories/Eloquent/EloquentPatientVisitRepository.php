@@ -2,8 +2,12 @@
 
 namespace App\Repositories\Eloquent;
 
+use App\Models\Appointment;
+use App\Models\Doctor;
+use App\Models\Patient;
 use App\Models\PatientVisit;
 use App\Repositories\PatientVisitRepository;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class EloquentPatientVisitRepository implements PatientVisitRepository
 {
@@ -15,6 +19,42 @@ class EloquentPatientVisitRepository implements PatientVisitRepository
     public function findById(int $id): ?PatientVisit
     {
         return PatientVisit::find($id);
+    }
+
+    public function paginate(array $filters, int $perPage): LengthAwarePaginator
+    {
+        $query = PatientVisit::with(['patient', 'doctor.user', 'appointment']);
+
+        if (! empty($filters['patient_id'])) {
+            $query->where('patient_id', $filters['patient_id']);
+        }
+
+        if (! empty($filters['doctor_id'])) {
+            $query->where('doctor_id', $filters['doctor_id']);
+        }
+
+        if (! empty($filters['date'])) {
+            $query->whereDate('visited_at', $filters['date']);
+        }
+
+        return $query->orderByDesc('visited_at')->paginate($perPage)->withQueryString();
+    }
+
+    public function getFormDependencies(bool $excludeTerminal = false): array
+    {
+        $excludedStatuses = $excludeTerminal
+            ? ['cancelled', 'no_show', 'completed']
+            : ['cancelled', 'no_show'];
+
+        return [
+            'patients' => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name', 'phone']),
+            'doctors' => Doctor::with('user')->where('is_active', true)->get(['id', 'user_id', 'specialization']),
+            'appointments' => Appointment::with(['patient', 'doctor.user', 'service'])
+                ->whereNotIn('status', $excludedStatuses)
+                ->orderBy('appointment_date')
+                ->orderBy('start_time')
+                ->get(),
+        ];
     }
 
     public function getByPatient(int $patientId): iterable

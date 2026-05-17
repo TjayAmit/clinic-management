@@ -25,6 +25,18 @@ class DentalRecordService
         return $this->repository->findById($id);
     }
 
+    public function paginate(Request $request): \Illuminate\Pagination\LengthAwarePaginator
+    {
+        $filters = $request->only(['search', 'patient_id', 'dentist_id', 'per_page']);
+
+        return $this->repository->paginate($filters, $request->integer('per_page', 10));
+    }
+
+    public function getCreateProps(Request $request): array
+    {
+        return $this->repository->forCreate($request->integer('visit_id') ?: null);
+    }
+
     public function getByPatient(int $patientId): iterable
     {
         return $this->repository->getByPatient($patientId);

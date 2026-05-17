@@ -27,6 +27,30 @@ class PatientVisitService
         return $this->repository->findById($id);
     }
 
+    public function paginate(Request $request): \Illuminate\Pagination\LengthAwarePaginator
+    {
+        $filters = $request->only(['patient_id', 'doctor_id', 'date', 'per_page']);
+
+        return $this->repository->paginate($filters, $request->integer('per_page', 10));
+    }
+
+    public function getCreateProps(Request $request): array
+    {
+        $deps = $this->repository->getFormDependencies(excludeTerminal: true);
+
+        $appointmentId = $request->integer('appointment_id') ?: null;
+        $deps['preselectedAppointment'] = $appointmentId
+            ? $deps['appointments']->firstWhere('id', $appointmentId)
+            : null;
+
+        return $deps;
+    }
+
+    public function getEditProps(PatientVisit $visit): array
+    {
+        return $this->repository->getFormDependencies(excludeTerminal: false);
+    }
+
     public function getByPatient(int $patientId): iterable
     {
         return $this->repository->getByPatient($patientId);

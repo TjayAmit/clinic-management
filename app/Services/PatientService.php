@@ -25,6 +25,21 @@ class PatientService
         return $this->repository->findById($id);
     }
 
+    public function paginate(Request $request): \Illuminate\Pagination\LengthAwarePaginator
+    {
+        $filters = $request->only(['search', 'per_page', 'is_regular']);
+
+        return $this->repository->paginate($filters, $request->integer('per_page', 10));
+    }
+
+    public function toggleRegular(int $id): Patient
+    {
+        $patient = $this->repository->toggleRegular($id);
+        $this->logActivity('updated', $patient, ['is_regular' => $patient->is_regular]);
+
+        return $patient;
+    }
+
     public function search(string $term): iterable
     {
         return $this->repository->search($term);

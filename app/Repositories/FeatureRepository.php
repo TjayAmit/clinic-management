@@ -10,7 +10,7 @@ interface FeatureRepository
 {
     public function all(): array;
 
-    public function paginate(int $perPage = 10): LengthAwarePaginator;
+    public function paginate(array $filters, int $perPage): LengthAwarePaginator;
 
     public function findById(int $id): ?Feature;
 

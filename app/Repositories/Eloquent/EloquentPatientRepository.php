@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Patient;
 use App\Repositories\PatientRepository;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class EloquentPatientRepository implements PatientRepository
 {
@@ -15,6 +16,35 @@ class EloquentPatientRepository implements PatientRepository
     public function findById(int $id): ?Patient
     {
         return Patient::find($id);
+    }
+
+    public function paginate(array $filters, int $perPage): LengthAwarePaginator
+    {
+        $query = Patient::query();
+
+        if (! empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if (! empty($filters['is_regular'])) {
+            $query->where('is_regular', true);
+        }
+
+        return $query->latest()->paginate($perPage)->withQueryString();
+    }
+
+    public function toggleRegular(int $id): Patient
+    {
+        $patient = $this->findById($id);
+        $patient->update(['is_regular' => ! $patient->is_regular]);
+
+        return $patient;
     }
 
     public function search(string $term): iterable

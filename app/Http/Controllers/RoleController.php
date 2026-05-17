@@ -2,24 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\RoleService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
+    public function __construct(
+        protected RoleService $service,
+    ) {}
+
     public function index(Request $request)
     {
-        $query = Role::query()->withCount('permissions');
-
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where('name', 'like', '%'.$search.'%');
-        }
+        $filters = $request->only(['search']);
+        $roles = $this->service->paginate($filters, $request->integer('per_page', 10));
 
         return Inertia::render('roles/index', [
-            'data' => $query->latest()->paginate($request->per_page ?? 10)->withQueryString(),
+            'data' => $roles,
             'filters' => $request->only(['search', 'per_page']),
         ]);
     }
@@ -27,7 +27,7 @@ class RoleController extends Controller
     public function create()
     {
         return Inertia::render('roles/create', [
-            'permissions' => Permission::select('id', 'name')->orderBy('name')->get(),
+            'permissions' => $this->service->allPermissions(),
         ]);
     }
 
@@ -39,15 +39,7 @@ class RoleController extends Controller
             'permissions.*' => 'integer|exists:permissions,id',
         ]);
 
-        $role = Role::create([
-            'name' => $validated['name'],
-            'guard_name' => 'web',
-        ]);
-
-        if (! empty($validated['permissions'])) {
-            $permissionNames = Permission::whereIn('id', $validated['permissions'])->pluck('name');
-            $role->syncPermissions($permissionNames);
-        }
+        $this->service->create($validated);
 
         return redirect()->route('roles.index')->with('success', 'Role created successfully');
     }
@@ -67,7 +59,7 @@ class RoleController extends Controller
 
         return Inertia::render('roles/edit', [
             'role' => $role,
-            'permissions' => Permission::select('id', 'name')->orderBy('name')->get(),
+            'permissions' => $this->service->allPermissions(),
         ]);
     }
 
@@ -79,16 +71,7 @@ class RoleController extends Controller
             'permissions.*' => 'integer|exists:permissions,id',
         ]);
 
-        $role->update([
-            'name' => $validated['name'],
-        ]);
-
-        if (! empty($validated['permissions'])) {
-            $permissionNames = Permission::whereIn('id', $validated['permissions'])->pluck('name');
-            $role->syncPermissions($permissionNames);
-        } else {
-            $role->syncPermissions([]);
-        }
+        $this->service->update($role->id, $validated);
 
         return redirect()->route('roles.index')->with('success', 'Role updated successfully');
     }
@@ -99,7 +82,7 @@ class RoleController extends Controller
             return redirect()->route('roles.index')->with('error', 'Cannot delete the super-admin role');
         }
 
-        $role->delete();
+        $this->service->delete($role->id);
 
         return redirect()->route('roles.index')->with('success', 'Role deleted successfully');
     }

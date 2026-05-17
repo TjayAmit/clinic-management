@@ -4,22 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
 use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class UserController extends Controller
 {
+    public function __construct(
+        protected UserService $service,
+    ) {}
+
     public function index(Request $request)
     {
-        $query = User::with('roles');
-
-        if ($request->has('search')) {
-            $query->where('name', 'like', '%'.$request->search.'%')
-                ->orWhere('email', 'like', '%'.$request->search.'%');
-        }
+        $filters = $request->only(['search']);
+        $users = $this->service->paginate($filters, 10);
 
         return Inertia::render('users/index', [
-            'data' => $query->latest()->paginate(10)->withQueryString(),
+            'data' => $users,
             'filters' => $request->only(['search']),
         ]);
     }
@@ -33,15 +34,8 @@ class UserController extends Controller
 
     public function store(UserRequest $request)
     {
-        $validated = $request->validated();
-
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => bcrypt($validated['password']),
-        ]);
-
-        $user->syncRoles($validated['roles']);
+        $user = $this->service->createFromRequest($request);
+        $user->syncRoles($request->validated('roles'));
 
         return redirect()->route('users.index')->with('success', 'User created successfully');
     }
@@ -67,25 +61,15 @@ class UserController extends Controller
 
     public function update(UserRequest $request, User $user)
     {
-        $validated = $request->validated();
-
-        $user->update([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-        ]);
-
-        if (! empty($validated['password'])) {
-            $user->update(['password' => bcrypt($validated['password'])]);
-        }
-
-        $user->syncRoles($validated['roles']);
+        $this->service->updateFromRequest($user->id, $request);
+        $user->syncRoles($request->validated('roles'));
 
         return redirect()->route('users.index')->with('success', 'User updated successfully');
     }
 
     public function destroy(User $user)
     {
-        $user->delete();
+        $this->service->delete($user->id);
 
         return redirect()->route('users.index')->with('success', 'User deleted successfully');
     }

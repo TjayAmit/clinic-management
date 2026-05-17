@@ -2,24 +2,34 @@
 
 namespace App\Providers;
 
-use App\Repositories\AppointmentRepository;
-use App\Repositories\DentalRecordRepository;
-use App\Repositories\DoctorRepository;
-use App\Repositories\Eloquent\EloquentAppointmentRepository;
-use App\Repositories\Eloquent\EloquentDentalRecordRepository;
-use App\Repositories\Eloquent\EloquentDoctorRepository;
-use App\Repositories\Eloquent\EloquentFeatureRepository;
-use App\Repositories\Eloquent\EloquentPatientRepository;
-use App\Repositories\Eloquent\EloquentPatientVisitRepository;
-use App\Repositories\Eloquent\EloquentQueueRepository;
-use App\Repositories\Eloquent\EloquentServiceRepository;
-use App\Repositories\Eloquent\EloquentUserRepository;
-use App\Repositories\FeatureRepository;
-use App\Repositories\PatientRepository;
-use App\Repositories\PatientVisitRepository;
-use App\Repositories\QueueRepository;
-use App\Repositories\ServiceRepository;
-use App\Repositories\UserRepository;
+use App\Repositories\{
+    AppointmentRepository,
+    ClinicSettingRepository,
+    DentalRecordRepository,
+    DoctorRepository,
+    FeatureRepository,
+    PatientRepository,
+    PatientVisitRepository,
+    QueueRepository,
+    RoleRepository,
+    ServiceRepository,
+    UserRepository
+};
+
+use App\Repositories\Eloquent\{
+    EloquentAppointmentRepository,
+    EloquentClinicSettingRepository,
+    EloquentDentalRecordRepository,
+    EloquentDoctorRepository,
+    EloquentFeatureRepository,
+    EloquentPatientRepository,
+    EloquentPatientVisitRepository,
+    EloquentQueueRepository,
+    EloquentRoleRepository,
+    EloquentServiceRepository,
+    EloquentUserRepository
+};
+
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -75,5 +85,16 @@ class RepositoryServiceProvider extends ServiceProvider
             QueueRepository::class,
             EloquentQueueRepository::class
         );
+
+        $this->app->bind(
+            ClinicSettingRepository::class,
+            EloquentClinicSettingRepository::class
+        );
+
+        $this->app->bind(
+            RoleRepository::class,
+            EloquentRoleRepository::class
+        );
     }
 }
+

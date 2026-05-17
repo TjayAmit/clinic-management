@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\User;
 use App\Repositories\UserRepository;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class EloquentUserRepository implements UserRepository
 {
@@ -15,6 +16,21 @@ class EloquentUserRepository implements UserRepository
     public function findById(int $id): ?User
     {
         return User::find($id);
+    }
+
+    public function paginate(array $filters, int $perPage): LengthAwarePaginator
+    {
+        $query = User::with('roles');
+
+        if (! empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        return $query->latest()->paginate($perPage)->withQueryString();
     }
 
     public function create(array $data): User

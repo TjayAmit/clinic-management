@@ -394,21 +394,34 @@ export default function DoctorDashboard({
                                                     </div>
                                                 </div>
                                                 <div className="mt-2 flex gap-2 pt-4">
-                                                    <Button
-                                                        size="sm"
-                                                        className="h-7 text-xs"
-                                                        onClick={() => router.patch(`/appointments/${next.id}`, { status: 'in_queue' })}
-                                                    >
-                                                        Confirm
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="h-7 text-xs"
-                                                        onClick={() => router.patch(`/appointments/${next.id}`, { status: 'in_progress' })}
-                                                    >
-                                                        Check In
-                                                    </Button>
+                                                    {next.status === 'pending' && (
+                                                        <Button
+                                                            size="sm"
+                                                            className="h-7 text-xs"
+                                                            onClick={() => router.patch(`/appointments/${next.id}`, { status: 'in_queue' })}
+                                                        >
+                                                            Confirm
+                                                        </Button>
+                                                    )}
+                                                    {['pending', 'confirmed', 'in_queue'].includes(next.status) && (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            className="h-7 text-xs"
+                                                            onClick={() => router.patch(`/appointments/${next.id}`, { status: 'in_progress' })}
+                                                        >
+                                                            {next.status === 'in_queue' ? 'Start' : 'Check In'}
+                                                        </Button>
+                                                    )}
+                                                    {next.status === 'in_progress' && (
+                                                        <Button
+                                                            size="sm"
+                                                            className="h-7 text-xs"
+                                                            onClick={() => router.patch(`/appointments/${next.id}`, { status: 'completed' })}
+                                                        >
+                                                            Complete
+                                                        </Button>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}

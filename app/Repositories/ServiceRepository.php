@@ -3,12 +3,15 @@
 namespace App\Repositories;
 
 use App\Models\Service;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 interface ServiceRepository
 {
     public function all(): iterable;
 
     public function findById(int $id): ?Service;
+
+    public function paginate(array $filters, int $perPage): LengthAwarePaginator;
 
     public function getActive(): iterable;
 

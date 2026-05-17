@@ -16,14 +16,7 @@ class ServiceController extends Controller
 
     public function index(Request $request)
     {
-        $services = Service::query()
-            ->when($request->input('search'), function ($q, $search) {
-                $q->where('name', 'like', "%{$search}%");
-            })
-            ->when($request->boolean('active_only'), fn ($q) => $q->where('is_active', true))
-            ->latest()
-            ->paginate($request->integer('per_page', 10))
-            ->withQueryString();
+        $services = $this->service->paginate($request);
 
         return Inertia::render('services/index', [
             'data' => $services,

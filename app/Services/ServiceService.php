@@ -25,6 +25,13 @@ class ServiceService
         return $this->repository->findById($id);
     }
 
+    public function paginate(Request $request): \Illuminate\Pagination\LengthAwarePaginator
+    {
+        $filters = $request->only(['search', 'per_page', 'active_only']);
+
+        return $this->repository->paginate($filters, $request->integer('per_page', 10));
+    }
+
     public function getActive(): iterable
     {
         return $this->repository->getActive();

@@ -2,32 +2,38 @@
 
 namespace App\Services;
 
+use App\DTOs\ClinicSettingData;
 use App\Models\ClinicSetting;
+use App\Repositories\ClinicSettingRepository;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ClinicSettingService
 {
+    public function __construct(
+        protected ClinicSettingRepository $repository,
+    ) {}
+
     public function get(): ClinicSetting
     {
-        return ClinicSetting::current();
+        return $this->repository->current();
     }
 
     public function updateFromRequest(Request $request): ClinicSetting
     {
-        $model = ClinicSetting::current();
+        $model = $this->repository->current();
         $oldData = $model->getOriginal();
         $updatedModel = null;
 
-        DB::transaction(function () use ($request, $model, &$updatedModel) {
-            $model->update($request->validated());
-            $updatedModel = $model->fresh();
+        DB::transaction(function () use ($request, &$updatedModel) {
+            $dto = ClinicSettingData::fromRequest($request);
+            $updatedModel = $this->repository->update($dto->toArray());
         });
 
         $this->logActivity('updated', $updatedModel, [
             'old' => $oldData,
-            'new' => $request->validated(),
+            'new' => $updatedModel->getAttributes(),
         ]);
 
         return $updatedModel;
@@ -44,6 +50,6 @@ class ClinicSettingService
             ->causedBy(auth()->user())
             ->performedOn($model)
             ->withProperties($properties)
-            ->log("{$action} " . class_basename($model));
+            ->log("{$action} ".class_basename($model));
     }
 }

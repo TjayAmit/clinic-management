@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use App\Models\User;
 
 class AppointmentService
 {
@@ -56,6 +57,52 @@ class AppointmentService
     public function getWalkInsByDate(string $date): iterable
     {
         return $this->repository->getWalkInsByDate($date);
+    }
+
+    public function getIndexData(User $user, array $filters, int $perPage): array
+    {
+        $appointments = $this->repository->paginate($user, $filters, $perPage);
+        
+        $appointments->through(function (Appointment $appointment) {
+            $data = $appointment->toArray();
+            $data['dentist'] = $data['doctor'] ?? null;
+            unset($data['doctor']);
+
+            return $data;
+        });
+
+        $doctors = $this->repository->getActiveDoctors();
+
+        return [
+            'data' => $appointments,
+            'doctors' => $doctors,
+        ];
+    }
+
+    public function getShowData(int $id): array
+    {
+        $appointment = $this->repository->findById($id);
+        
+        if (! $appointment) {
+            return [];
+        }
+
+        $appointment->load([
+            'patient.visits.doctor.user',
+            'patient.visits.dentalRecord',
+            'doctor.user',
+            'service',
+            'visit.dentalRecord',
+            'parent',
+            'followUps.patient',
+            'queue',
+        ]);
+
+        $data = $appointment->toArray();
+        $data['dentist'] = $data['doctor'] ?? null;
+        unset($data['doctor']);
+
+        return $data;
     }
 
     public function checkConflict(int $doctorId, string $date, string $start, string $end, ?int $excludeId = null): bool

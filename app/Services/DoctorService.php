@@ -36,6 +36,18 @@ class DoctorService
         return $this->repository->findByUserId($userId);
     }
 
+    public function paginate(Request $request): \Illuminate\Pagination\LengthAwarePaginator
+    {
+        $filters = $request->only(['search', 'per_page']);
+
+        return $this->repository->paginate($filters, $request->integer('per_page', 10));
+    }
+
+    public function usersAvailableForDoctor(int $userId): \Illuminate\Support\Collection
+    {
+        return $this->repository->usersAvailableForDoctor($userId);
+    }
+
     public function getActive(): iterable
     {
         return $this->repository->getActive();

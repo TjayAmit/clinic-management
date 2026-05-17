@@ -3,12 +3,17 @@
 namespace App\Repositories;
 
 use App\Models\PatientVisit;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 interface PatientVisitRepository
 {
     public function all(): iterable;
 
     public function findById(int $id): ?PatientVisit;
+
+    public function paginate(array $filters, int $perPage): LengthAwarePaginator;
+
+    public function getFormDependencies(bool $excludeTerminal = false): array;
 
     public function getByPatient(int $patientId): iterable;
 

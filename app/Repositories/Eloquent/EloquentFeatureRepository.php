@@ -14,11 +14,23 @@ class EloquentFeatureRepository implements FeatureRepository
         return Feature::with('enabledBy')->get()->toArray();
     }
 
-    public function paginate(int $perPage = 10): LengthAwarePaginator
+    public function paginate(array $filters, int $perPage): LengthAwarePaginator
     {
-        return Feature::with('enabledBy')
-            ->latest()
-            ->paginate($perPage);
+        $query = Feature::with('enabledBy');
+
+        if (! empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('key', 'like', "%{$search}%");
+            });
+        }
+
+        if (! empty($filters['enabled_only'])) {
+            $query->where('is_enabled', true);
+        }
+
+        return $query->latest()->paginate($perPage)->withQueryString();
     }
 
     public function findById(int $id): ?Feature

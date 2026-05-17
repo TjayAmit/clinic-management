@@ -3,7 +3,10 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\Doctor;
+use App\Models\User;
 use App\Repositories\DoctorRepository;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class EloquentDoctorRepository implements DoctorRepository
 {
@@ -20,6 +23,29 @@ class EloquentDoctorRepository implements DoctorRepository
     public function findByUserId(int $userId): ?Doctor
     {
         return Doctor::where('user_id', $userId)->first();
+    }
+
+    public function paginate(array $filters, int $perPage): LengthAwarePaginator
+    {
+        $query = Doctor::with('user');
+
+        if (! empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"))
+                    ->orWhere('specialization', 'like', "%{$search}%")
+                    ->orWhere('license_number', 'like', "%{$search}%");
+            });
+        }
+
+        return $query->latest()->paginate($perPage)->withQueryString();
+    }
+
+    public function usersAvailableForDoctor(int $currentDoctorUserId): Collection
+    {
+        return User::whereDoesntHave('doctor')
+            ->orWhere('id', $currentDoctorUserId)
+            ->get(['id', 'name', 'email']);
     }
 
     public function getActive(): iterable

@@ -25,6 +25,13 @@ class FeatureService
         return $this->repository->findById($id);
     }
 
+    public function paginate(Request $request): \Illuminate\Pagination\LengthAwarePaginator
+    {
+        $filters = $request->only(['search', 'per_page', 'enabled_only']);
+
+        return $this->repository->paginate($filters, $request->integer('per_page', 10));
+    }
+
     public function findByKey(string $key): ?Feature
     {
         return $this->repository->findByKey($key);

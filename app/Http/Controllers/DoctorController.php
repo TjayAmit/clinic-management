@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\DoctorRequest;
 use App\Models\Doctor;
-use App\Models\User;
 use App\Services\DoctorService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,15 +16,8 @@ class DoctorController extends Controller
 
     public function index(Request $request)
     {
-        $doctors = Doctor::with('user')
-            ->when($request->input('search'), function ($q, $search) {
-                $q->whereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"))
-                    ->orWhere('specialization', 'like', "%{$search}%")
-                    ->orWhere('license_number', 'like', "%{$search}%");
-            })
-            ->latest()
-            ->paginate($request->integer('per_page', 10))
-            ->withQueryString();
+        $filters = $request->only(['search']);
+        $doctors = $this->service->paginate($request);
 
         return Inertia::render('doctors/index', [
             'data' => $doctors,
@@ -58,9 +50,7 @@ class DoctorController extends Controller
     {
         $doctor->load('user');
 
-        $users = User::whereDoesntHave('doctor')
-            ->orWhere('id', $doctor->user_id)
-            ->get(['id', 'name', 'email']);
+        $users = $this->service->repository->usersAvailableForDoctor($doctor->user_id);
 
         return Inertia::render('doctors/edit', [
             'doctor' => $doctor,

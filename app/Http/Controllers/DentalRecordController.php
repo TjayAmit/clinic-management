@@ -4,9 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\DentalRecordRequest;
 use App\Models\DentalRecord;
-use App\Models\Doctor;
-use App\Models\Patient;
-use App\Models\PatientVisit;
 use App\Services\DentalRecordService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,17 +16,7 @@ class DentalRecordController extends Controller
 
     public function index(Request $request)
     {
-        $records = DentalRecord::with(['patient', 'dentist.user', 'patientVisit'])
-            ->when($request->input('patient_id'), fn ($q, $id) => $q->where('patient_id', $id))
-            ->when($request->input('dentist_id'), fn ($q, $id) => $q->where('dentist_id', $id))
-            ->when($request->input('search'), function ($q, $search) {
-                $q->whereHas('patient', fn ($p) => $p->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                );
-            })
-            ->orderByDesc('created_at')
-            ->paginate($request->integer('per_page', 10))
-            ->withQueryString();
+        $records = $this->service->paginate($request);
 
         return Inertia::render('dentalRecords/index', [
             'data' => $records,
@@ -39,13 +26,9 @@ class DentalRecordController extends Controller
 
     public function create(Request $request)
     {
-        return Inertia::render('dentalRecords/create', [
-            'patients' => Patient::orderBy('last_name')->get(['id', 'first_name', 'last_name']),
-            'doctors' => Doctor::with('user')->where('is_active', true)->get(),
-            'patient_visit' => $request->input('visit_id')
-                ? PatientVisit::with('patient', 'dentist')->find($request->input('visit_id'))
-                : null,
-        ]);
+        $props = $this->service->getCreateProps($request);
+
+        return Inertia::render('dentalRecords/create', $props);
     }
 
     public function store(DentalRecordRequest $request)

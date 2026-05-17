@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class DoctorCalendarController extends Controllers
+class DoctorCalendarController extends Controller
 {
     public function __construct(
         protected AppointmentService $appointmentService,
@@ -28,6 +28,10 @@ class DoctorCalendarController extends Controllers
         $appointments = $this->appointmentService->getByDoctorAndMonth($doctorId, $date->year, $date->month);
         $schedules = $this->scheduleService->getByDoctorAndMonth($doctorId, $date->year, $date->month);
         $doctor = $this->appointmentService->getDoctorById($doctorId);
+
+        if (!$doctor) {
+            abort(404, 'Doctor not found');
+        }
 
         return Inertia::render('doctors/calendar', [
             'doctor' => $doctor,

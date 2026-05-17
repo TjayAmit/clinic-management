@@ -149,7 +149,7 @@ export default function Index({ data, filters }: DoctorSchedulesListProps) {
                                         className="border-b border-border/60 last:border-0 transition-colors hover:bg-muted/30"
                                     >
                                         <TableCell className="py-3.5 pl-6 pr-4">
-                                            <span className="text-sm font-medium text-foreground">{item.doctor.user.name}</span>
+                                            <span className="text-sm font-medium text-foreground">{item.doctor.user?.name ?? '—'}</span>
                                         </TableCell>
 
                                         <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
@@ -228,7 +228,7 @@ export default function Index({ data, filters }: DoctorSchedulesListProps) {
                 open={!!deleteId}
                 onOpenChange={() => setDeleteId(null)}
                 title="Delete Schedule"
-                itemName={deleteTarget ? deleteTarget.doctor.user.name + ' – ' + deleteTarget.scheduled_date : undefined}
+                itemName={deleteTarget ? (deleteTarget.doctor.user?.name ?? '—') + ' – ' + deleteTarget.scheduled_date : undefined}
                 onConfirm={handleDelete}
                 isLoading={isDeleting}
             />

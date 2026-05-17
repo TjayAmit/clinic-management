@@ -21,6 +21,17 @@ class EloquentDoctorScheduleRepository implements DoctorScheduleRepository
             ->get();
     }
 
+    public function getByDoctorAndMonth(int $doctorId, int $year, int $month): Collection
+    {
+        return DoctorSchedule::where('doctor_id', $doctorId)
+            ->whereYear('scheduled_date', $year)
+            ->whereMonth('scheduled_date', $month)
+            ->where('is_available', true)
+            ->orderBy('scheduled_date')
+            ->orderBy('start_time')
+            ->get();
+    }
+
     public function upsert(array $rows, array $uniqueBy, array $update): void
     {
         DoctorSchedule::upsert($rows, uniqueBy: $uniqueBy, update: $update);

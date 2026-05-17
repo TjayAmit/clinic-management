@@ -7,13 +7,14 @@ use App\Repositories\{
     ClinicSettingRepository,
     DentalRecordRepository,
     DoctorRepository,
+    DoctorScheduleRepository,
     FeatureRepository,
     PatientRepository,
     PatientVisitRepository,
     QueueRepository,
     RoleRepository,
     ServiceRepository,
-    UserRepository
+    UserRepository,
 };
 
 use App\Repositories\Eloquent\{
@@ -21,13 +22,14 @@ use App\Repositories\Eloquent\{
     EloquentClinicSettingRepository,
     EloquentDentalRecordRepository,
     EloquentDoctorRepository,
+    EloquentDoctorScheduleRepository,
     EloquentFeatureRepository,
     EloquentPatientRepository,
     EloquentPatientVisitRepository,
     EloquentQueueRepository,
     EloquentRoleRepository,
     EloquentServiceRepository,
-    EloquentUserRepository
+    EloquentUserRepository,
 };
 
 use Illuminate\Support\ServiceProvider;
@@ -94,6 +96,11 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(
             RoleRepository::class,
             EloquentRoleRepository::class
+        );
+
+        $this->app->bind(
+            DoctorScheduleRepository::class,
+            EloquentDoctorScheduleRepository::class
         );
     }
 }

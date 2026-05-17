@@ -7,12 +7,26 @@ use App\Models\DoctorSchedule;
 use App\Repositories\DoctorScheduleRepository;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class DoctorScheduleService
 {
     public function __construct(
         protected DoctorScheduleRepository $repository,
     ) {}
+
+    public function paginate(Request $request)
+    {
+        $filters = $request->only(['search']);
+        $perPage = $request->integer('per_page', 10);
+
+        return $this->repository->paginate($filters, $perPage);
+    }
+
+    public function getByDoctorAndMonth(int $doctorId, int $year, int $month): Collection
+    {
+        return $this->repository->getByDoctorAndMonth($doctorId, $year, $month);
+    }
 
     public function findById(int $id): ?DoctorSchedule
     {

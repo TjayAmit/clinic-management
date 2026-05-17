@@ -4,7 +4,9 @@ namespace App\Repositories;
 
 use App\Models\Appointment;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 interface AppointmentRepository
 {
@@ -17,6 +19,14 @@ interface AppointmentRepository
     public function getFormDependencies(): array;
 
     public function getActiveDoctors(): iterable;
+
+    public function getTodayAppointments(User $user, Carbon $date): Collection;
+
+    public function getDailyBoardAppointments(User $user, string $date, ?int $doctorId = null): Collection;
+
+    public function getDoctorById(int $id): ?\App\Models\Doctor;
+
+    public function getByDoctorAndMonth(int $doctorId, int $year, int $month): \Illuminate\Database\Eloquent\Collection;
 
     public function getByDoctor(int $doctorId, ?string $date = null): iterable;
 

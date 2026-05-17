@@ -12,6 +12,8 @@ interface DoctorScheduleRepository
 
     public function forDoctor(int $doctorId): Collection;
 
+    public function getByDoctorAndMonth(int $doctorId, int $year, int $month): Collection;
+
     public function upsert(array $rows, array $uniqueBy, array $update): void;
 
     public function create(array $data): DoctorSchedule;

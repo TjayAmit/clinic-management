@@ -76,6 +76,57 @@ class EloquentAppointmentRepository implements AppointmentRepository
         return Doctor::with('user')->where('is_active', true)->get(['id', 'user_id', 'specialization']);
     }
 
+    public function getTodayAppointments(User $user, \Carbon\Carbon $date): \Illuminate\Database\Eloquent\Collection
+    {
+        $query = Appointment::with(['patient', 'doctor.user', 'service'])
+            ->whereDate('appointment_date', $date)
+            ->orderBy('start_time');
+
+        if ($user->hasRole('Doctor') && $user->doctor) {
+            $query->where('doctor_id', $user->doctor->id);
+        }
+
+        return $query->get();
+    }
+
+    public function getDailyBoardAppointments(User $user, string $date, ?int $doctorId = null): \Illuminate\Support\Collection
+    {
+        $query = Appointment::with(['patient', 'doctor.user', 'service'])
+            ->forUser($user)
+            ->whereDate('appointment_date', $date)
+            ->whereNotIn('status', ['cancelled', 'no_show'])
+            ->when($doctorId, fn ($q) => $q->where('doctor_id', $doctorId))
+            ->orderBy('start_time');
+
+        return $query->get()->map(fn (Appointment $appointment) => [
+            'id' => $appointment->id,
+            'patient_name' => $appointment->patient?->full_name ?? $appointment->walk_in_name ?? 'Walk-in',
+            'doctor_name' => $appointment->doctor->user->name,
+            'service_name' => $appointment->service->name,
+            'time' => $appointment->start_time,
+            'status' => $appointment->status->value,
+            'is_walk_in' => $appointment->is_walk_in,
+            'series_position' => $appointment->series_position,
+            'series_total' => $appointment->series_total,
+        ]);
+    }
+
+    public function getDoctorById(int $id): ?Doctor
+    {
+        return Doctor::with('user')->find($id);
+    }
+
+    public function getByDoctorAndMonth(int $doctorId, int $year, int $month): \Illuminate\Database\Eloquent\Collection
+    {
+        return Appointment::with(['patient', 'service'])
+            ->where('doctor_id', $doctorId)
+            ->whereYear('appointment_date', $year)
+            ->whereMonth('appointment_date', $month)
+            ->orderBy('appointment_date')
+            ->orderBy('start_time')
+            ->get();
+    }
+
     public function getByDoctor(int $doctorId, ?string $date = null): iterable
     {
         $query = Appointment::with(['patient', 'service'])

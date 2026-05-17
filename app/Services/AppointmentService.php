@@ -10,9 +10,9 @@ use App\Notifications\AppointmentCancelled;
 use App\Notifications\AppointmentCompleted;
 use App\Notifications\AppointmentConfirmed;
 use App\Repositories\AppointmentRepository;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
@@ -108,6 +108,26 @@ class AppointmentService
     public function checkConflict(int $doctorId, string $date, string $start, string $end, ?int $excludeId = null): bool
     {
         return $this->repository->checkConflict($doctorId, $date, $start, $end, $excludeId);
+    }
+
+    public function getTodayAppointments(User $user, Carbon $date): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->repository->getTodayAppointments($user, $date);
+    }
+
+    public function getDailyBoardAppointments(User $user, string $date, ?int $doctorId = null): \Illuminate\Support\Collection
+    {
+        return $this->repository->getDailyBoardAppointments($user, $date, $doctorId);
+    }
+
+    public function getDoctorById(int $id): ?Doctor
+    {
+        return $this->repository->getDoctorById($id);
+    }
+
+    public function getByDoctorAndMonth(int $doctorId, int $year, int $month): \Illuminate\Database\Eloquent\Collection
+    {
+        return $this->repository->getByDoctorAndMonth($doctorId, $year, $month);
     }
 
     public function createFromRequest(Request $request): Appointment

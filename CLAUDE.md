@@ -28,6 +28,37 @@ The project goal is to **transform the doctor's daily experience from administra
 - No acknowledgment phrases
 - Ask for clarification only when genuinely uncertain
 
+## Active Skills
+
+These skills are loaded automatically when their trigger conditions are met. Do not wait to be asked — invoke the skill when the condition is true.
+
+| Skill | Path | Invoke when |
+|-------|------|-------------|
+| `grill-me` | `.claude/skills/planning/grill-me.md/SKILL.md` | Any task that requires a plan — run this before planning begins |
+| `hotfix` | `.claude/skills/hotfix/SKILL.md` | User reports something broken in production, urgent, a fire, or needs an emergency fix |
+| `laravel-best-practices` | `.claude/skills/laravel-best-practices/SKILL.md` | Writing, reviewing, or refactoring any Laravel PHP code (controllers, models, migrations, jobs, queries, etc.) |
+| `vulnerability-audit` | `.claude/skills/vulnerability-audit/SKILL.md` | Code touches auth, authorization, user input, file uploads, raw queries, secrets, or user asks for a security review |
+
 ---
 
-*Last Updated: May 30, 2026*
+## Planning Rules
+
+**Any task that produces a deliverable requires a plan first.**
+
+1. Before implementing any feature or fix, run `/grill-me` (`.claude/skills/planning/grill-me.md`) to stress-test the plan through relentless questioning until shared understanding is reached.
+2. Once the plan is approved, save it to `docs/plans/` before writing any code.
+
+### Plan file naming
+
+| Task type | File name pattern | Required content |
+|-----------|-------------------|-----------------|
+| Feature   | `feature-<slug>.md` | Goal, scope, schema changes, process flow, test strategy |
+| Hotfix    | `hotfix-<slug>.md`  | Reason for the change, root cause, affected area, fix summary, rollback plan |
+
+- `<slug>` is a short kebab-case description (e.g., `hotfix-appointment-null-crash`, `feature-doctor-schedule-view`).
+- The plan file must exist and be committed **before** implementation begins.
+- Plans live in `docs/plans/` — never in the project root or elsewhere.
+
+---
+
+*Last Updated: June 2, 2026*

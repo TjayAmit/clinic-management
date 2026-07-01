@@ -20,7 +20,7 @@ use App\Models\User;
 class AppointmentService
 {
     public function __construct(
-        protected AppointmentRepository $repository,
+        public AppointmentRepository $repository,
         protected PatientVisitService $patientVisitService,
     ) {}
 

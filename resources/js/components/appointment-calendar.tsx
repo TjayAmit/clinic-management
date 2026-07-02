@@ -74,12 +74,16 @@ function fetchDayAvailability(
 
 interface AppointmentCalendarProps {
     selectedDate?: string;
+    selectedTime?: string;
     onDateSelect?: (date: string) => void;
+    onTimeSelect?: (time: string) => void;
 }
 
 export function AppointmentCalendar({
     selectedDate: controlledDate,
+    selectedTime,
     onDateSelect,
+    onTimeSelect,
 }: AppointmentCalendarProps = {}) {
     const today = new Date();
     const [year, setYear] = useState(today.getFullYear());
@@ -127,6 +131,11 @@ export function AppointmentCalendar({
 
     const morningRanges = dayDetail?.free_ranges.morning ?? [];
     const afternoonRanges = dayDetail?.free_ranges.afternoon ?? [];
+    const allSlots = dayDetail
+        ? [...morningRanges, ...afternoonRanges].sort((a, b) =>
+              a.from.localeCompare(b.from),
+          )
+        : [];
 
     const selectedLabel = selectedDate
         ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', {
@@ -134,6 +143,12 @@ export function AppointmentCalendar({
               month: 'short',
               year: 'numeric',
           })
+        : '';
+
+    const slotsLabel = selectedDate
+        ? new Date(selectedDate + 'T00:00:00')
+              .toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+              .toUpperCase()
         : '';
 
     return (
@@ -222,12 +237,23 @@ export function AppointmentCalendar({
 
                 {/* Selected date detail */}
                 {selectedDate && (
-                    <div>
-                        <p className="mb-3 text-xs text-muted-foreground font-medium">
-                            Selected :{' '}
-                            <span className="font-semibold text-primary">
-                                {selectedLabel}
-                            </span>
+                    <div className="pb-4">
+                        <p className="mb-3 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                            {onTimeSelect ? (
+                                <>
+                                    Available slots ·{' '}
+                                    <span className="font-semibold text-primary">
+                                        {slotsLabel}
+                                    </span>
+                                </>
+                            ) : (
+                                <>
+                                    Selected :{' '}
+                                    <span className="font-semibold text-primary">
+                                        {selectedLabel}
+                                    </span>
+                                </>
+                            )}
                         </p>
 
                         {loadingDay ? (
@@ -240,6 +266,33 @@ export function AppointmentCalendar({
                                     <div className="rounded-sm bg-destructive/10 px-3 py-2 text-center text-xs font-medium text-destructive">
                                         Fully booked
                                     </div>
+                                ) : onTimeSelect ? (
+                                    <div className="space-y-2">
+                                        {allSlots.map((slot) => {
+                                            const isSelected =
+                                                selectedTime === slot.from;
+
+                                            return (
+                                                <button
+                                                    key={slot.from}
+                                                    type="button"
+                                                    onClick={() =>
+                                                        onTimeSelect?.(
+                                                            slot.from,
+                                                        )
+                                                    }
+                                                    className={[
+                                                        'w-full rounded-xl px-3 py-2 text-center text-xs font-semibold transition-colors',
+                                                        isSelected
+                                                            ? 'bg-primary text-primary-foreground'
+                                                            : 'bg-success text-success-foreground hover:bg-success/80',
+                                                    ].join(' ')}
+                                                >
+                                                    {slot.from} - {slot.to}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 ) : (
                                     <>
                                         {morningRanges.length > 0 && (
@@ -247,7 +300,7 @@ export function AppointmentCalendar({
                                                 <p className="mb-1 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
                                                     Morning
                                                 </p>
-                                                <div className="rounded-xl bg-[#eaf7ef] text-center px-3 py-2 text-xs text-success-foreground">
+                                                <div className="rounded-xl bg-success px-3 py-2 text-center text-xs text-success-foreground">
                                                     <p className="font-semibold">
                                                         {morningRanges[0].from}{' '}
                                                         -{' '}
@@ -267,7 +320,7 @@ export function AppointmentCalendar({
                                                 <p className="mb-1 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
                                                     Afternoon
                                                 </p>
-                                                <div className="rounded-xl bg-[#eaf7ef] text-center px-3 py-2 text-xs text-success-foreground">
+                                                <div className="rounded-xl bg-success px-3 py-2 text-center text-xs text-success-foreground">
                                                     <p className="font-semibold">
                                                         {
                                                             afternoonRanges[0]

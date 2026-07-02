@@ -90,7 +90,7 @@ export default function Index({
         <>
             <Head title="Appointments" />
 
-            <div className="flex h-full bg-[#f6f7f9] flex-1 flex-col gap-4 p-4 lg:p-6">
+            <div className="flex h-full flex-1 flex-col gap-4 bg-muted p-4 lg:p-6">
                 {/* Header */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -124,7 +124,7 @@ export default function Index({
                                 <Input
                                     type="search"
                                     placeholder="Search by patient name..."
-                                    className="rounded-md border-1 pl-9 border-color-[#eaeff5] bg-[#f1f5fa]"
+                                    className="rounded-lg border border-border bg-muted pl-9"
                                     value={search}
                                     onChange={(e) =>
                                         handleSearchChange(e.target.value)
@@ -140,7 +140,7 @@ export default function Index({
                                     })
                                 }
                             >
-                                <SelectTrigger className="h-9 w-48 rounded-full border-0 bg-muted">
+                                <SelectTrigger className="h-9 w-48 rounded-lg border border-border bg-muted">
                                     <SelectValue placeholder="All doctors" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -166,7 +166,7 @@ export default function Index({
                                     })
                                 }
                             >
-                                <SelectTrigger className="h-9 w-40 rounded-full border-0 bg-muted">
+                                <SelectTrigger className="h-9 w-40 rounded-lg border border-border bg-muted">
                                     <SelectValue placeholder="All statuses" />
                                 </SelectTrigger>
                                 <SelectContent>

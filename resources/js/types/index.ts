@@ -8,6 +8,7 @@ export type * from './patients';
 export type * from './doctors';
 export type * from './services';
 export type * from './appointments';
+export type * from './billing';
 export type * from './patientVisits';
 export type * from './dentalRecords';
 export type * from './features';

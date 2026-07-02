@@ -58,6 +58,10 @@ class RoleAndPermissionSeeder extends Seeder
             // Notifications
             'notifications.view',
 
+            // Billing
+            'billing.view',
+            'billing.create',
+
             // Reports
             'reports.view',
 
@@ -127,6 +131,7 @@ class RoleAndPermissionSeeder extends Seeder
             'patient_visits.check_in',
             'patient_visits.check_out',
             'services.view',
+            'billing.view',
             'notifications.view',
             'clinic_settings.view',
         ]);

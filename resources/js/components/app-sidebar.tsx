@@ -14,6 +14,7 @@ import {
     UserRound,
     Users,
     Briefcase,
+    CreditCard,
     Flag,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
@@ -114,6 +115,12 @@ const navGroups: NavGroup[] = [
                 href: '/services',
                 icon: Briefcase,
                 permissions: ['services.view'],
+            },
+            {
+                title: 'Billing',
+                href: '/billing',
+                icon: CreditCard,
+                permissions: ['billing.view'],
             },
         ],
     },

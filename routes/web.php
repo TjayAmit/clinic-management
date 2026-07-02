@@ -4,6 +4,7 @@ use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\ClinicSettingController;
 use App\Http\Controllers\AppointmentAvailabilityController;
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\WeeklyAvailabilityController;
 use App\Http\Controllers\DailyBoardController;
 use App\Http\Controllers\DashboardController;
@@ -107,6 +108,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middlewareFor(['create', 'store'], 'can:services.create')
         ->middlewareFor(['edit', 'update'], 'can:services.edit')
         ->middlewareFor('destroy', 'can:services.delete');
+
+    // Billing
+    Route::get('billing', [BillingController::class, 'index'])
+        ->middleware('can:billing.view')
+        ->name('billing.index');
 
     // Features
     Route::resource('features', FeatureController::class)

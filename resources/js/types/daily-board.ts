@@ -15,7 +15,7 @@ export interface DailyBoardEntry {
 
 export interface DailyBoardProps {
     entries: DailyBoardEntry[];
-    doctors: { id: number; name: string }[];
+    doctors: { id: number; name: string; specialization: string }[];
     filters: {
         date: string;
         doctor_id: number | null;

@@ -1,16 +1,19 @@
 import { Link } from '@inertiajs/react';
 import {
     Activity,
-    CalendarClock,
     CalendarDays,
+    CalendarPlus,
+    ClipboardList,
     LayoutDashboard,
     LayoutGrid,
     Settings2,
     Shield,
-    Stethoscope,
+    Smile,
+    User,
+    UserPlus,
+    UserRound,
     Users,
     Briefcase,
-    UserRound,
     Flag,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
@@ -49,45 +52,61 @@ const navGroups: NavGroup[] = [
                 permissions: ['appointments.view'],
             },
             {
-                title: "Today's Schedule",
-                href: '/schedule',
-                icon: CalendarDays,
-                permissions: ['appointments.view'],
-            },
-            {
                 title: 'Appointments',
                 href: '/appointments',
                 icon: CalendarDays,
                 permissions: ['appointments.view'],
+                badge: 7,
             },
             {
-                title: 'Doctor Schedules',
-                href: '/doctor-schedules',
-                icon: CalendarClock,
-                roles: ['Admin', 'Staff', 'Doctor'],
-                permissions: ['doctors.schedules.edit'],
+                title: 'Book Appointment',
+                href: '/appointments/create',
+                icon: CalendarPlus,
+                permissions: ['appointments.create'],
             },
         ],
     },
     {
-        title: 'Patient Management',
+        title: 'Patients',
         items: [
             {
-                title: 'Patients',
+                title: 'Patient Records',
                 href: '/patients',
                 icon: UserRound,
                 permissions: ['patients.view'],
             },
+            {
+                title: 'Register Patient',
+                href: '/patients/create',
+                icon: UserPlus,
+                permissions: ['patients.create'],
+            },
         ],
     },
     {
-        title: 'Staff & Services',
-        roles: ['Admin', 'Staff'],
+        title: 'Clinical',
+        items: [
+            {
+                title: 'Dental Charting',
+                href: '/dental-records',
+                icon: Smile,
+                permissions: ['medical_records.view'],
+            },
+            {
+                title: 'Treatment Plans',
+                href: '/patient-visits',
+                icon: ClipboardList,
+                permissions: ['medical_records.view'],
+            },
+        ],
+    },
+    {
+        title: 'Practice',
         items: [
             {
                 title: 'Doctors',
                 href: '/doctors',
-                icon: Stethoscope,
+                icon: User,
                 permissions: ['doctors.view'],
             },
             {
@@ -99,9 +118,21 @@ const navGroups: NavGroup[] = [
         ],
     },
     {
-        title: 'System Administration',
+        title: 'Administration',
         roles: ['Admin'],
         items: [
+            {
+                title: 'Clinic Settings',
+                href: '/clinic-settings',
+                icon: Settings2,
+                roles: ['Admin'],
+            },
+            {
+                title: 'Activity Logs',
+                href: '/activity-logs',
+                icon: Activity,
+                permissions: ['activity_logs.view'],
+            },
             {
                 title: 'Users',
                 href: '/users',
@@ -120,24 +151,6 @@ const navGroups: NavGroup[] = [
                 icon: Flag,
                 permissions: ['features.view'],
             },
-            {
-                title: 'Clinic Settings',
-                href: '/clinic-settings',
-                icon: Settings2,
-                roles: ['Admin'],
-            },
-        ],
-    },
-    {
-        title: 'Audit & Logs',
-        roles: ['Admin'],
-        items: [
-            {
-                title: 'Activity Logs',
-                href: '/activity-logs',
-                icon: Activity,
-                permissions: ['activity_logs.view'],
-            }
         ],
     },
 ];
@@ -167,7 +180,7 @@ export function AppSidebar() {
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent className="pt-7">
+            <SidebarContent className="pt-2">
                 <NavMain groups={filteredGroups} />
             </SidebarContent>
 

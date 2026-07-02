@@ -1,15 +1,23 @@
 export interface Patient {
     id: number;
     first_name: string;
+    middle_name: string | null;
     last_name: string;
     full_name: string;
     date_of_birth: string;
     gender: 'male' | 'female' | 'other';
+    civil_status: string | null;
+    occupation: string | null;
+    nationality: string | null;
     blood_type: string | null;
     phone: string | null;
     email: string | null;
     address: string | null;
+    street_address: string | null;
+    city: string | null;
+    province: string | null;
     emergency_contact_name: string | null;
+    emergency_contact_relationship: string | null;
     emergency_contact_phone: string | null;
     allergies: string | null;
     medical_history: string | null;
@@ -30,7 +38,11 @@ export interface PatientVisitItem {
     weight: string | null;
     heart_rate: number | null;
     notes: string | null;
-    doctor?: { id: number; specialization: string; user?: { id: number; name: string } };
+    doctor?: {
+        id: number;
+        specialization: string;
+        user?: { id: number; name: string };
+    };
     dental_record?: {
         id: number;
         chief_complaint: string;

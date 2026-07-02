@@ -1,8 +1,9 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Bell, Check, Plus, Search } from 'lucide-react';
+import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -12,51 +13,145 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
+import { cn } from '@/lib/utils';
 import { index as patients, store as patientsStore } from '@/routes/patients';
 
 const BLOOD_TYPES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+const CIVIL_STATUSES = [
+    'Single',
+    'Married',
+    'Divorced',
+    'Widowed',
+    'Separated',
+];
 
 function sanitizeName(value: string): string {
     return value.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, '').slice(0, 100);
 }
 
 function sanitizePhone(value: string): string {
-    let digits = value.replace(/\D/g, '').slice(0, 10);
+    const digits = value.replace(/\D/g, '').slice(0, 11);
 
-    if (digits.startsWith('0')) {
-        digits = digits.slice(1);
-    }
-
-    return digits.slice(0, 10);
-}
-
-function sanitizeAddress(value: string): string {
-    return value.replace(/[^a-zA-ZÀ-ÿ0-9\s\-,.#&()'\/;:]/gu, '').slice(0, 500);
+    return digits.startsWith('0') ? digits.slice(1) : digits;
 }
 
 function sanitizeFreeText(value: string, max: number): string {
-    return value.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F<>]/g, '').slice(0, max);
+    return (
+        value
+            // eslint-disable-next-line no-control-regex
+            .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F<>]/g, '')
+            .slice(0, max)
+    );
+}
+
+function calculateAge(dateOfBirth: string): number | null {
+    if (!dateOfBirth) {
+        return null;
+    }
+
+    const birth = new Date(dateOfBirth);
+    const today = new Date();
+
+    if (isNaN(birth.getTime())) {
+        return null;
+    }
+
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+
+    if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birth.getDate())
+    ) {
+        age--;
+    }
+
+    return age >= 0 ? age : null;
 }
 
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm({
         first_name: '',
+        middle_name: '',
         last_name: '',
         date_of_birth: '',
         gender: '',
+        civil_status: '',
+        occupation: '',
+        nationality: '',
         blood_type: '',
         phone: '',
         email: '',
-        address: '',
+        street_address: '',
+        city: '',
+        province: '',
         emergency_contact_name: '',
+        emergency_contact_relationship: '',
         emergency_contact_phone: '',
         allergies: '',
         medical_history: '',
         is_regular: false as boolean,
     });
+
+    const age = useMemo(
+        () => calculateAge(data.date_of_birth),
+        [data.date_of_birth],
+    );
+
+    const personalRef = useRef<HTMLDivElement>(null);
+    const contactRef = useRef<HTMLDivElement>(null);
+    const emergencyRef = useRef<HTMLDivElement>(null);
+    const medicalRef = useRef<HTMLDivElement>(null);
+
+    const steps = useMemo(
+        () => [
+            { id: 1, title: 'Personal & Demographics', ref: personalRef },
+            { id: 2, title: 'Contact & Address', ref: contactRef },
+            { id: 3, title: 'Emergency Contact', ref: emergencyRef },
+            { id: 4, title: 'Medical Baseline', ref: medicalRef },
+        ],
+        [],
+    );
+
+    const [activeStep, setActiveStep] = useState(1);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const index = steps.findIndex(
+                            (s) => s.ref.current === entry.target,
+                        );
+
+                        if (index !== -1) {
+                            setActiveStep(index + 1);
+                        }
+                    }
+                });
+            },
+            { rootMargin: '-40% 0px -40% 0px', threshold: 0 },
+        );
+
+        steps.forEach((s) => {
+            if (s.ref.current) {
+                observer.observe(s.ref.current);
+            }
+        });
+
+        return () => observer.disconnect();
+    }, [steps]);
+
+    const scrollToStep = (index: number) => {
+        const ref = steps[index]?.ref;
+
+        if (ref?.current) {
+            ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setActiveStep(index + 1);
+        }
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -67,212 +162,580 @@ export default function Create() {
         <>
             <Head title="Register Patient" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 p-4 lg:p-6">
-                <div>
-                    <Button variant="ghost" size="sm" asChild>
-                        <Link href={patients()}>
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Back to list
-                        </Link>
-                    </Button>
+            <div className="flex min-h-full flex-1 flex-col gap-6 p-4 lg:p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            asChild
+                            className="text-muted-foreground"
+                        >
+                            <Link href={patients()}>
+                                <ArrowLeft className="mr-2 h-4 w-4" />
+                                Back
+                            </Link>
+                        </Button>
+                        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+                            Register New Patient
+                        </h1>
+                        <p className="text-sm text-muted-foreground">
+                            Capture demographics, contact, and medical baseline.
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <div className="relative hidden md:block">
+                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                type="search"
+                                placeholder="Search patients, appointments..."
+                                className="w-72 bg-background pl-9 lg:w-80"
+                            />
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="shrink-0"
+                        >
+                            <Bell className="h-4 w-4" />
+                        </Button>
+                        <Button asChild className="shrink-0">
+                            <Link href="/patients/create">
+                                <Plus className="mr-2 h-4 w-4" />
+                                New Patient
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="grid gap-4 lg:grid-cols-3">
-                    <Card className="lg:col-span-1">
-                        <CardHeader>
-                            <CardTitle className="text-base">Personal Information</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="first_name">First Name <span className="text-destructive">*</span></Label>
-                                <Input
-                                    id="first_name"
-                                    value={data.first_name}
-                                    maxLength={100}
-                                    onChange={(e) => setData('first_name', sanitizeName(e.target.value))}
-                                    placeholder="First name"
+                <form
+                    onSubmit={handleSubmit}
+                    className="grid gap-6 lg:grid-cols-[1fr_320px]"
+                >
+                    <div className="flex flex-col gap-6">
+                        <SectionCard
+                            ref={personalRef}
+                            step={1}
+                            title="Personal & Demographics"
+                        >
+                            <div className="grid gap-4 sm:grid-cols-3">
+                                <FormField
+                                    label="First name"
                                     required
-                                />
-                                <InputError message={errors.first_name} />
+                                    error={errors.first_name}
+                                >
+                                    <Input
+                                        value={data.first_name}
+                                        onChange={(e) =>
+                                            setData(
+                                                'first_name',
+                                                sanitizeName(e.target.value),
+                                            )
+                                        }
+                                        placeholder="John"
+                                        required
+                                    />
+                                </FormField>
+                                <FormField
+                                    label="Middle name"
+                                    error={errors.middle_name}
+                                >
+                                    <Input
+                                        value={data.middle_name}
+                                        onChange={(e) =>
+                                            setData(
+                                                'middle_name',
+                                                sanitizeName(e.target.value),
+                                            )
+                                        }
+                                        placeholder="—"
+                                    />
+                                </FormField>
+                                <FormField
+                                    label="Last name"
+                                    required
+                                    error={errors.last_name}
+                                >
+                                    <Input
+                                        value={data.last_name}
+                                        onChange={(e) =>
+                                            setData(
+                                                'last_name',
+                                                sanitizeName(e.target.value),
+                                            )
+                                        }
+                                        placeholder="Doe"
+                                        required
+                                    />
+                                </FormField>
+                            </div>
+
+                            <div className="grid gap-4 sm:grid-cols-3">
+                                <FormField
+                                    label="Date of birth"
+                                    required
+                                    error={errors.date_of_birth}
+                                >
+                                    <Input
+                                        type="date"
+                                        value={data.date_of_birth}
+                                        onChange={(e) =>
+                                            setData(
+                                                'date_of_birth',
+                                                e.target.value,
+                                            )
+                                        }
+                                        required
+                                    />
+                                </FormField>
+                                <FormField label="Age">
+                                    <Input
+                                        value={age ?? ''}
+                                        readOnly
+                                        placeholder="Auto"
+                                    />
+                                </FormField>
+                                <FormField
+                                    label="Civil status"
+                                    error={errors.civil_status}
+                                >
+                                    <Select
+                                        value={data.civil_status}
+                                        onValueChange={(v) =>
+                                            setData('civil_status', v)
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {CIVIL_STATUSES.map((s) => (
+                                                <SelectItem
+                                                    key={s.toLowerCase()}
+                                                    value={s.toLowerCase()}
+                                                >
+                                                    {s}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </FormField>
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="last_name">Last Name <span className="text-destructive">*</span></Label>
-                                <Input
-                                    id="last_name"
-                                    value={data.last_name}
-                                    maxLength={100}
-                                    onChange={(e) => setData('last_name', sanitizeName(e.target.value))}
-                                    placeholder="Last name"
-                                    required
-                                />
-                                <InputError message={errors.last_name} />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="date_of_birth">Date of Birth <span className="text-destructive">*</span></Label>
-                                <Input
-                                    id="date_of_birth"
-                                    type="date"
-                                    value={data.date_of_birth}
-                                    onChange={(e) => setData('date_of_birth', e.target.value)}
-                                    required
-                                />
-                                <InputError message={errors.date_of_birth} />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label>Gender <span className="text-destructive">*</span></Label>
-                                <Select value={data.gender} onValueChange={(v) => setData('gender', v)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select gender" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="male">Male</SelectItem>
-                                        <SelectItem value="female">Female</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <Label>
+                                    Gender{' '}
+                                    <span className="text-destructive">*</span>
+                                </Label>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {['male', 'female', 'other'].map((g) => (
+                                        <button
+                                            key={g}
+                                            type="button"
+                                            onClick={() => setData('gender', g)}
+                                            className={cn(
+                                                'h-10 rounded-lg border text-sm font-medium capitalize transition-colors',
+                                                data.gender === g
+                                                    ? 'border-primary bg-primary/5 text-primary'
+                                                    : 'border-border bg-background text-foreground hover:bg-muted',
+                                            )}
+                                        >
+                                            {g}
+                                        </button>
+                                    ))}
+                                </div>
                                 <InputError message={errors.gender} />
                             </div>
 
-                            <div className="space-y-2">
-                                <Label>Blood Type</Label>
-                                <Select value={data.blood_type} onValueChange={(v) => setData('blood_type', v)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select blood type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {BLOOD_TYPES.map((bt) => (
-                                            <SelectItem key={bt} value={bt}>{bt}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.blood_type} />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="phone">Phone</Label>
-                                <Input
-                                    id="phone"
-                                    value={data.phone}
-                                    maxLength={20}
-                                    onChange={(e) => setData('phone', sanitizePhone(e.target.value))}
-                                    placeholder="+63 9XX XXX XXXX"
-                                />
-                                <InputError message={errors.phone} />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    value={data.email}
-                                    maxLength={255}
-                                    onChange={(e) => setData('email', e.target.value.replace(/[\x00-\x1F\x7F<>]/g, '').slice(0, 255))}
-                                    placeholder="patient@example.com"
-                                />
-                                <InputError message={errors.email} />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="address">Address</Label>
-                                <Input
-                                    id="address"
-                                    value={data.address}
-                                    maxLength={500}
-                                    onChange={(e) => setData('address', sanitizeAddress(e.target.value))}
-                                    placeholder="Street, City"
-                                />
-                                <InputError message={errors.address} />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="lg:col-span-2 flex flex-col">
-                        <CardHeader>
-                            <CardTitle className="text-base">Medical Details</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex flex-1 flex-col gap-4">
                             <div className="grid gap-4 sm:grid-cols-2">
-                                <div className="space-y-2">
-                                    <Label htmlFor="emergency_contact_name">Emergency Contact Name</Label>
+                                <FormField
+                                    label="Occupation"
+                                    error={errors.occupation}
+                                >
                                     <Input
-                                        id="emergency_contact_name"
+                                        value={data.occupation}
+                                        onChange={(e) =>
+                                            setData(
+                                                'occupation',
+                                                sanitizeFreeText(
+                                                    e.target.value,
+                                                    100,
+                                                ),
+                                            )
+                                        }
+                                        placeholder="e.g. Student"
+                                    />
+                                </FormField>
+                                <FormField
+                                    label="Nationality"
+                                    error={errors.nationality}
+                                >
+                                    <Input
+                                        value={data.nationality}
+                                        onChange={(e) =>
+                                            setData(
+                                                'nationality',
+                                                sanitizeFreeText(
+                                                    e.target.value,
+                                                    100,
+                                                ),
+                                            )
+                                        }
+                                        placeholder="Filipino"
+                                    />
+                                </FormField>
+                            </div>
+                        </SectionCard>
+
+                        <SectionCard
+                            ref={contactRef}
+                            step={2}
+                            title="Contact & Address"
+                        >
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <FormField
+                                    label="Phone"
+                                    required
+                                    error={errors.phone}
+                                >
+                                    <Input
+                                        value={data.phone}
+                                        onChange={(e) =>
+                                            setData(
+                                                'phone',
+                                                sanitizePhone(e.target.value),
+                                            )
+                                        }
+                                        placeholder="09XX XXX XXXX"
+                                        required
+                                    />
+                                </FormField>
+                                <FormField label="Email" error={errors.email}>
+                                    <Input
+                                        type="email"
+                                        value={data.email}
+                                        onChange={(e) =>
+                                            setData(
+                                                'email',
+                                                sanitizeFreeText(
+                                                    e.target.value,
+                                                    255,
+                                                ),
+                                            )
+                                        }
+                                        placeholder="name@email.com"
+                                    />
+                                </FormField>
+                            </div>
+
+                            <FormField
+                                label="Street address"
+                                error={errors.street_address}
+                            >
+                                <Input
+                                    value={data.street_address}
+                                    onChange={(e) =>
+                                        setData(
+                                            'street_address',
+                                            sanitizeFreeText(
+                                                e.target.value,
+                                                500,
+                                            ),
+                                        )
+                                    }
+                                    placeholder="House no., street, barangay"
+                                />
+                            </FormField>
+
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <FormField label="City" error={errors.city}>
+                                    <Input
+                                        value={data.city}
+                                        onChange={(e) =>
+                                            setData(
+                                                'city',
+                                                sanitizeFreeText(
+                                                    e.target.value,
+                                                    100,
+                                                ),
+                                            )
+                                        }
+                                        placeholder="Zamboanga City"
+                                    />
+                                </FormField>
+                                <FormField
+                                    label="Province"
+                                    error={errors.province}
+                                >
+                                    <Input
+                                        value={data.province}
+                                        onChange={(e) =>
+                                            setData(
+                                                'province',
+                                                sanitizeFreeText(
+                                                    e.target.value,
+                                                    100,
+                                                ),
+                                            )
+                                        }
+                                        placeholder="Zamboanga del Sur"
+                                    />
+                                </FormField>
+                            </div>
+                        </SectionCard>
+
+                        <SectionCard
+                            ref={emergencyRef}
+                            step={3}
+                            title="Emergency Contact"
+                        >
+                            <div className="grid gap-4 sm:grid-cols-3">
+                                <FormField
+                                    label="Full name"
+                                    error={errors.emergency_contact_name}
+                                >
+                                    <Input
                                         value={data.emergency_contact_name}
-                                        maxLength={100}
-                                        onChange={(e) => setData('emergency_contact_name', sanitizeName(e.target.value))}
-                                        placeholder="Contact person"
+                                        onChange={(e) =>
+                                            setData(
+                                                'emergency_contact_name',
+                                                sanitizeName(e.target.value),
+                                            )
+                                        }
+                                        placeholder="Contact name"
                                     />
-                                    <InputError message={errors.emergency_contact_name} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="emergency_contact_phone">Emergency Contact Phone</Label>
+                                </FormField>
+                                <FormField
+                                    label="Relationship"
+                                    error={
+                                        errors.emergency_contact_relationship
+                                    }
+                                >
                                     <Input
-                                        id="emergency_contact_phone"
-                                        value={data.emergency_contact_phone}
-                                        maxLength={20}
-                                        onChange={(e) => setData('emergency_contact_phone', sanitizePhone(e.target.value))}
-                                        placeholder="+63 9XX XXX XXXX"
+                                        value={
+                                            data.emergency_contact_relationship
+                                        }
+                                        onChange={(e) =>
+                                            setData(
+                                                'emergency_contact_relationship',
+                                                sanitizeFreeText(
+                                                    e.target.value,
+                                                    50,
+                                                ),
+                                            )
+                                        }
+                                        placeholder="e.g. Guardian"
                                     />
-                                    <InputError message={errors.emergency_contact_phone} />
-                                </div>
+                                </FormField>
+                                <FormField
+                                    label="Phone"
+                                    error={errors.emergency_contact_phone}
+                                >
+                                    <Input
+                                        value={data.emergency_contact_phone}
+                                        onChange={(e) =>
+                                            setData(
+                                                'emergency_contact_phone',
+                                                sanitizePhone(e.target.value),
+                                            )
+                                        }
+                                        placeholder="09XX XXX XXXX"
+                                    />
+                                </FormField>
+                            </div>
+                        </SectionCard>
+
+                        <SectionCard
+                            ref={medicalRef}
+                            step={4}
+                            title="Medical Baseline"
+                        >
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <FormField
+                                    label="Blood type"
+                                    error={errors.blood_type}
+                                >
+                                    <Select
+                                        value={data.blood_type}
+                                        onValueChange={(v) =>
+                                            setData('blood_type', v)
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {BLOOD_TYPES.map((bt) => (
+                                                <SelectItem key={bt} value={bt}>
+                                                    {bt}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </FormField>
+                                <FormField
+                                    label="Known allergies"
+                                    error={errors.allergies}
+                                >
+                                    <Input
+                                        value={data.allergies}
+                                        onChange={(e) =>
+                                            setData(
+                                                'allergies',
+                                                sanitizeFreeText(
+                                                    e.target.value,
+                                                    1000,
+                                                ),
+                                            )
+                                        }
+                                        placeholder="e.g. Penicillin, latex"
+                                    />
+                                </FormField>
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="allergies">Known Allergies</Label>
+                            <FormField
+                                label="Medical history / notes"
+                                error={errors.medical_history}
+                            >
                                 <Textarea
-                                    id="allergies"
-                                    value={data.allergies}
-                                    maxLength={1000}
-                                    onChange={(e) => setData('allergies', sanitizeFreeText(e.target.value, 1000))}
-                                    placeholder="List any known allergies…"
-                                    rows={3}
-                                />
-                                <InputError message={errors.allergies} />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="medical_history">Medical History</Label>
-                                <Textarea
-                                    id="medical_history"
                                     value={data.medical_history}
-                                    maxLength={2000}
-                                    onChange={(e) => setData('medical_history', sanitizeFreeText(e.target.value, 2000))}
-                                    placeholder="Relevant past illnesses, surgeries, conditions…"
-                                    rows={5}
+                                    onChange={(e) =>
+                                        setData(
+                                            'medical_history',
+                                            sanitizeFreeText(
+                                                e.target.value,
+                                                2000,
+                                            ),
+                                        )
+                                    }
+                                    placeholder="Chronic conditions, medications, prior surgeries..."
+                                    rows={4}
                                 />
-                                <InputError message={errors.medical_history} />
-                            </div>
+                            </FormField>
+                        </SectionCard>
 
-                            <div className="flex items-center justify-between rounded-lg border border-border p-4">
-                                <div className="space-y-0.5">
-                                    <Label htmlFor="is_regular" className="cursor-pointer text-sm font-medium">Regular Patient</Label>
-                                    <p className="text-xs text-muted-foreground">Mark to allow advance appointment booking for return visits.</p>
-                                </div>
-                                <Switch
-                                    id="is_regular"
-                                    checked={data.is_regular}
-                                    onCheckedChange={(v) => setData('is_regular', v)}
-                                />
-                            </div>
+                        <div className="flex items-center gap-3">
+                            <Button
+                                type="submit"
+                                disabled={processing}
+                                className="gap-2"
+                            >
+                                <Check className="h-4 w-4" />
+                                {processing
+                                    ? 'Registering…'
+                                    : 'Register patient'}
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                disabled={processing}
+                            >
+                                Save draft
+                            </Button>
+                        </div>
+                    </div>
 
-                            <div className="mt-auto flex items-center gap-4 pt-2">
-                                <Button type="submit" disabled={processing}>
-                                    {processing ? 'Registering…' : 'Register Patient'}
-                                </Button>
-                                <Button variant="outline" asChild>
-                                    <Link href={patients()}>Cancel</Link>
-                                </Button>
+                    <aside className="hidden lg:block">
+                        <Card className="sticky top-6 p-5">
+                            <h2 className="mb-4 text-sm font-semibold">
+                                Registration
+                            </h2>
+                            <nav className="space-y-3">
+                                {steps.map((s, idx) => (
+                                    <button
+                                        key={s.id}
+                                        type="button"
+                                        onClick={() => scrollToStep(idx)}
+                                        className="flex w-full items-center gap-3 text-left"
+                                    >
+                                        <span
+                                            className={cn(
+                                                'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-semibold transition-colors',
+                                                activeStep === s.id
+                                                    ? 'bg-primary text-primary-foreground'
+                                                    : 'bg-muted text-muted-foreground',
+                                            )}
+                                        >
+                                            {s.id}
+                                        </span>
+                                        <span
+                                            className={cn(
+                                                'text-sm font-medium',
+                                                activeStep === s.id
+                                                    ? 'text-foreground'
+                                                    : 'text-muted-foreground',
+                                            )}
+                                        >
+                                            {s.title}
+                                        </span>
+                                    </button>
+                                ))}
+                            </nav>
+                            <div className="mt-6 rounded-lg bg-muted p-4 text-xs text-muted-foreground">
+                                <p className="mb-1">
+                                    Fields marked * are required.
+                                </p>
+                                <p>
+                                    Medical baseline drives allergy alerts
+                                    during booking.
+                                </p>
                             </div>
-                        </CardContent>
-                    </Card>
+                        </Card>
+                    </aside>
                 </form>
             </div>
         </>
     );
 }
+
+type SectionCardProps = {
+    children: React.ReactNode;
+    step: number;
+    title: string;
+};
+
+const SectionCard = forwardRef<HTMLDivElement, SectionCardProps>(
+    function SectionCard({ children, step, title }, ref) {
+        return (
+            <div ref={ref}>
+                <Card className="overflow-hidden">
+                    <div className="flex items-center gap-3 border-b border-border p-5">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-xs font-semibold text-primary-foreground">
+                            {step}
+                        </span>
+                        <h2 className="text-base font-semibold">{title}</h2>
+                    </div>
+                    <CardContent className="grid gap-5 p-5">
+                        {children}
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    },
+);
+
+const FormField = ({
+    children,
+    label,
+    required = false,
+    error,
+}: {
+    children: React.ReactNode;
+    label: string;
+    required?: boolean;
+    error?: string;
+}) => {
+    return (
+        <div className="space-y-2">
+            <Label>
+                {label}
+                {required && <span className="text-destructive"> *</span>}
+            </Label>
+            {children}
+            <InputError message={error} />
+        </div>
+    );
+};
 
 Create.layout = (page: React.ReactNode) => (
     <AppLayout

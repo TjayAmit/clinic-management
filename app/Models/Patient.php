@@ -12,9 +12,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 
 #[Fillable([
-    'first_name', 'last_name', 'date_of_birth', 'gender', 'blood_type',
-    'phone', 'email', 'address', 'emergency_contact_name',
-    'emergency_contact_phone', 'allergies', 'dental_history', 'is_regular',
+    'first_name', 'middle_name', 'last_name', 'date_of_birth', 'gender', 'civil_status',
+    'occupation', 'nationality', 'blood_type',
+    'phone', 'email', 'address', 'street_address', 'city', 'province',
+    'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship',
+    'allergies', 'medical_history', 'is_regular',
 ])]
 class Patient extends Model
 {

@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
@@ -18,12 +18,26 @@ interface DayDetail {
     date_label: string;
     is_full: boolean;
     free_ranges: { morning: FreeRange[]; afternoon: FreeRange[] };
-    summary: { total_minutes: number; booked_minutes: number; free_minutes: number };
+    summary: {
+        total_minutes: number;
+        booked_minutes: number;
+        free_minutes: number;
+    };
 }
 
 const MONTHS = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
 ];
 
 const DAY_ABBR = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -32,50 +46,71 @@ function pad2(n: number) {
     return String(n).padStart(2, '0');
 }
 
+function fetchMonthAvailability(
+    monthKey: string,
+    setLoading: (v: boolean) => void,
+    setData: (data: Record<string, DayAvailability>) => void,
+) {
+    setLoading(true);
+    fetch(`/appointments/availability?month=${monthKey}`)
+        .then((r) => r.json())
+        .then((json) => setData(json.days ?? {}))
+        .catch(() => setData({}))
+        .finally(() => setLoading(false));
+}
+
+function fetchDayAvailability(
+    date: string,
+    setLoading: (v: boolean) => void,
+    setDetail: (detail: DayDetail | null) => void,
+) {
+    setLoading(true);
+    fetch(`/appointments/availability?date=${date}`)
+        .then((r) => r.json())
+        .then((json) => setDetail(json))
+        .catch(() => setDetail(null))
+        .finally(() => setLoading(false));
+}
+
 interface AppointmentCalendarProps {
     selectedDate?: string;
     onDateSelect?: (date: string) => void;
 }
 
-export function AppointmentCalendar({ selectedDate: controlledDate, onDateSelect }: AppointmentCalendarProps = {}) {
+export function AppointmentCalendar({
+    selectedDate: controlledDate,
+    onDateSelect,
+}: AppointmentCalendarProps = {}) {
     const today = new Date();
-    const [year, setYear]     = useState(today.getFullYear());
-    const [month, setMonth]   = useState(today.getMonth()); // 0-indexed
-    const [internalDate, setInternalDate] = useState<string>(today.toISOString().slice(0, 10));
+    const [year, setYear] = useState(today.getFullYear());
+    const [month, setMonth] = useState(today.getMonth()); // 0-indexed
+    const [internalDate, setInternalDate] = useState<string>(
+        today.toISOString().slice(0, 10),
+    );
 
     const selectedDate = controlledDate ?? internalDate;
 
-    const [monthData, setMonthData]   = useState<Record<string, DayAvailability>>({});
-    const [dayDetail, setDayDetail]   = useState<DayDetail | null>(null);
+    const [monthData, setMonthData] = useState<Record<string, DayAvailability>>(
+        {},
+    );
+    const [dayDetail, setDayDetail] = useState<DayDetail | null>(null);
     const [loadingMonth, setLoadingMonth] = useState(false);
-    const [loadingDay, setLoadingDay]     = useState(false);
+    const [loadingDay, setLoadingDay] = useState(false);
 
-    const monthKey     = `${year}-${pad2(month + 1)}`;
-    const daysInMonth  = new Date(year, month + 1, 0).getDate();
-    const startOffset  = new Date(year, month, 1).getDay(); // 0 = Sunday
+    const monthKey = `${year}-${pad2(month + 1)}`;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const startOffset = new Date(year, month, 1).getDay(); // 0 = Sunday
 
-    // Fetch monthly dot data whenever the visible month changes
     useEffect(() => {
-        setLoadingMonth(true);
-        fetch(`/appointments/availability?month=${monthKey}`)
-            .then((r) => r.json())
-            .then((json) => setMonthData(json.days ?? {}))
-            .catch(() => {})
-            .finally(() => setLoadingMonth(false));
+        fetchMonthAvailability(monthKey, setLoadingMonth, setMonthData);
     }, [monthKey]);
 
-    // Fetch slot detail when a date is selected
     useEffect(() => {
         if (!selectedDate) {
-return;
-}
+            return;
+        }
 
-        setLoadingDay(true);
-        fetch(`/appointments/availability?date=${selectedDate}`)
-            .then((r) => r.json())
-            .then((json) => setDayDetail(json))
-            .catch(() => {})
-            .finally(() => setLoadingDay(false));
+        fetchDayAvailability(selectedDate, setLoadingDay, setDayDetail);
     }, [selectedDate]);
 
     const navigateMonth = (dir: 'prev' | 'next') => {
@@ -84,27 +119,28 @@ return;
         setMonth(d.getMonth());
     };
 
-    const todayStr    = today.toISOString().slice(0, 10);
+    const todayStr = today.toISOString().slice(0, 10);
     const cells: (number | null)[] = [
         ...Array<null>(startOffset).fill(null),
         ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
     ];
 
-    const morningRanges   = dayDetail?.free_ranges.morning   ?? [];
+    const morningRanges = dayDetail?.free_ranges.morning ?? [];
     const afternoonRanges = dayDetail?.free_ranges.afternoon ?? [];
-    const availableCount  = morningRanges.length + afternoonRanges.length;
 
     const selectedLabel = selectedDate
         ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', {
-            day: 'numeric', month: 'short', year: 'numeric',
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
           })
         : '';
 
     return (
         <Card className="shadow-sm">
-            <CardHeader className="px-4 pb-0 pt-4">
+            <CardHeader className="px-4 py-0">
                 {/* Month navigation */}
-                <div className="mb-3 flex items-center justify-between">
+                <div className="mb-2 flex items-center justify-between">
                     <button
                         type="button"
                         onClick={() => navigateMonth('prev')}
@@ -127,142 +163,131 @@ return;
                 {/* Day-of-week headers */}
                 <div className="grid grid-cols-7">
                     {DAY_ABBR.map((d) => (
-                        <div key={d} className="py-1 text-center text-[10px] font-medium text-muted-foreground">
+                        <div
+                            key={d}
+                            className="py-1 text-center text-[10px] font-medium text-muted-foreground"
+                        >
                             {d}
                         </div>
                     ))}
                 </div>
             </CardHeader>
 
-            <CardContent className="px-4 pb-4">
+            <CardContent className="px-4 pb-0">
                 {/* Calendar grid */}
-                <div className={`grid grid-cols-7 gap-y-0.5 mb-4 ${loadingMonth ? 'opacity-50' : ''}`}>
+                <div
+                    className={`mb-5 grid grid-cols-7 gap-y-1 ${loadingMonth ? 'opacity-50' : ''}`}
+                >
                     {cells.map((day, i) => {
                         if (day === null) {
-return <div key={`e-${i}`} />;
-}
+                            return <div key={`e-${i}`} />;
+                        }
 
-                        const dateKey    = `${year}-${pad2(month + 1)}-${pad2(day)}`;
-                        const avail      = monthData[dateKey];
-                        const isToday    = dateKey === todayStr;
+                        const dateKey = `${year}-${pad2(month + 1)}-${pad2(day)}`;
+                        const avail = monthData[dateKey];
+                        const isToday = dateKey === todayStr;
                         const isSelected = dateKey === selectedDate;
-                        const isPast     = dateKey < todayStr;
+                        const isPast = dateKey < todayStr;
+                        const isFull = avail?.is_full && !isPast && !isSelected;
 
                         return (
-                            <button
+                            <div
                                 key={day}
-                                type="button"
-                                onClick={() => {
- setInternalDate(dateKey); onDateSelect?.(dateKey); 
-}}
-                                className={[
-                                    'relative flex flex-col items-center justify-center rounded-md py-1 transition-colors',
-                                    isSelected
-                                        ? 'bg-primary text-primary-foreground'
-                                        : isToday
-                                        ? 'bg-muted font-semibold'
-                                        : 'hover:bg-muted/60',
-                                    isPast ? 'opacity-40' : '',
-                                ].join(' ')}
+                                className="flex items-center justify-center"
                             >
-                                <span className={`text-xs leading-none ${isSelected ? 'text-primary-foreground' : isToday ? 'text-primary font-semibold' : 'text-foreground'}`}>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setInternalDate(dateKey);
+                                        onDateSelect?.(dateKey);
+                                    }}
+                                    className={[
+                                        'flex h-8 w-8 items-center justify-center rounded-sm text-xs transition-colors',
+                                        isSelected
+                                            ? 'bg-primary text-primary-foreground'
+                                            : isFull
+                                              ? 'bg-destructive/10 text-destructive hover:bg-destructive/20'
+                                              : isToday
+                                                ? 'bg-muted text-primary ring-1 ring-primary'
+                                                : 'bg-muted text-foreground hover:bg-muted/80',
+                                        isPast ? 'opacity-40' : '',
+                                    ].join(' ')}
+                                >
                                     {day}
-                                </span>
-                                {avail && !isPast && (
-                                    <span
-                                        className={[
-                                            'mt-0.5 h-1 w-1 rounded-full',
-                                            avail.is_full ? 'bg-red-500' : 'bg-emerald-500',
-                                            isSelected ? 'opacity-70' : '',
-                                        ].join(' ')}
-                                    />
-                                )}
-                            </button>
+                                </button>
+                            </div>
                         );
                     })}
-                </div>
-
-                {/* Legend */}
-                <div className="mb-4 flex items-center gap-4 border-b border-border pb-3">
-                    <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                        <span className="h-2 w-2 rounded-full bg-primary" />
-                        Selected
-                    </span>
-                    <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                        <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                        Open Slots
-                    </span>
-                    <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                        <span className="h-2 w-2 rounded-full bg-red-500" />
-                        Full
-                    </span>
                 </div>
 
                 {/* Selected date detail */}
                 {selectedDate && (
                     <div>
-                        <div className="mb-2 flex items-center gap-2">
-                            <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span className="text-xs font-semibold text-foreground">
-                                Selected{' '}
-                                <span className="text-primary">{selectedLabel}</span>
+                        <p className="mb-3 text-xs text-muted-foreground font-medium">
+                            Selected :{' '}
+                            <span className="font-semibold text-primary">
+                                {selectedLabel}
                             </span>
-                        </div>
+                        </p>
 
                         {loadingDay ? (
                             <div className="py-6 text-center text-xs text-muted-foreground">
                                 Loading slots…
                             </div>
                         ) : dayDetail ? (
-                            <>
-                                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                                    {availableCount} Slot{availableCount !== 1 ? 's' : ''} Available
-                                </p>
-
+                            <div className="space-y-2">
                                 {dayDetail.is_full ? (
-                                    <p className="rounded-md bg-red-50 px-3 py-2 text-xs font-medium text-red-600 dark:bg-red-950/30 dark:text-red-400">
-                                        Fully booked — no available slots
-                                    </p>
+                                    <div className="rounded-sm bg-destructive/10 px-3 py-2 text-center text-xs font-medium text-destructive">
+                                        Fully booked
+                                    </div>
                                 ) : (
-                                    <div className="space-y-3">
+                                    <>
                                         {morningRanges.length > 0 && (
                                             <div>
-                                                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                                <p className="mb-1 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
                                                     Morning
                                                 </p>
-                                                <div className="space-y-1">
-                                                    {morningRanges.map((r) => (
-                                                        <div
-                                                            key={`m-${r.from}`}
-                                                            className="rounded-md bg-emerald-50 px-2 py-1.5 text-center text-xs font-medium text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
-                                                        >
-                                                            {r.from} – {r.to}
-                                                        </div>
-                                                    ))}
+                                                <div className="rounded-xl bg-[#eaf7ef] text-center px-3 py-2 text-xs text-success-foreground">
+                                                    <p className="font-semibold">
+                                                        {morningRanges[0].from}{' '}
+                                                        -{' '}
+                                                        {
+                                                            morningRanges[
+                                                                morningRanges.length -
+                                                                    1
+                                                            ].to
+                                                        }{' '}
+                                                        · open
+                                                    </p>
                                                 </div>
                                             </div>
                                         )}
-
                                         {afternoonRanges.length > 0 && (
                                             <div>
-                                                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                                <p className="mb-1 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
                                                     Afternoon
                                                 </p>
-                                                <div className="space-y-1">
-                                                    {afternoonRanges.map((r) => (
-                                                        <div
-                                                            key={`a-${r.from}`}
-                                                            className="rounded-md bg-emerald-50 px-2 py-1.5 text-center text-xs font-medium text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
-                                                        >
-                                                            {r.from} – {r.to}
-                                                        </div>
-                                                    ))}
+                                                <div className="rounded-xl bg-[#eaf7ef] text-center px-3 py-2 text-xs text-success-foreground">
+                                                    <p className="font-semibold">
+                                                        {
+                                                            afternoonRanges[0]
+                                                                .from
+                                                        }{' '}
+                                                        -{' '}
+                                                        {
+                                                            afternoonRanges[
+                                                                afternoonRanges.length -
+                                                                    1
+                                                            ].to
+                                                        }{' '}
+                                                        · open
+                                                    </p>
                                                 </div>
                                             </div>
                                         )}
-                                    </div>
+                                    </>
                                 )}
-                            </>
+                            </div>
                         ) : null}
                     </div>
                 )}

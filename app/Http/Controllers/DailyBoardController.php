@@ -43,7 +43,11 @@ class DailyBoardController extends Controller
 
         return Inertia::render('dailyboard/Index', [
             'entries' => $entries,
-            'doctors' => $doctors->map(fn ($d) => ['id' => $d->id, 'name' => $d->user->name])->values()->all(),
+            'doctors' => $doctors->map(fn ($d) => [
+                'id' => $d->id,
+                'name' => $d->user->name,
+                'specialization' => $d->specialization,
+            ])->values()->all(),
             'filters' => [
                 'date' => $date,
                 'doctor_id' => $doctorId,

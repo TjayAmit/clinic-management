@@ -11,6 +11,7 @@ export type NavItem = {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon | null;
     isActive?: boolean;
+    badge?: string | number;
     /** User must have at least one of these permissions to see this item. */
     permissions?: string[];
     /** User must have at least one of these roles to see this item. */

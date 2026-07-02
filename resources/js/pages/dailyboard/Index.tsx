@@ -1,39 +1,49 @@
-import { Head, router } from '@inertiajs/react';
-import { LayoutDashboard } from 'lucide-react';
-import { AppointmentStatusActions } from '@/components/appointment-status-actions';
+import { Head, Link, router } from '@inertiajs/react';
+import { LayoutDashboard, Plus } from 'lucide-react';
 import { StatusBadge } from '@/components/status-badge';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import { usePermission } from '@/hooks/use-permission';
 import AppLayout from '@/layouts/app-layout';
-import { show as appointmentsShow } from '@/routes/appointments';
-import type { DailyBoardProps } from '@/types';
+import {
+    create as appointmentsCreate,
+    show as appointmentsShow,
+} from '@/routes/appointments';
+import type {
+    AppointmentStatus,
+    DailyBoardEntry,
+    DailyBoardProps,
+} from '@/types';
+import { STATUS_DOT, avatarCls, initials } from '../dashboard/_shared';
 
 function formatTime(time: string): string {
-    // Strip seconds: "09:00:00" -> "09:00"
-    return time.slice(0, 5);
+    const [h, m] = time.split(':').map(Number);
+
+    return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
 }
 
-export default function Index({ entries, doctors, filters }: DailyBoardProps) {
-    const { hasRole } = usePermission();
-    const isDoctor = hasRole('Doctor');
+const STATUS_BORDER: Record<AppointmentStatus, string> = {
+    pending: 'border-l-amber-500',
+    confirmed: 'border-l-blue-500',
+    in_queue: 'border-l-amber-500',
+    in_progress: 'border-l-purple-500',
+    completed: 'border-l-emerald-500',
+    needs_follow_up: 'border-l-orange-500',
+    cancelled: 'border-l-red-400',
+    no_show: 'border-l-slate-400',
+};
 
-    const navigate = (params: Record<string, string | number | null | undefined>) => {
+const LEGEND = [
+    { status: 'confirmed', label: 'Confirmed' },
+    { status: 'in_progress', label: 'In chair' },
+    { status: 'pending', label: 'Pending' },
+    { status: 'completed', label: 'Done' },
+];
+
+export default function Index({ entries, doctors, filters }: DailyBoardProps) {
+    const navigate = (
+        params: Record<string, string | number | null | undefined>,
+    ) => {
         router.get(
             '/daily-board',
             { date: filters.date, doctor_id: filters.doctor_id, ...params },
@@ -41,163 +51,160 @@ export default function Index({ entries, doctors, filters }: DailyBoardProps) {
         );
     };
 
-    const handleReload = () => {
-        router.reload();
-    };
+    const dateLabel = new Date(filters.date).toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+    });
+
+    const entriesByDoctor = entries.reduce<Record<string, DailyBoardEntry[]>>(
+        (acc, entry) => {
+            acc[entry.doctor_name] = acc[entry.doctor_name] ?? [];
+            acc[entry.doctor_name].push(entry);
+
+            return acc;
+        },
+        {},
+    );
+
+    const columns = doctors.map((doctor) => ({
+        doctor,
+        entries: entriesByDoctor[doctor.name] ?? [],
+    }));
 
     return (
         <>
             <Head title="Daily Board" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 p-4 lg:p-6">
-                <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-                    {/* Header */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-6 py-4">
-                        <div>
-                            <h1 className="text-lg font-semibold text-foreground">Daily Board</h1>
-                            <p className="text-sm text-muted-foreground">{filters.date}</p>
+            <div className="flex min-h-full flex-1 flex-col gap-6 p-4 lg:p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                            Daily Board
+                        </h1>
+                        <p className="text-sm text-muted-foreground">
+                            {dateLabel} · live chair status by dentist
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <div className="hidden items-center gap-3 rounded-lg border border-border bg-card px-3 py-2 sm:flex">
+                            {LEGEND.map((item) => (
+                                <div
+                                    key={item.status}
+                                    className="flex items-center gap-1.5"
+                                >
+                                    <span
+                                        className={`h-2 w-2 rounded-full ${STATUS_DOT[item.status]}`}
+                                    />
+                                    <span className="text-xs text-muted-foreground">
+                                        {item.label}
+                                    </span>
+                                </div>
+                            ))}
                         </div>
-                        <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 text-sm">
-                            <LayoutDashboard className="h-4 w-4" />
-                            {entries.length} patient{entries.length !== 1 ? 's' : ''}
-                        </Badge>
+                        <Button className="gap-1" asChild>
+                            <Link href={appointmentsCreate()}>
+                                <Plus className="h-4 w-4" />
+                                Add
+                            </Link>
+                        </Button>
                     </div>
+                </div>
 
-                    {/* Filters */}
-                    <div className="flex flex-wrap items-center gap-3 border-b border-border px-6 py-3">
-                        <Input
-                            type="date"
-                            className="h-9 w-auto"
-                            value={filters.date}
-                            onChange={(e) =>
-                                navigate({ date: e.target.value || undefined, doctor_id: filters.doctor_id })
-                            }
-                            aria-label="Filter by date"
-                        />
-                        {!isDoctor && (
-                            <Select
-                                value={filters.doctor_id !== null ? String(filters.doctor_id) : 'all'}
-                                onValueChange={(v) =>
-                                    navigate({ date: filters.date, doctor_id: v === 'all' ? null : Number(v) })
-                                }
-                            >
-                                <SelectTrigger className="h-9 w-48" aria-label="Filter by doctor">
-                                    <SelectValue placeholder="All Doctors" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Doctors</SelectItem>
-                                    {doctors.map((d) => (
-                                        <SelectItem key={d.id} value={String(d.id)}>
-                                            {d.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        )}
-                    </div>
+                <div className="flex items-center gap-2">
+                    <Input
+                        type="date"
+                        className="h-9 w-auto"
+                        value={filters.date}
+                        onChange={(e) =>
+                            navigate({
+                                date: e.target.value || undefined,
+                                doctor_id: filters.doctor_id,
+                            })
+                        }
+                        aria-label="Filter by date"
+                    />
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                            navigate({
+                                date: new Date().toISOString().slice(0, 10),
+                                doctor_id: null,
+                            })
+                        }
+                    >
+                        Today
+                    </Button>
+                </div>
 
-                    {/* Table */}
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="border-b border-border bg-muted/40 hover:bg-muted/40">
-                                    <TableHead className="h-11 py-0 pl-6 pr-4 text-sm font-medium text-muted-foreground">
-                                        Patient
-                                    </TableHead>
-                                    <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">
-                                        Time
-                                    </TableHead>
-                                    <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">
-                                        Doctor
-                                    </TableHead>
-                                    <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">
-                                        Service
-                                    </TableHead>
-                                    <TableHead className="h-11 px-4 py-0 text-sm font-medium text-muted-foreground">
-                                        Status
-                                    </TableHead>
-                                    <TableHead className="h-11 w-28 py-0 pl-4 pr-6">
-                                        <span className="sr-only">Actions</span>
-                                    </TableHead>
-                                </TableRow>
-                            </TableHeader>
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {columns.map(({ doctor, entries: doctorEntries }) => (
+                        <Card key={doctor.id} className="border-0 shadow-sm">
+                            <CardContent className="p-4">
+                                <div className="mb-4 flex items-center gap-3">
+                                    <div
+                                        className={`flex h-10 w-10 items-center justify-center rounded-full text-xs font-semibold ${avatarCls(doctor.name)}`}
+                                    >
+                                        {initials(doctor.name)}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-sm font-semibold text-foreground">
+                                            {doctor.name}
+                                        </p>
+                                        <p className="truncate text-xs text-muted-foreground">
+                                            {doctor.specialization}
+                                        </p>
+                                    </div>
+                                    <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-muted px-2 text-xs font-semibold text-muted-foreground">
+                                        {doctorEntries.length}
+                                    </span>
+                                </div>
 
-                            <TableBody>
-                                {entries.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="h-40 text-center">
-                                            <div className="flex flex-col items-center gap-3 text-muted-foreground">
-                                                <div className="rounded-full bg-muted p-3">
-                                                    <LayoutDashboard className="h-5 w-5 opacity-50" />
-                                                </div>
-                                                <p className="text-sm font-medium">
-                                                    No patients scheduled for this date.
-                                                </p>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
+                                {doctorEntries.length === 0 ? (
+                                    <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border py-8 text-muted-foreground">
+                                        <LayoutDashboard className="h-5 w-5 opacity-40" />
+                                        <p className="text-xs">
+                                            No appointments
+                                        </p>
+                                    </div>
                                 ) : (
-                                    entries.map((entry) => (
-                                        <TableRow
-                                            key={entry.id}
-                                            className="cursor-pointer border-b border-border/60 last:border-0 transition-colors hover:bg-muted/30"
-                                            onClick={() => router.get(appointmentsShow(entry.id))}
-                                        >
-                                            {/* Patient */}
-                                            <TableCell className="py-3.5 pl-6 pr-4 text-sm font-medium">
-                                                <div className="flex items-center gap-2">
-                                                    {entry.patient_name}
-                                                    {entry.is_walk_in && (
-                                                        <Badge
-                                                            variant="outline"
-                                                            className="border-transparent bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                                                        >
-                                                            Walk-in
-                                                        </Badge>
-                                                    )}
+                                    <div className="space-y-3">
+                                        {doctorEntries.map((entry) => (
+                                            <button
+                                                key={entry.id}
+                                                type="button"
+                                                onClick={() =>
+                                                    router.get(
+                                                        appointmentsShow(
+                                                            entry.id,
+                                                        ),
+                                                    )
+                                                }
+                                                className={`flex w-full items-start justify-between gap-3 rounded-xl border border-l-4 border-border bg-card p-3 text-left transition-colors hover:bg-muted/40 ${STATUS_BORDER[entry.status]}`}
+                                            >
+                                                <div>
+                                                    <p className="text-sm font-semibold text-foreground tabular-nums">
+                                                        {formatTime(entry.time)}
+                                                    </p>
+                                                    <p className="text-sm font-medium text-foreground">
+                                                        {entry.patient_name}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {entry.service_name}
+                                                    </p>
                                                 </div>
-                                            </TableCell>
-
-                                            {/* Time */}
-                                            <TableCell className="px-4 py-3.5 text-sm tabular-nums text-muted-foreground">
-                                                {formatTime(entry.time)}
-                                            </TableCell>
-
-                                            {/* Doctor */}
-                                            <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                                {entry.doctor_name}
-                                            </TableCell>
-
-                                            {/* Service + series progress */}
-                                            <TableCell className="px-4 py-3.5 text-sm text-muted-foreground">
-                                                {entry.service_name}
-                                                {entry.series_position !== null &&
-                                                    entry.series_total !== null && (
-                                                        <span className="ml-1.5 text-xs text-muted-foreground/60">
-                                                            ({entry.series_position}/{entry.series_total})
-                                                        </span>
-                                                    )}
-                                            </TableCell>
-
-                                            {/* Status */}
-                                            <TableCell className="px-4 py-3.5">
-                                                <StatusBadge status={entry.status} />
-                                            </TableCell>
-
-                                            {/* Actions */}
-                                            <TableCell className="py-3.5 pl-4 pr-6" onClick={(e) => e.stopPropagation()}>
-                                                <AppointmentStatusActions
-                                                    appointmentId={entry.id}
+                                                <StatusBadge
                                                     status={entry.status}
-                                                    onSuccess={handleReload}
+                                                    className="shrink-0"
                                                 />
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
+                                            </button>
+                                        ))}
+                                    </div>
                                 )}
-                            </TableBody>
-                        </Table>
-                    </div>
+                            </CardContent>
+                        </Card>
+                    ))}
                 </div>
             </div>
         </>
